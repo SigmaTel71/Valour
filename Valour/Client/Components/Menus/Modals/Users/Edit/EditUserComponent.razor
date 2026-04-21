@@ -31,6 +31,7 @@
     private RenderFragment ReferralsContent => @<EditReferralsComponent />;
     private RenderFragment NotificationsContent => @<EditUserNotificationsComponent />;
     private RenderFragment DevicePreferencesContent => @<EditDevicePreferencesComponent />;
+    private RenderFragment LanguageContent =>@<EditLanguageComponent />;
     private RenderFragment SecurityContent => @<EditSessionsComponent />;
     private RenderFragment EncryptionContent => @<EditEncryptionComponent />;
     private RenderFragment FederationContent => @<EditFederationMigrationComponent />;
@@ -145,6 +146,13 @@
                         Icon = "phone-fill",
                         Description = "Manage device preferences",
                         Content = DevicePreferencesContent
+                    },
+                    new MainMenu.MenuItem()
+                    {
+                        Name = "Language & Time",
+                        Icon = "globe",
+                        Description = "Manage user interface language and time preferences",
+                        Content = LanguageContent
                     },
                     new MainMenu.MenuItem()
                     {

@@ -1,7 +1,10 @@
+using Valour.Shared.Utilities;
+
 namespace Valour.Client.Utility;
 
 public static class TimeUtil
 {
+    [Obsolete("Use Humanizer for time relativization and language awareness.")]
     public static string GetRelativeTime(DateTime utcTime)
     {
         var span = DateTime.UtcNow - utcTime;
@@ -31,4 +34,11 @@ public static class TimeUtil
         var years = (int)(span.TotalDays / 365);
         return years == 1 ? "1 year ago" : $"{years} years ago";
     }
+
+    public static bool UseRelativeTime;
+    public static bool AlwaysShowTime;
+
+    public static HybridEvent TimePreferenceChanged;
+
+    public static void NotifyTimePreferenceChanged() => TimePreferenceChanged?.Invoke();
 }
