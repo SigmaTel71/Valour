@@ -8,15 +8,18 @@
     <WasmBuildNative>true</WasmBuildNative>
     <!-- Fix trimming issue -->
     <_ExtraTrimmerArgs>--keep-metadata parametername</_ExtraTrimmerArgs>
+	<BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Blazor.WebAssembly.DynamicCulture" Version="3.2.0" />
     <PackageReference Include="ExCSS" Version="4.3.1" />
     <PackageReference Include="FastDragBlazor" Version="1.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.3" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="10.0.3" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Localization" Version="10.0.7" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="10.0.3" />
     <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.9.3">
       <PrivateAssets>all</PrivateAssets>
@@ -59,6 +62,36 @@
     <AdditionalFiles Include="Components\PlanetDiscovery\DiscoveryPageComponent.razor" />
     <AdditionalFiles Include="Components\PlanetDiscovery\DiscoveryPlanetCard.razor" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources\Components\Menus\Modals\Users\Edit\EditLanguageContent.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>EditLanguageContent.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Resources\ValourApp.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ValourApp.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\Components\Menus\Modals\Users\Edit\EditLanguageContent.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>EditLanguageContent.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+	<EmbeddedResource Update="Resources\Components\Menus\Modals\Users\Edit\EditLanguageContent.ru-RU.resx">
+		<DependentUpon>EditLanguageContent.resx</DependentUpon>
+	</EmbeddedResource>
+	<EmbeddedResource Update="Resources\ValourApp.resx">
+	  <Generator>PublicResXFileCodeGenerator</Generator>
+	  <LastGenOutput>ValourApp.Designer.cs</LastGenOutput>
+	</EmbeddedResource>
+	<EmbeddedResource Update="Resources\ValourApp.ru-RU.resx">
+		<DependentUpon>ValourApp.resx</DependentUpon>
+	</EmbeddedResource>
+  </ItemGroup>
   
   <!-- JS Cleanup script
   <Target Name="RunCustomBuildScripts" BeforeTargets="PrepareForBuild">
@@ -69,9 +102,7 @@
   -->
 
   <!-- Build-time CSS bundling: concatenates global + scoped CSS files and minifies with NUglify -->
-  <Target Name="GenerateCssBundle"
-          DependsOnTargets="BundleScopedCssFiles"
-          BeforeTargets="ResolveProjectStaticWebAssets">
+  <Target Name="GenerateCssBundle" DependsOnTargets="BundleScopedCssFiles" BeforeTargets="ResolveProjectStaticWebAssets">
     <PropertyGroup>
       <_CssBundlerProject>$(MSBuildProjectDirectory)/../BuildTools/CssBundler/CssBundler.csproj</_CssBundlerProject>
       <_CssBundleInputs>$(MSBuildProjectDirectory)/wwwroot/css/reboot.min.css;$(MSBuildProjectDirectory)/wwwroot/css/app.css;$(MSBuildProjectDirectory)/wwwroot/css/globals.css;$(MSBuildProjectDirectory)/wwwroot/css/bootstrap-icons.css;$(MSBuildProjectDirectory)/wwwroot/css/hljs-theme.min.css;$(MSBuildProjectDirectory)/wwwroot/css/pickr.min.css</_CssBundleInputs>

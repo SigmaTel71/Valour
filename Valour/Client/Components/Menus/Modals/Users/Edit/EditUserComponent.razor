@@ -4,7 +4,7 @@
 @inject NavigationManager NavManager
 @inject ValourClient Client
 
-
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
 @if (@Data.User is null)
 {
     <div class="background">
@@ -29,6 +29,7 @@
     private RenderFragment ReferralsContent => @<EditReferralsComponent />;
     private RenderFragment NotificationsContent => @<EditUserNotificationsComponent />;
     private RenderFragment DevicePreferencesContent => @<EditDevicePreferencesComponent />;
+    private RenderFragment LanguageContent =>@<EditLanguageComponent />;
     private RenderFragment SecurityContent => @<EditSessionsComponent />;
     private RenderFragment LogOutContent => @<div></div>;
     private RenderFragment OAuthContent => @<EditOAuthComponent />;
@@ -47,7 +48,8 @@
             <TabFour>
                 <StaffEmailComponent />
             </TabFour>
-        </TabContainerComponent>;
+        </TabContainerComponent>
+    ;
 
     private readonly string[] _staffTabs = new[] { "Members", "Reports", "Verify", "Email Users" };
 
@@ -124,6 +126,13 @@
                         Icon = "phone-fill",
                         Description = "Manage device preferences",
                         Content = DevicePreferencesContent
+                    },
+                    new MainMenu.MenuItem()
+                    {
+                        Name = "Language & Time",
+                        Icon = "globe",
+                        Description = "Manage user interface language and time preferences",
+                        Content = LanguageContent
                     },
                     new MainMenu.MenuItem()
                     {

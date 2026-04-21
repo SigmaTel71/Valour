@@ -1,7 +1,10 @@
+using Blazor.WebAssembly.DynamicCulture.Extensions;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using System.Globalization;
 using Valour.Client;
 using Valour.Client.Notifications;
 using Valour.Client.Storage;
+using Valour.Shared.Utilities;
 
 namespace Valour.Client.Blazor;
 
@@ -24,6 +27,18 @@ public class Program
             options.MinimumEventLevel = LogLevel.Error;
             options.SetBeforeSend((e, _) => SentryGate.IsEnabled ? e : null);
         });
+
+        CultureInfo[] supportedCultures = new CultureInfo[]{ };
+
+        builder.Services.AddLocalization(options => options.ResourcesPath = "../Client/Resources");
+        builder.Services.AddLocalizationDynamic(options =>
+        {
+            options.SetDefaultCulture(SupportedCultures.Default);
+            options.AddSupportedCultures(SupportedCultures.Get());
+            options.AddSupportedUICultures(SupportedCultures.Get());
+
+            supportedCultures = options.SupportedCultures.ToArray();
+        });
         
         builder.Services.AddSingleton<IAppStorage, BrowserStorageService>();
         builder.Services.AddSingleton<IPushNotificationService, BrowserPushNotificationService>();
@@ -31,6 +46,6 @@ public class Program
         builder.Services.AddValourClientServices("https://api.valour.gg");
         
         var host = builder.Build();
-        await host.RunAsync();
+        await host.RunWithCultureMiddlewareAsync();
     }
 }

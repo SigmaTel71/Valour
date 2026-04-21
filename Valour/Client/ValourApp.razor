@@ -1,9 +1,12 @@
+@using System.Globalization
+@inject IStringLocalizer<ValourApp> Localizer
 @inject ValourClient Client
 @inject LoggingService Logger
 @inject IJSRuntime JsRuntime
 @inject IAppStorage LocalStorage
 @inject SoundManager SoundManager
 
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
 <BrowserUtils OnReady="@ReadyAsync" />
 
 @if (_browserReady)
@@ -43,7 +46,7 @@
 }
 else
 {
-    <Loading Subtext='Logging you in...'></Loading>
+    <Loading Subtext='@Resources.ValourApp.LoginEllipsis'></Loading>
 }
 
 @code{

@@ -1,6 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Valour.Shared.Models;
+using Valour.Shared.Utilities;
+using static Valour.Shared.Models.TimeSettings;
 
 namespace Valour.Database;
 
@@ -25,4 +27,13 @@ public class UserPreferences : ISharedUserPreferences
 
     [Column("dm_policy")]
     public DmPolicy DmPolicy { get; set; } = DmPolicy.Everyone;
+
+    [Column("sync_language_between_devices")]
+    public bool SyncLanguageBetweenDevices { get; set; } = true;
+
+    [Column("language")]
+    public string Language { get; set; } = SupportedCultures.Default;
+
+    [Column("time_format")]
+    public TimeFormatPreference TimeFormat { get; set; } = TimeFormatPreference.PreferAuto;
 }

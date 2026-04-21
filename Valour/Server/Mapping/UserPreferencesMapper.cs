@@ -13,7 +13,10 @@ public static class UserPreferencesMapper
             ErrorReportingState = prefs.ErrorReportingState,
             NotificationVolume = prefs.NotificationVolume,
             EnabledNotificationSources = prefs.EnabledNotificationSources,
-            DmPolicy = prefs.DmPolicy
+            DmPolicy = prefs.DmPolicy,
+            TimeFormat = prefs.TimeFormat,
+            SyncLanguageBetweenDevices = prefs.SyncLanguageBetweenDevices,
+            Language = prefs.Language
         };
     }
 
@@ -28,7 +31,10 @@ public static class UserPreferencesMapper
             ErrorReportingState = prefs.ErrorReportingState,
             NotificationVolume = prefs.NotificationVolume,
             EnabledNotificationSources = prefs.EnabledNotificationSources,
-            DmPolicy = prefs.DmPolicy
+            DmPolicy = prefs.DmPolicy,
+            TimeFormat = prefs.TimeFormat,
+            SyncLanguageBetweenDevices = prefs.SyncLanguageBetweenDevices,
+            Language = prefs.Language
         };
     }
 }

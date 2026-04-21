@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Valour.Database.Context;
@@ -12,9 +13,11 @@ using Valour.Database.Context;
 namespace Valour.Database.Migrations
 {
     [DbContext(typeof(ValourDb))]
-    partial class ValourDbModelSnapshot : ModelSnapshot
+    [Migration("20260503104213_MUISyncBetweenDevices")]
+    partial class MUISyncBetweenDevices
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1633,71 +1636,6 @@ namespace Valour.Database.Migrations
                     b.ToTable("notification_subscriptions", (string)null);
                 });
 
-            modelBuilder.Entity("Valour.Database.RealtimeKitMeeting", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<long>("ChannelId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("channel_id");
-
-                    b.Property<int>("CleanupFailureCount")
-                        .HasColumnType("integer")
-                        .HasColumnName("cleanup_failure_count");
-
-                    b.Property<DateTime?>("ClosedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("closed_at");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<DateTime?>("LastCleanupAttemptAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_cleanup_attempt_at");
-
-                    b.Property<string>("LastCleanupError")
-                        .HasColumnType("text")
-                        .HasColumnName("last_cleanup_error");
-
-                    b.Property<DateTime>("LastUsedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_used_at");
-
-                    b.Property<string>("MeetingId")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("meeting_id");
-
-                    b.Property<long?>("PlanetId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("planet_id");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("status");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ChannelId")
-                        .IsUnique()
-                        .HasFilter("closed_at IS NULL");
-
-                    b.HasIndex("MeetingId")
-                        .IsUnique();
-
-                    b.HasIndex("Status", "ClosedAt");
-
-                    b.ToTable("realtimekit_meetings", (string)null);
-                });
-
             modelBuilder.Entity("Valour.Database.Referral", b =>
                 {
                     b.Property<long>("UserId")
@@ -2293,10 +2231,6 @@ namespace Valour.Database.Migrations
                     b.Property<bool>("SyncLanguageBetweenDevices")
                         .HasColumnType("boolean")
                         .HasColumnName("sync_language_between_devices");
-
-                    b.Property<int>("TimeFormat")
-                        .HasColumnType("integer")
-                        .HasColumnName("time_format");
 
                     b.HasKey("Id");
 
