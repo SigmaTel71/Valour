@@ -10,7 +10,7 @@ using Valour.Database.Themes;
 using Valour.Shared.Models;
 
 /*  Valour (TM) - A free and secure chat client
- *  Copyright (C) 2025 Valour Software LLC
+ *  Copyright (C) 2025-2026 Valour Software LLC
  *  This program is subject to the GNU Affero General Public license
  *  A copy of the license should be included - if not, see <http://www.gnu.org/licenses/>
  */
@@ -32,7 +32,7 @@ internal class ValourDbDesignTimeContext : IDesignTimeDbContextFactory<ValourDb>
 
 public partial class ValourDb : DbContext
 {
-    public static readonly string ConnectionString = $"Host={DbConfig.Instance.Host};Database={DbConfig.Instance.Database};Username={DbConfig.Instance.Username};Password={DbConfig.Instance.Password};SslMode=Prefer;";
+    public static readonly string ConnectionString = $"Host={DbConfig.Instance.Host};Port={DbConfig.Instance.Port};Database={DbConfig.Instance.Database};Username={DbConfig.Instance.Username};Password={DbConfig.Instance.Password};SslMode={(DbConfig.Instance.Type == DbConfig.DbType.PostgreSQL ? "Prefer": "Preferred")};";
 
     // These are the database sets we can access
     //public DbSet<ClientPlanetMessage> Messages { get; set; }
@@ -251,7 +251,17 @@ public partial class ValourDb : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
         options.ConfigureWarnings(w => w.Ignore(RelationalEventId.ForeignKeyPropertiesMappedToUnrelatedTables));
-        options.UseNpgsql(ConnectionString).UseExceptionProcessor();
+        if (DbConfig.Instance.Type == DbConfig.DbType.MariaDB || DbConfig.Instance.Type == DbConfig.DbType.MySQL)
+        {
+            ServerVersion dbServerVersion = DbConfig.Instance.Type == DbConfig.DbType.MySQL
+                ? new MySqlServerVersion(new Version(8, 0, 24))
+                : new MariaDbServerVersion(new Version(11, 8, 0));
+            options.UseMySql(ConnectionString, dbServerVersion).UseExceptionProcessor();
+        }
+        else
+        {
+            options.UseNpgsql(ConnectionString).UseExceptionProcessor();
+        }
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

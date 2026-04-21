@@ -286,7 +286,22 @@ public partial class Program
             options.MultipartBodyLengthLimit = 262_144_000; // 250 MB (max tier upload limit)
         });
 
-        services.AddDbContext<ValourDb>(options => { options.UseNpgsql(ValourDb.ConnectionString); }, ServiceLifetime.Scoped);
+        services.AddDbContext<ValourDb>(options =>
+        {
+            var dbType = DbConfig.Instance.Type;
+
+            if (dbType == DbConfig.DbType.MariaDB || dbType == DbConfig.DbType.MySQL)
+            {
+                ServerVersion dbServerVersion = DbConfig.Instance.Type == DbConfig.DbType.MySQL
+                    ? new MySqlServerVersion(new Version(8, 0, 24))
+                    : new MariaDbServerVersion(new Version(11, 8, 0));
+                options.UseMySql(ValourDb.ConnectionString, dbServerVersion);
+            }
+            else
+            {
+                options.UseNpgsql(ValourDb.ConnectionString);
+            }
+        }, ServiceLifetime.Scoped);
 
         // Apply migrations if flag is set
         //if (Environment.GetEnvironmentVariable("APPLY_MIGRATIONS") == "true")

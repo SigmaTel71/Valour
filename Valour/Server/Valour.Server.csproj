@@ -21,13 +21,14 @@
     <PackageReference Include="GoogleAuthenticator" Version="3.2.0" />
     <PackageReference Include="IdGen" Version="3.0.7" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.3" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.3">
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.7" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.7" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.7">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.7" />
+    <PackageReference Include="Microting.EntityFrameworkCore.MySql" Version="10.0.7" />
     <PackageReference Include="Npgsql" Version="10.0.1" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
     <PackageReference Include="SendGrid" Version="9.29.3" />
