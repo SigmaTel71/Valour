@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Valour.Database.Context;
@@ -12,9 +13,11 @@ using Valour.Database.Context;
 namespace Valour.Database.Migrations
 {
     [DbContext(typeof(ValourDb))]
-    partial class ValourDbModelSnapshot : ModelSnapshot
+    [Migration("20260502212501_MUISupport")]
+    partial class MUISupport
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1032,12 +1035,7 @@ namespace Valour.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TimeRead");
-
-                    b.HasIndex("UserId", "TimeSent")
-                        .HasFilter("time_read IS NULL");
-
-                    b.ToTable("notifications", (string)null);
+                    b.ToTable("notifications");
                 });
 
             modelBuilder.Entity("Valour.Database.OauthApp", b =>
@@ -1200,10 +1198,6 @@ namespace Valour.Database.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("discoverable");
 
-                    b.Property<bool>("EnableThreads")
-                        .HasColumnType("boolean")
-                        .HasColumnName("enable_threads");
-
                     b.Property<bool>("HasAnimatedIcon")
                         .HasColumnType("boolean")
                         .HasColumnName("animated_icon");
@@ -1236,17 +1230,9 @@ namespace Valour.Database.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("owner_id");
 
-                    b.Property<long?>("PinnedThreadId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("pinned_thread_id");
-
                     b.Property<bool>("Public")
                         .HasColumnType("boolean")
                         .HasColumnName("public");
-
-                    b.Property<bool>("PublicThreads")
-                        .HasColumnType("boolean")
-                        .HasColumnName("public_threads");
 
                     b.Property<int>("Version")
                         .HasColumnType("integer")
@@ -1377,10 +1363,6 @@ namespace Valour.Database.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<long?>("DismissedPinThreadId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("dismissed_pin_thread_id");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
@@ -1431,116 +1413,6 @@ namespace Valour.Database.Migrations
                         .IsUnique();
 
                     b.ToTable("planet_members", (string)null);
-                });
-
-            modelBuilder.Entity("Valour.Database.PlanetReport", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<long?>("ChannelId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("channel_id");
-
-                    b.Property<string>("LongReason")
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)")
-                        .HasColumnName("long_reason");
-
-                    b.Property<long?>("MessageId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("message_id");
-
-                    b.Property<string>("ModeratorNotes")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasColumnName("moderator_notes");
-
-                    b.Property<long>("PlanetId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("planet_id");
-
-                    b.Property<long?>("ReportedMemberId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("reported_member_id");
-
-                    b.Property<long?>("ReportedUserId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("reported_user_id");
-
-                    b.Property<long>("ReportingUserId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("reporting_user_id");
-
-                    b.Property<int>("Resolution")
-                        .HasColumnType("integer")
-                        .HasColumnName("resolution");
-
-                    b.Property<DateTime?>("ResolvedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("resolved_at");
-
-                    b.Property<long?>("ResolvedById")
-                        .HasColumnType("bigint")
-                        .HasColumnName("resolved_by_id");
-
-                    b.Property<bool>("Reviewed")
-                        .HasColumnType("boolean")
-                        .HasColumnName("reviewed");
-
-                    b.Property<string>("RuleDescriptionSnapshot")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasColumnName("rule_description_snapshot");
-
-                    b.Property<long?>("RuleId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("rule_id");
-
-                    b.Property<string>("RuleTitleSnapshot")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("rule_title_snapshot");
-
-                    b.Property<long?>("ThreadCommentId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("thread_comment_id");
-
-                    b.Property<long?>("ThreadId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("thread_id");
-
-                    b.Property<DateTime>("TimeCreated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("time_created");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PlanetId");
-
-                    b.HasIndex("ReportedMemberId");
-
-                    b.HasIndex("ReportedUserId");
-
-                    b.HasIndex("ReportingUserId");
-
-                    b.HasIndex("Resolution");
-
-                    b.HasIndex("ResolvedById");
-
-                    b.HasIndex("RuleId");
-
-                    b.HasIndex("ThreadCommentId");
-
-                    b.HasIndex("ThreadId");
-
-                    b.HasIndex("TimeCreated");
-
-                    b.ToTable("planet_reports", (string)null);
                 });
 
             modelBuilder.Entity("Valour.Database.PlanetRole", b =>
@@ -1620,45 +1492,6 @@ namespace Valour.Database.Migrations
                         .IsUnique();
 
                     b.ToTable("planet_roles", (string)null);
-                });
-
-            modelBuilder.Entity("Valour.Database.PlanetRule", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasColumnName("description");
-
-                    b.Property<long>("PlanetId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("planet_id");
-
-                    b.Property<long>("Position")
-                        .HasColumnType("bigint")
-                        .HasColumnName("position");
-
-                    b.Property<string>("Title")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("title");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PlanetId");
-
-                    b.HasIndex("PlanetId", "Id")
-                        .IsUnique();
-
-                    b.HasIndex("PlanetId", "Position");
-
-                    b.ToTable("planet_rules", (string)null);
                 });
 
             modelBuilder.Entity("Valour.Database.PlanetTag", b =>
@@ -1760,76 +1593,6 @@ namespace Valour.Database.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Valour.Database.PlanetThread", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<long?>("AuthorMemberId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("author_member_id");
-
-                    b.Property<long>("AuthorUserId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("author_user_id");
-
-                    b.Property<int>("BoostCount")
-                        .HasColumnType("integer")
-                        .HasColumnName("boost_count");
-
-                    b.Property<int>("CommentCount")
-                        .HasColumnType("integer")
-                        .HasColumnName("comment_count");
-
-                    b.Property<string>("Content")
-                        .HasMaxLength(10000)
-                        .HasColumnType("character varying(10000)")
-                        .HasColumnName("content");
-
-                    b.Property<DateTime?>("EditedTime")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("edited_time");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
-
-                    b.Property<bool>("IsLocked")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_locked");
-
-                    b.Property<bool>("Nsfw")
-                        .HasColumnType("boolean")
-                        .HasColumnName("nsfw");
-
-                    b.Property<long>("PlanetId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("planet_id");
-
-                    b.Property<DateTime>("TimeCreated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("time_created");
-
-                    b.Property<string>("Title")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("title");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AuthorUserId");
-
-                    b.HasIndex("PlanetId");
-
-                    b.HasIndex("PlanetId", "TimeCreated");
-
-                    b.ToTable("planet_threads", (string)null);
-                });
-
             modelBuilder.Entity("Valour.Database.PushNotificationSubscription", b =>
                 {
                     b.Property<long>("Id")
@@ -1871,71 +1634,6 @@ namespace Valour.Database.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("notification_subscriptions", (string)null);
-                });
-
-            modelBuilder.Entity("Valour.Database.RealtimeKitMeeting", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<long>("ChannelId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("channel_id");
-
-                    b.Property<int>("CleanupFailureCount")
-                        .HasColumnType("integer")
-                        .HasColumnName("cleanup_failure_count");
-
-                    b.Property<DateTime?>("ClosedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("closed_at");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<DateTime?>("LastCleanupAttemptAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_cleanup_attempt_at");
-
-                    b.Property<string>("LastCleanupError")
-                        .HasColumnType("text")
-                        .HasColumnName("last_cleanup_error");
-
-                    b.Property<DateTime>("LastUsedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_used_at");
-
-                    b.Property<string>("MeetingId")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("meeting_id");
-
-                    b.Property<long?>("PlanetId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("planet_id");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("status");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ChannelId")
-                        .IsUnique()
-                        .HasFilter("closed_at IS NULL");
-
-                    b.HasIndex("MeetingId")
-                        .IsUnique();
-
-                    b.HasIndex("Status", "ClosedAt");
-
-                    b.ToTable("realtimekit_meetings", (string)null);
                 });
 
             modelBuilder.Entity("Valour.Database.Referral", b =>
@@ -2019,14 +1717,6 @@ namespace Valour.Database.Migrations
                         .HasColumnType("text")
                         .HasColumnName("staff_notes");
 
-                    b.Property<long?>("ThreadCommentId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("thread_comment_id");
-
-                    b.Property<long?>("ThreadId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("thread_id");
-
                     b.Property<DateTime>("TimeCreated")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("time_created");
@@ -2046,10 +1736,6 @@ namespace Valour.Database.Migrations
                     b.HasIndex("Resolution");
 
                     b.HasIndex("ResolvedById");
-
-                    b.HasIndex("ThreadCommentId");
-
-                    b.HasIndex("ThreadId");
 
                     b.ToTable("reports", (string)null);
                 });
@@ -2151,10 +1837,6 @@ namespace Valour.Database.Migrations
                         .HasColumnType("text")
                         .HasColumnName("font_color");
 
-                    b.Property<string>("FontFamily")
-                        .HasColumnType("text")
-                        .HasColumnName("font_family");
-
                     b.Property<bool>("HasAnimatedBanner")
                         .HasColumnType("boolean")
                         .HasColumnName("animated_banner");
@@ -2210,30 +1892,6 @@ namespace Valour.Database.Migrations
                     b.Property<bool>("Published")
                         .HasColumnType("boolean")
                         .HasColumnName("published");
-
-                    b.Property<string>("RadiusFull")
-                        .HasColumnType("text")
-                        .HasColumnName("radius_full");
-
-                    b.Property<string>("RadiusLg")
-                        .HasColumnType("text")
-                        .HasColumnName("radius_lg");
-
-                    b.Property<string>("RadiusMd")
-                        .HasColumnType("text")
-                        .HasColumnName("radius_md");
-
-                    b.Property<string>("RadiusSm")
-                        .HasColumnType("text")
-                        .HasColumnName("radius_sm");
-
-                    b.Property<string>("RadiusXl")
-                        .HasColumnType("text")
-                        .HasColumnName("radius_xl");
-
-                    b.Property<string>("RadiusXs")
-                        .HasColumnType("text")
-                        .HasColumnName("radius_xs");
 
                     b.Property<string>("TintColor")
                         .HasColumnType("text")
@@ -2326,226 +1984,6 @@ namespace Valour.Database.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("theme_votes");
-                });
-
-            modelBuilder.Entity("Valour.Database.ThreadAttachment", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("CdnBucketItemId")
-                        .HasColumnType("text")
-                        .HasColumnName("cdn_bucket_item_id");
-
-                    b.Property<string>("Data")
-                        .HasColumnType("text")
-                        .HasColumnName("data");
-
-                    b.Property<string>("FileName")
-                        .HasColumnType("text")
-                        .HasColumnName("file_name");
-
-                    b.Property<int>("Height")
-                        .HasColumnType("integer")
-                        .HasColumnName("height");
-
-                    b.Property<bool>("Inline")
-                        .HasColumnType("boolean")
-                        .HasColumnName("inline");
-
-                    b.Property<string>("Location")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("location");
-
-                    b.Property<string>("MimeType")
-                        .HasColumnType("text")
-                        .HasColumnName("mime_type");
-
-                    b.Property<bool>("Missing")
-                        .HasColumnType("boolean")
-                        .HasColumnName("missing");
-
-                    b.Property<string>("OpenGraphData")
-                        .HasColumnType("text")
-                        .HasColumnName("open_graph_data");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("integer")
-                        .HasColumnName("sort_order");
-
-                    b.Property<long>("ThreadId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("thread_id");
-
-                    b.Property<long>("Type")
-                        .HasColumnType("bigint")
-                        .HasColumnName("type");
-
-                    b.Property<int>("Width")
-                        .HasColumnType("integer")
-                        .HasColumnName("width");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CdnBucketItemId");
-
-                    b.HasIndex("ThreadId");
-
-                    b.ToTable("thread_attachments", (string)null);
-                });
-
-            modelBuilder.Entity("Valour.Database.ThreadBoost", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<long>("PlanetId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("planet_id");
-
-                    b.Property<long>("ThreadId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("thread_id");
-
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("ThreadId", "UserId")
-                        .IsUnique();
-
-                    b.ToTable("thread_boosts", (string)null);
-                });
-
-            modelBuilder.Entity("Valour.Database.ThreadComment", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<long?>("AuthorMemberId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("author_member_id");
-
-                    b.Property<long>("AuthorUserId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("author_user_id");
-
-                    b.Property<int>("BoostCount")
-                        .HasColumnType("integer")
-                        .HasColumnName("boost_count");
-
-                    b.Property<string>("Content")
-                        .HasMaxLength(2048)
-                        .HasColumnType("character varying(2048)")
-                        .HasColumnName("content");
-
-                    b.Property<int>("Depth")
-                        .HasColumnType("integer")
-                        .HasColumnName("depth");
-
-                    b.Property<DateTime?>("EditedTime")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("edited_time");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
-
-                    b.Property<long?>("ParentCommentId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("parent_comment_id");
-
-                    b.Property<long>("PlanetId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("planet_id");
-
-                    b.Property<int>("ReplyCount")
-                        .HasColumnType("integer")
-                        .HasColumnName("reply_count");
-
-                    b.Property<long>("ThreadId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("thread_id");
-
-                    b.Property<DateTime>("TimeCreated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("time_created");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AuthorUserId");
-
-                    b.HasIndex("ParentCommentId");
-
-                    b.HasIndex("PlanetId");
-
-                    b.HasIndex("ThreadId");
-
-                    b.HasIndex("ThreadId", "ParentCommentId");
-
-                    b.ToTable("thread_comments", (string)null);
-                });
-
-            modelBuilder.Entity("Valour.Database.ThreadCommentBoost", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<long>("CommentId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("comment_id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<long>("PlanetId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("planet_id");
-
-                    b.Property<long>("ThreadId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("thread_id");
-
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ThreadId");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("CommentId", "UserId")
-                        .IsUnique();
-
-                    b.ToTable("thread_comment_boosts", (string)null);
                 });
 
             modelBuilder.Entity("Valour.Database.User", b =>
@@ -2790,14 +2228,6 @@ namespace Valour.Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("notification_volume");
 
-                    b.Property<bool>("SyncLanguageBetweenDevices")
-                        .HasColumnType("boolean")
-                        .HasColumnName("sync_language_between_devices");
-
-                    b.Property<int>("TimeFormat")
-                        .HasColumnType("integer")
-                        .HasColumnName("time_format");
-
                     b.HasKey("Id");
 
                     b.ToTable("user_preferences");
@@ -2821,6 +2251,10 @@ namespace Valour.Database.Migrations
                         .HasColumnType("text")
                         .HasColumnName("join_source");
 
+                    b.Property<int?>("Locality")
+                        .HasColumnType("integer")
+                        .HasColumnName("locality");
+
                     b.Property<long>("UserId")
                         .HasColumnType("bigint")
                         .HasColumnName("user_id");
@@ -2836,6 +2270,8 @@ namespace Valour.Database.Migrations
                     b.HasIndex("Email");
 
                     b.HasIndex("JoinInviteCode");
+
+                    b.HasIndex("Locality");
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -3321,43 +2757,10 @@ namespace Valour.Database.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Valour.Database.PlanetReport", b =>
-                {
-                    b.HasOne("Valour.Database.Planet", "Planet")
-                        .WithMany("Reports")
-                        .HasForeignKey("PlanetId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Planet");
-                });
-
             modelBuilder.Entity("Valour.Database.PlanetRole", b =>
                 {
                     b.HasOne("Valour.Database.Planet", "Planet")
                         .WithMany("Roles")
-                        .HasForeignKey("PlanetId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Planet");
-                });
-
-            modelBuilder.Entity("Valour.Database.PlanetRule", b =>
-                {
-                    b.HasOne("Valour.Database.Planet", "Planet")
-                        .WithMany("Rules")
-                        .HasForeignKey("PlanetId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Planet");
-                });
-
-            modelBuilder.Entity("Valour.Database.PlanetThread", b =>
-                {
-                    b.HasOne("Valour.Database.Planet", "Planet")
-                        .WithMany("Threads")
                         .HasForeignKey("PlanetId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -3434,62 +2837,6 @@ namespace Valour.Database.Migrations
                     b.Navigation("Theme");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Valour.Database.ThreadAttachment", b =>
-                {
-                    b.HasOne("Valour.Database.CdnBucketItem", "CdnBucketItem")
-                        .WithMany()
-                        .HasForeignKey("CdnBucketItemId");
-
-                    b.HasOne("Valour.Database.PlanetThread", "Thread")
-                        .WithMany("Attachments")
-                        .HasForeignKey("ThreadId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CdnBucketItem");
-
-                    b.Navigation("Thread");
-                });
-
-            modelBuilder.Entity("Valour.Database.ThreadBoost", b =>
-                {
-                    b.HasOne("Valour.Database.PlanetThread", "Thread")
-                        .WithMany("Boosts")
-                        .HasForeignKey("ThreadId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Thread");
-                });
-
-            modelBuilder.Entity("Valour.Database.ThreadComment", b =>
-                {
-                    b.HasOne("Valour.Database.ThreadComment", "ParentComment")
-                        .WithMany("Replies")
-                        .HasForeignKey("ParentCommentId");
-
-                    b.HasOne("Valour.Database.PlanetThread", "Thread")
-                        .WithMany("Comments")
-                        .HasForeignKey("ThreadId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ParentComment");
-
-                    b.Navigation("Thread");
-                });
-
-            modelBuilder.Entity("Valour.Database.ThreadCommentBoost", b =>
-                {
-                    b.HasOne("Valour.Database.ThreadComment", "Comment")
-                        .WithMany("Boosts")
-                        .HasForeignKey("CommentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Comment");
                 });
 
             modelBuilder.Entity("Valour.Database.User", b =>
@@ -3646,13 +2993,7 @@ namespace Valour.Database.Migrations
 
                     b.Navigation("Messages");
 
-                    b.Navigation("Reports");
-
                     b.Navigation("Roles");
-
-                    b.Navigation("Rules");
-
-                    b.Navigation("Threads");
 
                     b.Navigation("UserChannelStates");
                 });
@@ -3675,27 +3016,11 @@ namespace Valour.Database.Migrations
                     b.Navigation("PermissionNodes");
                 });
 
-            modelBuilder.Entity("Valour.Database.PlanetThread", b =>
-                {
-                    b.Navigation("Attachments");
-
-                    b.Navigation("Boosts");
-
-                    b.Navigation("Comments");
-                });
-
             modelBuilder.Entity("Valour.Database.Themes.Theme", b =>
                 {
                     b.Navigation("ThemeAssets");
 
                     b.Navigation("ThemeVotes");
-                });
-
-            modelBuilder.Entity("Valour.Database.ThreadComment", b =>
-                {
-                    b.Navigation("Boosts");
-
-                    b.Navigation("Replies");
                 });
 
             modelBuilder.Entity("Valour.Database.User", b =>
