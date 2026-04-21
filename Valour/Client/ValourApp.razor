@@ -1,4 +1,10 @@
 @using Microsoft.Extensions.DependencyInjection
+@using System.Globalization
+@using Blazor.WebAssembly.DynamicCulture.LocalizationManager
+
+@inject ILocalizationService LocalizationService
+@inject LocalizationLocalStorageManager LocLSM
+@inject IStringLocalizer<ValourApp> Localizer
 @inject ValourClient Client
 @inject LoggingService Logger
 @inject IJSRuntime JsRuntime
@@ -6,6 +12,7 @@
 @inject SoundManager SoundManager
 @inject IServiceProvider Services
 
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
 <BrowserUtils OnReady="@ReadyAsync" />
 
 @if (_browserReady)
@@ -45,7 +52,7 @@
 }
 else
 {
-    <Loading Subtext='Logging you in...'></Loading>
+    <Loading Subtext='@Localizer["Logging you in..."]'></Loading>
 }
 
 @code{
@@ -60,6 +67,13 @@ else
     protected override async Task OnInitializedAsync()
     {
         Logger.AddColorLogger(Log);
+
+        CultureInfo newCulture = new CultureInfo(await LocLSM.GetBlazorCultureAsync());
+        CultureInfo.DefaultThreadCurrentCulture = newCulture;
+        CultureInfo.DefaultThreadCurrentUICulture = newCulture;
+        await LocLSM.SetBlazorCultureAsync(newCulture.Name);
+        LocalizationService.InvokeLanguageChanged(newCulture);
+
         await DevicePreferences.LoadPreferences(LocalStorage);
         Logger.Log("App", "Loaded user preferences", "magenta");
     }

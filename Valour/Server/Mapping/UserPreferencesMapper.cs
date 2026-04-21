@@ -14,6 +14,9 @@ public static class UserPreferencesMapper
             NotificationVolume = prefs.NotificationVolume,
             EnabledNotificationSources = prefs.EnabledNotificationSources,
             DmPolicy = prefs.DmPolicy,
+            TimeFormat = prefs.TimeFormat,
+            SyncLanguageBetweenDevices = prefs.SyncLanguageBetweenDevices,
+            Language = prefs.Language,
             ForceGpuAcceleration = prefs.ForceGpuAcceleration
         };
     }
@@ -30,6 +33,9 @@ public static class UserPreferencesMapper
             NotificationVolume = prefs.NotificationVolume,
             EnabledNotificationSources = prefs.EnabledNotificationSources,
             DmPolicy = prefs.DmPolicy,
+            TimeFormat = prefs.TimeFormat,
+            SyncLanguageBetweenDevices = prefs.SyncLanguageBetweenDevices,
+            Language = prefs.Language,
             ForceGpuAcceleration = prefs.ForceGpuAcceleration
         };
     }
