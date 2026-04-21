@@ -1,12 +1,17 @@
+using Blazor.WebAssembly.DynamicCulture.Extensions;
+using Blazor.WebAssembly.DynamicCulture.LocalizationManager;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Valour.Client;
+using Microsoft.Extensions.Localization;
+using System.Globalization;
 using Valour.Client.Notifications;
 using Valour.Client.Storage;
+using Valour.Client.Utility;
+using Valour.Shared.Utilities;
 
 namespace Valour.Client.Blazor;
 
 /*  Valour (TM) - A free and secure chat client
- *  Copyright (C) 2025 Valour Software LLC
+ *  Copyright (C) 2025-2026 Valour Software LLC
  *  This program is subject to the GNU Affero General Public license
  *  A copy of the license should be included - if not, see <http://www.gnu.org/licenses/>
  */
@@ -26,15 +31,34 @@ public class Program
             options.SetBeforeSend((e, _) =>
                 SentryGate.IsEnabled && (e.Exception is null || !SentryGate.IsKnownFrameworkNoise(e.Exception)) ? e : null);
         });
-        
+
+        builder.Services.AddLocalization(options => options.ResourcesPath = "../Client/Resources");
+        builder.Services.AddSingleton(typeof(IStringLocalizer<>), typeof(ResxLocalizer<>));
+        builder.Services.AddLocalizationDynamic(options =>
+        {
+            options.SetDefaultCulture(SupportedCultures.Default);
+            options.AddSupportedCultures(SupportedCultures.Get());
+            options.AddSupportedUICultures(SupportedCultures.Get());
+        });
+
         builder.Services.AddSingleton<IAppStorage, BrowserStorageService>();
         builder.Services.AddSingleton<Valour.Sdk.E2ee.IE2eeKeyStore, AppStorageE2eeKeyStore>();
         builder.Services.AddSingleton<Valour.Sdk.E2ee.INotificationKeyStore, BrowserNotificationKeyStore>();
         builder.Services.AddSingleton<IPushNotificationService, BrowserPushNotificationService>();
+        builder.Services.AddSingleton<IStoredCultureService>
+        (
+            sp => new BlazorStoredCultureService(() => sp.CreateScope().ServiceProvider.GetRequiredService<LocalizationLocalStorageManager>())
+        );
+
         // Default to the API host. Web deploys can override at runtime via valour-runtime-config.js.
         builder.Services.AddValourClientServices("https://api.valour.gg");
-        
+
         var host = builder.Build();
-        await host.RunAsync();
+
+        CultureInfo appliedCulture = new CultureInfo(await host.Services.GetRequiredService<IStoredCultureService>().GetCultureStringAsync());
+        CultureInfo.DefaultThreadCurrentCulture = appliedCulture;
+        CultureInfo.DefaultThreadCurrentUICulture = appliedCulture;        
+
+        await host.RunWithCultureMiddlewareAsync();
     }
 }
