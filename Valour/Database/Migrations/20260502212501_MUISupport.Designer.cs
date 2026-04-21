@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Valour.Database.Context;
@@ -12,9 +13,11 @@ using Valour.Database.Context;
 namespace Valour.Database.Migrations
 {
     [DbContext(typeof(ValourDb))]
-    partial class ValourDbModelSnapshot : ModelSnapshot
+    [Migration("20260502212501_MUISupport")]
+    partial class MUISupport
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2224,10 +2227,6 @@ namespace Valour.Database.Migrations
                     b.Property<int>("NotificationVolume")
                         .HasColumnType("integer")
                         .HasColumnName("notification_volume");
-
-                    b.Property<bool>("SyncLanguageBetweenDevices")
-                        .HasColumnType("boolean")
-                        .HasColumnName("sync_language_between_devices");
 
                     b.HasKey("Id");
 

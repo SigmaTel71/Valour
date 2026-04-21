@@ -1,0 +1,60 @@
+@inject IAppStorage LocalStorage
+@inject ValourClient Client
+
+<div class="perm-list-item">
+    <div class="perm-list-name">
+        Synchronize between devices
+    </div>
+    <div type="button" style="float:right">
+        <label class="switch">
+            <input type="checkbox" @onclick="SwitchSyncLangBetweenDevices" checked="@_syncBetweenDevices">
+            <span class="slider round"></span>
+        </label>
+    </div>
+    <div class="perm-list-desc mt-1">
+        Language preferences will be synchronized across all devices where this setting was enabled.
+    </div>
+    <ResultLabel Result="@_syncBetweenDevicesResult" />
+</div>
+
+<hr />
+
+@code {
+    private bool _syncBetweenDevices = true;
+
+    private ITaskResult _syncBetweenDevicesResult;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPreferences();
+    }
+
+    private async Task LoadPreferences()
+    {
+        var response = await Client.PrimaryNode.GetJsonAsync<UserPreferences>("api/users/me/preferences");
+        if (response.Success && response.Data is not null)
+        {
+            _syncBetweenDevices = response.Data.SyncLanguageBetweenDevices;
+        }
+    }
+
+    private async Task SwitchSyncLangBetweenDevices()
+    {
+        var rollbackValue = _syncBetweenDevices;
+
+        var result = await Client.PrimaryNode.PostAsyncWithResponse<UserPreferences>(
+            $"api/users/me/preferences/syncLanguageBetweenClients/{_syncBetweenDevices}"
+        );
+
+        if (result.Success && result.Data is not null)
+        {
+            _syncBetweenDevices = result.Data.SyncLanguageBetweenDevices;
+            _syncBetweenDevicesResult = new TaskResult(true, "Language synchronization preferences updated.");
+        }
+        else
+        {
+            _syncBetweenDevices = rollbackValue;
+            _syncBetweenDevicesResult = new TaskResult(false, result.Message);
+        }
+    }
+}

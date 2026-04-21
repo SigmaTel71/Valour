@@ -3,10 +3,14 @@ using Valour.Database;
 using Valour.Shared.Authorization;
 using Valour.Shared.Models;
 using Valour.Shared.Queries;
+using Valour.Shared.Utilities;
 using PasswordRecovery = Valour.Server.Models.PasswordRecovery;
 using User = Valour.Server.Models.User;
 using UserPrivateInfo = Valour.Server.Models.UserPrivateInfo;
 using DbUserPreferences = Valour.Database.UserPreferences;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Localization;
 
 namespace Valour.Server.Api.Dynamic;
 
@@ -787,6 +791,45 @@ public class UserApi
         return Results.Json(prefs.ToModel());
     }
 
+    [ValourRoute(HttpVerbs.Post, "api/users/me/preferences/language/{language}")]
+    [UserRequired]
+    public static async Task<IResult> SetLanguage(
+        string language,
+        UserService userService,
+        ValourDb db,
+        ILogger<UserApi> logger)
+    {
+        string[] supportedCultures = SupportedCultures.Get();
+
+        if (!supportedCultures.Any(culture => culture.Equals(language, StringComparison.InvariantCultureIgnoreCase)))
+        {
+            logger.LogWarning($"Unsupported language was provided: {language}, defaulting to {SupportedCultures.Default}");
+            language = SupportedCultures.Default;
+        }
+
+        var userId = await userService.GetCurrentUserIdAsync();
+        var prefs = await EnsurePreferencesAsync(userId, db);
+        prefs.Language = language;
+
+        await db.SaveChangesAsync();
+        return Results.Json(prefs.ToModel());
+    }
+
+    [ValourRoute(HttpVerbs.Post, "api/users/me/preferences/syncLanguageBetweenClients/{enabled}")]
+    [UserRequired]
+    public static async Task<IResult> SyncLanguage(
+        bool enabled,
+        UserService userService,
+        ValourDb db)
+    {
+        var userId = await userService.GetCurrentUserIdAsync();
+        var prefs = await EnsurePreferencesAsync(userId, db);
+        prefs.SyncLanguageBetweenDevices = !enabled;
+
+        await db.SaveChangesAsync();
+        return Results.Json(prefs.ToModel());
+    }
+
     private static async Task<DbUserPreferences> EnsurePreferencesAsync(long userId, ValourDb db)
     {
         var prefs = await db.UserPreferences.FindAsync(userId);
@@ -821,7 +864,9 @@ public class UserApi
             ErrorReportingState = ErrorReportingState.Unset,
             NotificationVolume = NotificationPreferences.DefaultNotificationVolume,
             EnabledNotificationSources = NotificationPreferences.AllNotificationSourcesMask,
-            DmPolicy = dmPolicy
+            DmPolicy = dmPolicy,
+            SyncLanguageBetweenDevices = true,
+            Language = SupportedCultures.Default
         };
     }
 }

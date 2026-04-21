@@ -9,4 +9,6 @@ public class UserPreferences : ISharedUserPreferences
     public int NotificationVolume { get; set; }
     public long EnabledNotificationSources { get; set; }
     public DmPolicy DmPolicy { get; set; }
+    public bool SyncLanguageBetweenDevices { get; set; }
+    public string Language { get; set; }
 }

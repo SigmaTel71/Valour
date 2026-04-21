@@ -12,6 +12,8 @@ public class UserPreferences : ClientModel<UserPreferences, long>, ISharedUserPr
     public int NotificationVolume { get; set; }
     public long EnabledNotificationSources { get; set; }
     public DmPolicy DmPolicy { get; set; }
+    public bool SyncLanguageBetweenDevices { get; set; }
+    public string Language { get; set; }
 
     [JsonConstructor]
     private UserPreferences() : base() { }

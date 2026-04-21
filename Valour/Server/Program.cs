@@ -15,6 +15,7 @@ using Valour.Server.Email;
 using Valour.Server.Redis;
 using Valour.Server.Workers;
 using Valour.Shared.Models;
+using Valour.Shared.Utilities;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Valour.Config;
 using Microsoft.AspNetCore.Components;
@@ -223,6 +224,7 @@ public partial class Program
         app.UseBlazorFrameworkFiles();
         app.MapStaticAssets();
         
+        app.UseRequestLocalization();
         app.UseRouting();
 
         app.UseAuthentication();
@@ -284,6 +286,14 @@ public partial class Program
         {
             options.MemoryBufferThreshold = 20_971_520; // 20 MB memory buffer before spilling to disk
             options.MultipartBodyLengthLimit = 262_144_000; // 250 MB (max tier upload limit)
+        });
+
+        services.Configure<RequestLocalizationOptions>(options =>
+        {
+            var supportedCultures = SupportedCultures.Get();
+            options.SetDefaultCulture(SupportedCultures.Default)
+                   .AddSupportedCultures(supportedCultures)
+                   .AddSupportedUICultures(supportedCultures);
         });
 
         services.AddDbContext<ValourDb>(options => { options.UseNpgsql(ValourDb.ConnectionString); }, ServiceLifetime.Scoped);

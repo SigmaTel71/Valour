@@ -11,6 +11,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Utilities\SupportedCultures.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="..\Tests\Valour.Tests.csproj" />
   </ItemGroup>
 
