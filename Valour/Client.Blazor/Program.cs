@@ -1,7 +1,12 @@
+using Blazor.WebAssembly.DynamicCulture.Extensions;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.Extensions.Localization;
+using System.Globalization;
 using Valour.Client;
 using Valour.Client.Notifications;
 using Valour.Client.Storage;
+using Valour.Client.Utility;
+using Valour.Shared.Utilities;
 
 namespace Valour.Client.Blazor;
 
@@ -25,15 +30,24 @@ public class Program
             options.SetBeforeSend((e, _) =>
                 SentryGate.IsEnabled && (e.Exception is null || !SentryGate.IsKnownFrameworkNoise(e.Exception)) ? e : null);
         });
-        
+
+        builder.Services.AddLocalization(options => options.ResourcesPath = "../Client/Resources");
+        builder.Services.AddSingleton(typeof(IStringLocalizer<>), typeof(ResxLocalizer<>));
+        builder.Services.AddLocalizationDynamic(options =>
+        {
+            options.SetDefaultCulture(SupportedCultures.Default);
+            options.AddSupportedCultures(SupportedCultures.Get());
+            options.AddSupportedUICultures(SupportedCultures.Get());
+        });
+
         builder.Services.AddSingleton<IAppStorage, BrowserStorageService>();
         builder.Services.AddSingleton<Valour.Sdk.E2ee.IE2eeKeyStore, AppStorageE2eeKeyStore>();
         builder.Services.AddSingleton<Valour.Sdk.E2ee.INotificationKeyStore, BrowserNotificationKeyStore>();
         builder.Services.AddSingleton<IPushNotificationService, BrowserPushNotificationService>();
         // Default to the API host. Web deploys can override at runtime via valour-runtime-config.js.
         builder.Services.AddValourClientServices("https://api.valour.gg");
-        
+
         var host = builder.Build();
-        await host.RunAsync();
+        await host.RunWithCultureMiddlewareAsync();
     }
 }

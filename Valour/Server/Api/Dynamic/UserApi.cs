@@ -29,7 +29,7 @@ public class UserApi
     {
         return Results.Json(await userService.GetNewUsersAsync(count));
     }
-    
+
     [ValourRoute(HttpVerbs.Get, "api/users/ping")]
     [UserRequired]
     public static async Task<IResult> PingOnlineAsync(
@@ -120,7 +120,7 @@ public class UserApi
 
         if (user.UserStateCode > 4)
             return ValourResult.BadRequest($"User state {user.UserStateCode} does not exist.");
-        
+
         // If we are changing the tag, make sure we are stargazer or above
         if (currentUser.Tag != user.Tag)
         {
@@ -157,12 +157,12 @@ public class UserApi
         var confirmCode = await userService.GetEmailConfirmCode(code);
         if (confirmCode is null)
             return ValourResult.NotFound("Invalid code.");
-        
-        
+
+
         var result = await userService.VerifyAsync(code);
         if (!result.Success)
             return ValourResult.Problem(result.Message);
-        
+
         // Check for invite code
 
         var query = "";
@@ -181,7 +181,7 @@ public class UserApi
     public static async Task<IResult> SetComplianceData(UserService service, DateTime? birthDate)
     {
         var userId = await service.GetCurrentUserIdAsync();
-        
+
         if (birthDate is null)
             return ValourResult.BadRequest("Birth date cannot be null.");
 
@@ -190,7 +190,7 @@ public class UserApi
         var result = await service.SetUserComplianceData(userId, notNullBirthDate);
         if (!result.Success)
             return ValourResult.BadRequest(result.Message);
-        
+
         return Results.NoContent();
     }
 
@@ -543,7 +543,7 @@ public class UserApi
     [RateLimit(RateLimitPolicies.Register)]
     [ValourRoute(HttpVerbs.Post, "api/users/register")]
     public static async Task<IResult> RegisterUserRouteAsync(
-        [FromBody] RegisterUserRequest request, 
+        [FromBody] RegisterUserRequest request,
         UserService userService,
         RegisterService registerService,
         ExternalAuthService externalAuth,
@@ -683,7 +683,7 @@ public class UserApi
             if (!result.Success)
                 return ValourResult.Problem(result.Message);
         }
-	
+
         return Results.NoContent();
     }
 
@@ -715,7 +715,7 @@ public class UserApi
     [ValourRoute(HttpVerbs.Get, "api/users/{id}/friends")]
     [UserRequired(UserPermissionsEnum.Friends)]
     public static async Task<IResult> GetFriendsRouteAsync(
-        long id, 
+        long id,
         UserService userService)
     {
         var userId = await userService.GetCurrentUserIdAsync();
@@ -729,7 +729,7 @@ public class UserApi
     [ValourRoute(HttpVerbs.Get, "api/users/{id}/frienddata")]
     [UserRequired(UserPermissionsEnum.Friends)]
     public static async Task<IResult> GetFriendDataRouteAsync(
-        long id, 
+        long id,
         UserService userService)
     {
         var userId = await userService.GetCurrentUserIdAsync();
@@ -745,7 +745,7 @@ public class UserApi
             addedBy = result.incoming
         });
     }
-    
+
     [ValourRoute(HttpVerbs.Get, "api/users/me/multiAuth")]
     [UserRequired(UserPermissionsEnum.FullControl)]
     public static async Task<IResult> GetMultiFactorRouteAsync(
@@ -756,7 +756,7 @@ public class UserApi
         var result = await multiAuthService.GetAppMultiAuthTypes(userId);
         return Results.Json(result);
     }
-    
+
     [ValourRoute(HttpVerbs.Post, "api/users/me/multiAuth")]
     [UserRequired(UserPermissionsEnum.FullControl)]
     public static async Task<IResult> SetupMultiFactorRouteAsync(
@@ -765,13 +765,13 @@ public class UserApi
     {
         var userId = await userService.GetCurrentUserIdAsync();
         var result = await multiAuthService.CreateAppMultiAuth(userId);
-        
+
         if (!result.Success)
             return ValourResult.Problem(result.Message);
-        
+
         return Results.Json(result.Data);
     }
-    
+
     [RateLimit(RateLimitPolicies.Auth)]
     [ValourRoute(HttpVerbs.Post, "api/users/me/multiAuth/remove")]
     [UserRequired(UserPermissionsEnum.FullControl)]
@@ -822,7 +822,7 @@ public class UserApi
             Message = "MFA removed. All other sessions have been logged out."
         });
     }
-    
+
     [ValourRoute(HttpVerbs.Post, "api/users/me/multiAuth/verify/{code}")]
     [UserRequired(UserPermissionsEnum.FullControl)]
     public static async Task<IResult> VerifyMultiFactorRouteAsync(
@@ -832,10 +832,10 @@ public class UserApi
     {
         var userId = await userService.GetCurrentUserIdAsync();
         var result = await multiAuthService.VerifyAppMultiAuth(userId, code);
-        
+
         return Results.Json(result.Success);
     }
-    
+
     [ValourRoute(HttpVerbs.Get, "api/users/me/tenorfavorites")]
     [UserRequired(UserPermissionsEnum.Messages)]
     public static async Task<IResult> GetTenorFavoritesRouteAsync(
@@ -860,7 +860,7 @@ public class UserApi
         var userId = await userService.GetCurrentUserIdAsync();
         return Results.Json(await userService.GetReferralDataAsync(userId));
     }
-    
+
     [RateLimit(RateLimitPolicies.Auth)]
     [ValourRoute(HttpVerbs.Post, "api/users/me/password")]
     [UserRequired(UserPermissionsEnum.FullControl)]
@@ -902,7 +902,7 @@ public class UserApi
         // Return the new token so the client can update their auth
         return Results.Json(new { newToken = rotateResult.Data.Id, message = "Password changed. All other sessions have been logged out." });
     }
-    
+
     [RateLimit(RateLimitPolicies.Auth)]
     [ValourRoute(HttpVerbs.Post, "api/users/me/username")]
     [UserRequired(UserPermissionsEnum.FullControl)]
@@ -915,7 +915,7 @@ public class UserApi
         {
             return ValourResult.BadRequest("Include request in body.");
         }
-        
+
         var userId = await userService.GetCurrentUserIdAsync();
         var confirmed = await signInMethods.ConfirmIdentityAsync(userId, request.Password, request.ReauthProof);
         if (!confirmed.Success)
@@ -924,7 +924,7 @@ public class UserApi
         var result = await userService.ChangeUsernameAsync(userId, request.NewUsername);
         if (!result.Success)
             return ValourResult.Problem(result.Message);
-        
+
         return Results.NoContent();
     }
 
@@ -944,7 +944,7 @@ public class UserApi
         var confirmed = await signInMethods.ConfirmIdentityAsync(user.Id, model.Password, model.ReauthProof);
         if (!confirmed.Success)
             return ValourResult.Forbid(confirmed.Message);
-        
+
         // Validated
         var result =  await userService.HardDelete(user);
         if (!result.Success)
@@ -954,7 +954,7 @@ public class UserApi
 
         return ValourResult.Ok("Deleted.");
     }
-    
+
     [ValourRoute(HttpVerbs.Post, "api/staff/users/query")]
     [UserRequired(UserPermissionsEnum.FullControl)]
     [StaffRequired]
@@ -1266,6 +1266,95 @@ public class UserApi
         return Results.Json(prefs.ToModel());
     }
 
+    [ValourRoute(HttpVerbs.Post, "api/users/me/preferences/language/{language}")]
+    [UserRequired]
+    public static async Task<IResult> SetLanguage(
+        string language,
+        UserService userService,
+        ValourDb db,
+        ILogger<UserApi> logger)
+    {
+        string[] supportedCultures = SupportedCultures.Get();
+
+        if (!supportedCultures.Any(culture => culture.Equals(language, StringComparison.InvariantCultureIgnoreCase)))
+        {
+            logger.LogWarning($"Unsupported language was provided: {language}, defaulting to {SupportedCultures.Default}");
+            language = SupportedCultures.Default;
+        }
+
+        var userId = await userService.GetCurrentUserIdAsync();
+        var prefs = await EnsurePreferencesAsync(userId, db);
+
+        prefs.Language = language;
+
+        await db.SaveChangesAsync();
+        return Results.Json(prefs.ToModel());
+    }
+
+    [ValourRoute(HttpVerbs.Post, "api/users/me/preferences/syncLanguageBetweenClients/{enabled}")]
+    [UserRequired]
+    public static async Task<IResult> SyncLanguage(
+        bool enabled,
+        UserService userService,
+        ValourDb db)
+    {
+        var userId = await userService.GetCurrentUserIdAsync();
+        var prefs = await EnsurePreferencesAsync(userId, db);
+
+        prefs.SyncLanguageBetweenDevices = !enabled;
+
+        await db.SaveChangesAsync();
+        return Results.Json(prefs.ToModel());
+    }
+
+    [ValourRoute(HttpVerbs.Post, "api/users/me/preferences/timeFormat/{timeFormat}")]
+    [UserRequired]
+    public static async Task<IResult> SetTimeFormat(
+        TimeSettings.TimeFormatPreference timeFormat,
+        UserService userService,
+        ValourDb db)
+    {
+        var userId = await userService.GetCurrentUserIdAsync();
+        var prefs = await EnsurePreferencesAsync(userId, db);
+
+        prefs.TimeFormat = timeFormat;
+
+        await db.SaveChangesAsync();
+        return Results.Json(prefs.ToModel());
+    }
+
+    [ValourRoute(HttpVerbs.Post, "api/users/me/preferences/alwaysShowTime/{enabled}")]
+    [UserRequired]
+    public static async Task<IResult> SetAlwaysShowTime(
+        bool enabled,
+        UserService userService,
+        ValourDb db)
+    {
+        var userId = await userService.GetCurrentUserIdAsync();
+        var prefs = await EnsurePreferencesAsync(userId, db);
+
+        prefs.AlwaysShowTime = enabled;
+
+        await db.SaveChangesAsync();
+        return Results.Json(prefs.ToModel());
+    }
+
+    [ValourRoute(HttpVerbs.Post, "api/users/me/preferences/useRelativeTime/{enabled}")]
+    [UserRequired]
+    public static async Task<IResult> SetUseRelativeTime(
+        bool enabled,
+        UserService userService,
+        ValourDb db)
+    {
+        var userId = await userService.GetCurrentUserIdAsync();
+        var prefs = await EnsurePreferencesAsync(userId, db);
+
+        prefs.UseRelativeTime = enabled;
+
+        await db.SaveChangesAsync();
+        return Results.Json(prefs.ToModel());
+    }
+
     internal static async Task<DbUserPreferences?> SetErrorReportingStateAsync(long userId, ErrorReportingState state, ValourDb db)
     {
         var defaults = await CreateDefaultPreferencesAsync(userId, db);
@@ -1317,7 +1406,12 @@ public class UserApi
             EnabledNotificationSources = NotificationPreferences.AllNotificationSourcesMask,
             DmPolicy = dmPolicy,
             CallPolicy = DmPolicy.FriendsOnly,
-            ForceGpuAcceleration = false
+            ForceGpuAcceleration = false,
+            TimeFormat = TimeSettings.TimeFormatPreference.PreferAuto,
+            UseRelativeTime = false,
+            AlwaysShowTime = false,
+            SyncLanguageBetweenDevices = true,
+            Language = SupportedCultures.Default
         };
     }
 }
