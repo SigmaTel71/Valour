@@ -5,8 +5,8 @@
     <ImplicitUsings>true</ImplicitUsings>
     <DebugType>portable</DebugType>
     <SelfContained>true</SelfContained>
+	<BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
     <!--
-    <InvariantGlobalization>true</InvariantGlobalization>
     <WasmEnableSIMD>false</WasmEnableSIMD>
     <WasmBuildNative>true</WasmBuildNative>
     -->

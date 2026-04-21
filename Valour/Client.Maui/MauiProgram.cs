@@ -1,7 +1,11 @@
+using Blazor.WebAssembly.DynamicCulture.Middleware;
+using Blazor.WebAssembly.DynamicCulture.Services;
+using Blazor.WebAssembly.DynamicCulture.LocalizationManager;
 using Microsoft.AspNetCore.Components.WebView.Maui;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.LifecycleEvents;
-using Microsoft.Maui.Storage;
 using System.Reflection;
 using System.Text.Json;
 #if ANDROID
@@ -14,6 +18,9 @@ using Valour.Client.Maui.Notifications;
 using Valour.Client.Maui.Storage;
 using Valour.Client.Notifications;
 using Valour.Client.Storage;
+using Valour.Client.Utility;
+using Valour.Shared.Utilities;
+using Blazor.WebAssembly.DynamicCulture.Extensions;
 
 namespace Valour.Client.Maui;
 
@@ -148,6 +155,21 @@ public static class MauiProgram
         builder.Services.AddBlazorWebViewDeveloperTools();
         builder.Logging.AddDebug();
 #endif
+
+        builder.Services.AddLocalization(options => options.ResourcesPath = "../Client/Resources");
+        builder.Services.AddSingleton(typeof(IStringLocalizer<>), typeof(ResxLocalizer<>));
+        builder.Services.AddLocalizationDynamic(options =>
+        {
+            options.SetDefaultCulture(SupportedCultures.Default);
+            options.AddSupportedCultures(SupportedCultures.Get());
+            options.AddSupportedUICultures(SupportedCultures.Get());
+        });
+        builder.Services.TryAddSingleton<ILocalizationService, LocalizationService>();
+        builder.Services.TryAddSingleton<IStoredCultureService, MauiStoredCultureService>();
+        builder.Services.TryAddScoped<LocalizationNavigatorManager>();
+        builder.Services.TryAddScoped<LocalizationQueryManager>();
+        builder.Services.TryAddScoped<LocalizationContextManager>();
+        builder.Services.TryAddScoped<LocalizationDynamicMiddleware>();
 
         return builder.Build();
     }

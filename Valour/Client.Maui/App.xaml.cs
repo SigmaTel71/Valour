@@ -1,3 +1,6 @@
+using System.Globalization;
+using Valour.Shared.Utilities;
+
 namespace Valour.Client.Maui;
 
 public partial class App : Application
@@ -10,6 +13,14 @@ public partial class App : Application
         // and system pickers match it instead of following the system setting.
         UserAppTheme = AppTheme.Dark;
 #endif
+        string loadedCulture = Preferences.Default.Get("BlazorCulture", SupportedCultures.Default);
+
+        if (!SupportedCultures.Get().Contains(loadedCulture, StringComparer.InvariantCultureIgnoreCase))
+            loadedCulture = SupportedCultures.Default;
+
+        CultureInfo newCulture = new CultureInfo(loadedCulture);
+        CultureInfo.DefaultThreadCurrentCulture = newCulture;
+        CultureInfo.DefaultThreadCurrentUICulture = newCulture;
     }
 
     protected override Window CreateWindow(IActivationState? activationState)
