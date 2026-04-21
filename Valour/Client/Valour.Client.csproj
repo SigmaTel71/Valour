@@ -8,17 +8,21 @@
     <WasmBuildNative>true</WasmBuildNative>
     <!-- Fix trimming issue -->
     <_ExtraTrimmerArgs>--keep-metadata parametername</_ExtraTrimmerArgs>
+    <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Blazor.WebAssembly.DynamicCulture" Version="3.2.0" />
     <PackageReference Include="ExCSS" Version="4.3.1" />
     <PackageReference Include="FastDragBlazor" Version="1.0.6" />
+    <PackageReference Include="Humanizer" Version="3.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.3" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="10.0.3" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Localization" Version="10.0.7" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="10.0.3" />
-    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.9.3">
+    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="6.0.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
