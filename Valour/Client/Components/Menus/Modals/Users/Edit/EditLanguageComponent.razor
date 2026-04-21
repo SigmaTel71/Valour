@@ -1,0 +1,226 @@
+@using System.Globalization
+@using Blazor.WebAssembly.DynamicCulture.LocalizationManager
+
+@inject ILocalizationService LocalizationService
+@inject IStringLocalizer<EditLanguageComponent> Localizer
+@inject LocalizationLocalStorageManager LocLSM
+@inject IAppStorage LocalStorage
+@inject ValourClient Client
+
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
+<div class="settings-page">
+    <div class="editor-section">
+        <div class="toggle-item">
+            <div class="toggle-header">
+                <span class="toggle-title">@Localizer["Synchronize between devices"]</span>
+                <label class="switch">
+                    <input type="checkbox" @onclick="SwitchSyncLangBetweenDevices" checked="@_syncBetweenDevices">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <p class="toggle-description">@Localizer["Preferences will be synchronized across all devices where this setting was enabled."]</p>
+            <ResultLabel Result="@_syncBetweenDevicesResult" />
+        </div>
+    </div>
+
+    <div class="editor-section">
+        <h3 class="editor-section-title">
+            <i class="bi bi-globe"></i>
+            @Localizer["Language"]
+        </h3>
+
+        @* TODO: You can look at the select element we use for selecting roles in the permissions menu — SpikeViper *@
+        <select class="form-control lang-select" @onchange="OnLanguageChange">
+            @foreach(string cultureCode in SupportedCultures.Get())
+            {
+            var ci = @CultureInfo.GetCultureInfo(cultureCode);
+            <option class="form-select" selected="@(_currentCultureCode == cultureCode)" value="@cultureCode">@ci.TextInfo.ToTitleCase(ci.NativeName)</option>
+            }
+        </select>
+    </div>
+
+    <div class="editor-section">
+        <h3 class="editor-section-title">
+            <i class="bi bi-clock"></i>
+            @Localizer["Time preferences"]
+        </h3>
+
+        <div class="toggle-item">
+            <div class="toggle-header">
+                <span class="toggle-title">@Localizer["Always show time"]</span>
+                <label class="switch">
+                    <input type="checkbox" @onclick="SwitchAlwaysShowTime" checked="@TimeUtil.AlwaysShowTime">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <p class="toggle-description">@Localizer["Time when message was sent will be always shown unless messages were sent in short burst."]</p>
+            <ResultLabel Result="@_alwaysShowTimeResult" />
+        </div>
+        <div class="toggle-item">
+            <div class="toggle-header">
+                <span class="toggle-title">@Localizer["Use relative time for recent messages"]</span>
+                <label class="switch">
+                    <input type="checkbox" @onclick="SwitchUseRelativeTime" checked="@TimeUtil.UseRelativeTime">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <p class="toggle-description">@Localizer["Messages sent last 24 hours will have relative timestamps (e.g. 15 minutes ago)."]</p>
+            <ResultLabel Result="@_alwaysShowTimeResult" />
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0; padding-top: 0.25em">
+            <label>@Localizer["Time format"]</label>
+            @foreach (TimeSettings.TimeFormatPreference timePref in Enum.GetValues<TimeSettings.TimeFormatPreference>())
+            {
+            <label class="switch switch-radio">
+                <input type="radio" @onchange="SwitchTimePreference" value="@timePref" name="timeFormatPref" checked="@(_currentTimePref == timePref)"/>@Localizer[timePref.ToString()]
+                <span class="radio round"></span>
+            </label>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool _syncBetweenDevices = true;
+    private TimeSettings.TimeFormatPreference _currentTimePref = TimeSettings.TimeFormatPreference.PreferAuto;
+    private string _currentCultureCode = SupportedCultures.Default;
+
+    private ITaskResult _syncBetweenDevicesResult;
+    private ITaskResult _alwaysShowTimeResult;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _currentCultureCode = await LocLSM.GetBlazorCultureAsync();
+        Enum.TryParse<TimeSettings.TimeFormatPreference>(await LocalStorage.GetStringAsync("timeFormat"), true, out _currentTimePref);
+
+        await LoadPreferences();
+    }
+
+    private async Task LoadPreferences()
+    {
+        var response = await Client.PrimaryNode.GetJsonAsync<UserPreferences>("api/users/me/preferences");
+        if (response.Success && response.Data is not null)
+        {
+            _syncBetweenDevices = response.Data.SyncLanguageBetweenDevices;
+
+            if (_syncBetweenDevices)
+            {
+                _currentCultureCode = response.Data.Language;
+                _currentTimePref = response.Data.TimeFormat;
+            }
+        }
+    }
+
+    private async Task OnLanguageChange(ChangeEventArgs e)
+    {
+        async Task ApplyCulture(string cultureCode)
+        {
+            _currentCultureCode = cultureCode;
+
+            CultureInfo newCulture = new CultureInfo(_currentCultureCode);
+            ApplyTimePreference(ref newCulture);
+            CultureInfo.DefaultThreadCurrentCulture = newCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = newCulture;
+            await LocLSM.SetBlazorCultureAsync(newCulture.Name);
+            LocalizationService.InvokeLanguageChanged(newCulture);
+            TimeUtil.NotifyTimePreferenceChanged();
+        }
+
+        string chosenCultureCode = e.Value?.ToString();
+
+        if (_syncBetweenDevices)
+        {
+            var result = await Client.PrimaryNode.PostAsyncWithResponse<UserPreferences>($"api/users/me/preferences/language/{chosenCultureCode}");
+
+            if (result.Success)
+            {
+                await ApplyCulture(result.Data.Language);
+                return;
+            }
+        }
+        else
+        {   
+            if (SupportedCultures.Get().Any(culture => culture.Equals(chosenCultureCode, StringComparison.InvariantCultureIgnoreCase)))
+                await ApplyCulture(chosenCultureCode);
+        }
+    }
+
+    private async Task SwitchSyncLangBetweenDevices()
+    {
+        _syncBetweenDevicesResult =  await Client.PrimaryNode.PostAsyncWithResponse<UserPreferences>(
+            $"api/users/me/preferences/syncLanguageBetweenClients/{_syncBetweenDevices}"
+        );
+
+        _syncBetweenDevices = !_syncBetweenDevices;
+    }
+
+    /* These two are updated on client and then passed as otherwise they would not be changed
+     * if the user had disabled syncing settings accross devices. Not a design bug. */
+    private async Task SwitchAlwaysShowTime()
+    {
+        TimeUtil.AlwaysShowTime = !TimeUtil.AlwaysShowTime;
+        if (_syncBetweenDevices)
+            await Client.PrimaryNode.PostAsyncWithResponse<UserPreferences>($"api/users/me/preferences/alwaysShowTime/{TimeUtil.AlwaysShowTime}");
+
+        await LocalStorage.SetStringAsync("alwaysShowTime", TimeUtil.AlwaysShowTime.ToString());
+        TimeUtil.NotifyTimePreferenceChanged();
+    }
+
+    private async Task SwitchUseRelativeTime()
+    {
+        TimeUtil.UseRelativeTime = !TimeUtil.UseRelativeTime;
+        if (_syncBetweenDevices)
+            await Client.PrimaryNode.PostAsyncWithResponse<UserPreferences>($"api/users/me/preferences/useRelativeTime/{TimeUtil.UseRelativeTime}");
+
+        await LocalStorage.SetStringAsync("useRelativeTime", TimeUtil.UseRelativeTime.ToString());
+        TimeUtil.NotifyTimePreferenceChanged();
+    }
+
+    private async Task SwitchTimePreference(ChangeEventArgs e)
+    {
+        TimeSettings.TimeFormatPreference chosen;
+        Enum.TryParse<TimeSettings.TimeFormatPreference>(e.Value?.ToString(), true, out chosen);
+
+        if (_syncBetweenDevices)
+            await Client.PrimaryNode.PostAsyncWithResponse<UserPreferences>($"api/users/me/preferences/timeFormat/{chosen}");
+
+        await LocalStorage.SetStringAsync("timeFormat", chosen.ToString());
+        _currentTimePref = chosen;
+
+        CultureInfo ci = CultureInfo.CurrentUICulture;
+        ApplyTimePreference(ref ci);
+        await LocLSM.SetBlazorCultureAsync(ci.Name);
+        LocalizationService.InvokeLanguageChanged(ci);
+        TimeUtil.NotifyTimePreferenceChanged();
+    }
+
+    private void ApplyTimePreference(ref CultureInfo ci)
+    {
+        CultureInfo defaultForCulture = new CultureInfo(ci.Name);
+
+        ci.DateTimeFormat.ShortTimePattern = defaultForCulture.DateTimeFormat.ShortTimePattern;
+        ci.DateTimeFormat.LongTimePattern = defaultForCulture.DateTimeFormat.LongTimePattern;
+        const string AMPMPattern = " tt";
+
+        switch (_currentTimePref)
+        {
+            case TimeSettings.TimeFormatPreference.Prefer12Hours:
+                if (ci.DateTimeFormat.ShortTimePattern.EndsWith(AMPMPattern) && ci.DateTimeFormat.LongTimePattern.EndsWith(AMPMPattern))
+                    break;
+
+                ci.DateTimeFormat.ShortTimePattern = ci.DateTimeFormat.ShortTimePattern.Replace('H', 'h') + AMPMPattern;
+                ci.DateTimeFormat.LongTimePattern = ci.DateTimeFormat.LongTimePattern.Replace('H', 'h') + AMPMPattern;
+                break;
+            case TimeSettings.TimeFormatPreference.Prefer24Hours:
+                if (!(ci.DateTimeFormat.ShortTimePattern.EndsWith(AMPMPattern) && ci.DateTimeFormat.LongTimePattern.EndsWith(AMPMPattern)))
+                    break;
+
+                ci.DateTimeFormat.ShortTimePattern = ci.DateTimeFormat.ShortTimePattern.Replace(AMPMPattern, string.Empty).Replace('h', 'H');
+                ci.DateTimeFormat.LongTimePattern = ci.DateTimeFormat.LongTimePattern.Replace(AMPMPattern, string.Empty).Replace('h', 'H');
+                break;
+            default: /* Default is PreferAuto. */
+                break;
+        }
+    }
+}
