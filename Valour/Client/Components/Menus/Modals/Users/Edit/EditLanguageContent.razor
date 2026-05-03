@@ -1,20 +1,36 @@
 @inject IAppStorage LocalStorage
 @inject ValourClient Client
 
-<div class="perm-list-item">
-    <div class="perm-list-name">
-        Synchronize between devices
+<div class="perm-list-section">
+    <div class="perm-list-item">
+        <div class="perm-list-name">
+            Synchronize between devices
+        </div>
+        <div type="button" style="float:right">
+            <label class="switch">
+                <input type="checkbox" @onclick="SwitchSyncLangBetweenDevices" checked="@_syncBetweenDevices">
+                <span class="slider round"></span>
+            </label>
+        </div>
+        <div class="perm-list-desc mt-1">
+            Language preferences will be synchronized across all devices where this setting was enabled.
+        </div>
+        <ResultLabel Result="@_syncBetweenDevicesResult" />
     </div>
-    <div type="button" style="float:right">
-        <label class="switch">
-            <input type="checkbox" @onclick="SwitchSyncLangBetweenDevices" checked="@_syncBetweenDevices">
-            <span class="slider round"></span>
+    <div class="perm-list-item">
+        <div class="perm-list-name">
+            Time format
+        </div>
+        <div class="perm-list-desc mt-1"></div>
+        @foreach (TimeSettings.TimeFormatPreference timePref in Enum.GetValues<TimeSettings.TimeFormatPreference>())
+        {
+        <label class="switch switch-radio">
+            <input type="radio" value="@timePref" name="timeFormatPref"/>@timePref.ToString()
+            <span class="radio round"></span>
         </label>
+        <br/>
+        }
     </div>
-    <div class="perm-list-desc mt-1">
-        Language preferences will be synchronized across all devices where this setting was enabled.
-    </div>
-    <ResultLabel Result="@_syncBetweenDevicesResult" />
 </div>
 
 <hr />

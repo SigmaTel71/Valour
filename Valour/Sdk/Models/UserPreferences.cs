@@ -1,6 +1,7 @@
 using Valour.Sdk.Client;
 using Valour.Sdk.ModelLogic;
 using Valour.Shared.Models;
+using static Valour.Shared.Models.TimeSettings;
 
 namespace Valour.Sdk.Models;
 
@@ -12,6 +13,7 @@ public class UserPreferences : ClientModel<UserPreferences, long>, ISharedUserPr
     public int NotificationVolume { get; set; }
     public long EnabledNotificationSources { get; set; }
     public DmPolicy DmPolicy { get; set; }
+    public TimeFormatPreference TimeFormat { get; set; }
     public bool SyncLanguageBetweenDevices { get; set; }
     public string Language { get; set; }
 

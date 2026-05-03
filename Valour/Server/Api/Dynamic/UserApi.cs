@@ -865,6 +865,7 @@ public class UserApi
             NotificationVolume = NotificationPreferences.DefaultNotificationVolume,
             EnabledNotificationSources = NotificationPreferences.AllNotificationSourcesMask,
             DmPolicy = dmPolicy,
+            TimeFormat = TimeSettings.TimeFormatPreference.PreferAuto,
             SyncLanguageBetweenDevices = true,
             Language = SupportedCultures.Default
         };
