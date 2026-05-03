@@ -1,3 +1,4 @@
+@using System.Globalization;
 @inject IAppStorage LocalStorage
 @inject ValourClient Client
 
@@ -34,6 +35,16 @@
 </div>
 
 <hr />
+
+<div class="perm-list-section">
+    <h3>Select language</h3>
+    @foreach(string cultureCode in SupportedCultures.Get())
+    {
+    <div type="button">
+        <input type="radio" value="@cultureCode" name="userLanguage"/>@CultureInfo.GetCultureInfo(cultureCode).DisplayName
+    </div>
+    }
+</div>
 
 @code {
     private bool _syncBetweenDevices = true;
