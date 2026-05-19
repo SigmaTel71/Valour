@@ -1,20 +1,22 @@
 @using Valour.Client.Components.Windows.ModTools
 @using Valour.Client.Components.Staff
 @inherits Modal<EditUserComponent.ModalParams>
+@inject IStringLocalizer<EditUserComponent> Localizer
+@inject IStringLocalizer<ValourApp> CommonLocalizer
 @inject NavigationManager NavManager
 @inject ValourClient Client
 @inject IAppStorage LocalStorage
 
-
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
 @if (@Data.User is null)
 {
     <div class="background">
-        <h5>Loading user...</h5>
+        <h5>@Localizer["Loading user..."]</h5>
     </div>
     return;
 }
 
-<MainMenuComponent DefaultCategory="@Data.StartCategory" DefaultItem="@Data.StartItem" MenuCategories="@_categories"  />
+<MainMenuComponent DefaultCategory="@Data.StartCategory" DefaultItem="@Data.StartItem" MenuCategories="@_categories" ParentComponentLocalizer="Localizer"/>
 
 @code {
 
@@ -42,7 +44,7 @@
     private RenderFragment StaffDashboardContent => @<StaffDashboardComponent />;
     private RenderFragment TilesetToolContent => @<StaffTilesetToolComponent />;
     private RenderFragment StaffToolsContent =>
-        @<TabContainerComponent Titles="@_staffTabs" MaxHeight="100%" ContentStyle="background-color: var(--main-1); padding: 1em">
+        @<TabContainerComponent Titles="@_staffTabs" MaxHeight="100%" ContentStyle="background-color: var(--main-1); padding: 1em" ParentComponentLocalizer="Localizer">
             <TabOne>
                 <StaffUserQueryTable />
             </TabOne>
@@ -291,10 +293,10 @@
         try
         {
             var cData = new ConfirmModalComponent.ModalParams(
-            "Log Out",
-            "Are you sure?",
-            "Yes, log out",
-            "Cancel",
+            Localizer["Log Out"],
+            Localizer["Are you sure?"],
+            Localizer["Yes, log out"],
+            CommonLocalizer["Cancel"],
             PerformLogoutAsync,
             () =>
             {
