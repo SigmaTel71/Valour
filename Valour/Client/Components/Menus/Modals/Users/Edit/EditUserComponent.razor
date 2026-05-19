@@ -1,6 +1,7 @@
 @using Valour.Client.Components.Windows.ModTools
 @using Valour.Client.Components.Staff
 @inherits Modal<EditUserComponent.ModalParams>
+@inject IStringLocalizer<EditUserComponent> Localizer
 @inject NavigationManager NavManager
 @inject ValourClient Client
 @inject IAppStorage LocalStorage
@@ -9,7 +10,7 @@
 @if (@Data.User is null)
 {
     <div class="background">
-        <h5>Loading user...</h5>
+        <h5>@Localizer["Loading user..."]</h5>
     </div>
     return;
 }
@@ -52,7 +53,7 @@
         </TabContainerComponent>
     ;
 
-    private readonly string[] _staffTabs = new[] { "Members", "Reports", "Verify", "Email Users" };
+    private readonly string[] _staffTabs = new[] { "StaffToolsTabMembers", "StaffToolsTabReports", "StaffToolsTabVerify", "StaffToolsTabMassEmail" };
 
     private List<MainMenu.MenuCategory> _categories;
 
@@ -61,90 +62,90 @@
         {
             new MainMenu.MenuCategory()
             {
-                Name = "General Settings",
+                Name = Localizer["General Settings"],
                 Icon = "gear-fill",
                 Items = new List<MainMenu.MenuItem>()
                 {
                     new MainMenu.MenuItem()
                     {
-                        Name = "Profile",
+                        Name = Localizer["Profile"],
                         Icon = "person-fill",
-                        Description = "Edit your profile, avatar, and appearance",
+                        Description = Localizer["Edit your profile, avatar, and appearance"],
                         Content = ProfileContent
                     },
                     new MainMenu.MenuItem()
                     {
-                        Name = "Friends",
+                        Name = Localizer["Friends"],
                         Icon = "person-heart",
-                        Description = "Manage your friends and requests",
+                        Description = Localizer["Manage your friends and requests"],
                         Content = FriendsContent
                     },
                     new MainMenu.MenuItem()
                     {
-                        Name = "Safety",
+                        Name = Localizer["Safety"],
                         Icon = "shield-fill-check",
-                        Description = "Manage blocks and DM privacy",
+                        Description = Localizer["Manage blocks and DM privacy"],
                         Content = SafetyContent
                     },
                     new MainMenu.MenuItem()
                     {
-                        Name = "Attachments",
+                        Name = Localizer["Attachments"],
                         Icon = "paperclip",
-                        Description = "View, search, and delete uploaded attachments",
+                        Description = Localizer["View, search, and delete uploaded attachments"],
                         Content = AttachmentsContent
                     },
                     new MainMenu.MenuItem()
                     {
-                        Name = "Themes",
+                        Name = Localizer["Themes"],
                         Icon = "palette-fill",
-                        Description = "Create and install custom themes",
+                        Description = Localizer["Create and install custom themes"],
                         Content = ThemesContent
                     },
                     new MainMenu.MenuItem()
                     {
-                        Name = "Subscriptions",
+                        Name = Localizer["Subscriptions"],
                         Icon = "rocket-takeoff-fill",
-                        Description = "Upgrade your experience!",
+                        Description = Localizer["Upgrade your experience!"],
                         Content = SubscriptionsContent
                     },
                     new MainMenu.MenuItem()
                     {
-                        Name = "Referrals",
+                        Name = Localizer["Referrals"],
                         Icon = "envelope-paper-heart-fill",
-                        Description = "Invite friends and earn rewards",
+                        Description = Localizer["Invite friends and earn rewards"],
                         Content = ReferralsContent
                     },
                     new MainMenu.MenuItem()
                     {
-                        Name = "Notifications",
+                        Name = Localizer["Notifications"],
                         Icon = "bell-fill",
-                        Description = "Manage notification preferences and sound",
+                        Description = Localizer["Manage notification preferences and sound"],
                         Content = NotificationsContent
                     },
                     new MainMenu.MenuItem()
                     {
-                        Name = "Device Preferences",
+                        Name = Localizer["Device Preferences"],
                         Icon = "phone-fill",
-                        Description = "Manage device preferences",
+                        Description = Localizer["Manage device preferences"],
                         Content = DevicePreferencesContent
                     },
                     new MainMenu.MenuItem()
                     {
-                        Name = "Language & Time",
+                        Name = Localizer["Language & Time"],
                         Icon = "globe",
-                        Description = "Manage user interface language and time preferences",
+                        Description = Localizer["Manage user interface language and time preferences"],
                         Content = LanguageContent
                     },
                     new MainMenu.MenuItem()
                     {
-                        Name = "Security",
+                        Name = Localizer["Security"],
                         Icon = "shield-lock-fill",
-                        Description = "MFA, password, and active sessions",
+                        Description = Localizer["MFA, password, and active sessions"],
                         Content = SecurityContent
                     },
                     new MainMenu.MenuItem()
                     {
-                        Name = "Log Out",
+                        Name = Localizer["Log Out"],
                         Icon = "x-octagon-fill",
                         Color = "var(--color-danger)",
                         Content = LogOutContent,
@@ -154,22 +155,22 @@
             },
             new MainMenu.MenuCategory()
             {
-                Name = "Developer",
+                Name = Localizer["Developer"],
                 Icon = "code-slash",
                 Items = new List<MainMenu.MenuItem>()
                 {
                     new MainMenu.MenuItem()
                     {
-                        Name = "Bots",
+                        Name = Localizer["Bots"],
                         Icon = "robot",
-                        Description = "Create and manage bot accounts",
+                        Description = Localizer["Create and manage bot accounts"],
                         Content = BotsContent
                     },
                     new MainMenu.MenuItem()
                     {
-                        Name = "OAuth Apps",
+                        Name = Localizer["OAuth Apps"],
                         Icon = "key-fill",
-                        Description = "Manage your OAuth applications and API access",
+                        Description = Localizer["Manage your OAuth applications and API access"],
                         Content = OAuthContent
                     }
                 }
@@ -204,15 +205,15 @@
         {
             _categories.Add(new MainMenu.MenuCategory()
             {
-                Name = "Staff",
+                Name = Localizer["Staff"],
                 Icon = "shield-fill",
                 Items = new List<MainMenu.MenuItem>()
                 {
                     new MainMenu.MenuItem()
                     {
-                        Name = "Staff Tools",
+                        Name = Localizer["Staff Tools"],
                         Icon = "tools",
-                        Description = "Manage users and reports",
+                        Description = Localizer["Manage users and reports"],
                         Content = StaffToolsContent
                     }
                 }
@@ -232,10 +233,10 @@
         try
         {
             var cData = new ConfirmModalComponent.ModalParams(
-            "Log Out",
-            "Are you sure?",
-            "Yes, log out",
-            "Cancel",
+            Localizer["Log Out"],
+            Localizer["Are you sure?"],
+            Localizer["Yes, log out"],
+            Localizer["Cancel"],
             PerformLogoutAsync,
             () =>
             {
