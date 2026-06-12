@@ -1,28 +1,32 @@
 @using Valour.Sdk.ModelLogic.QueryEngines
 @inject ValourClient Client
 @inject StaffService StaffService
+@inject IStringLocalizer<ReportsQueryTable> Localizer
+@inject IStringLocalizer<StaffUserQueryTable> UQLocalizer
+@inject IStringLocalizer<ValourApp> CommonLocalizer
 
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
 <div class="reports-filters">
     <div class="filter-group">
-        <label>Reason</label>
+        <label>@Localizer["Reason"]</label>
         <select class="form-control" @onchange="OnReasonFilterChanged">
-            <option value="">All Reasons</option>
+            <option value="">@Localizer["All Reasons"]</option>
             @foreach (var reason in ReportReasons.Reasons)
             {
-                <option value="@((int)reason.Code)">@reason.Title</option>
+                <option value="@((int)reason.Code)">@Localizer[reason.Title]</option>
             }
         </select>
     </div>
     <div class="filter-group">
-        <label>Status</label>
+        <label>@Localizer["Status"]</label>
         <select class="form-control" @onchange="OnStatusFilterChanged">
-            <option value="">All</option>
-            <option value="unresolved" selected>Unresolved</option>
-            <option value="resolved">Resolved</option>
+            <option value="">@Localizer["All"]</option>
+            <option value="unresolved" selected>@Localizer["Unresolved"]</option>
+            <option value="resolved">@Localizer["Resolved"]</option>
         </select>
     </div>
     <button class="v-btn secondary" @onclick="RefreshTable">
-        <i class="bi bi-arrow-clockwise"></i> Refresh
+        <i class="bi bi-arrow-clockwise"></i>@CommonLocalizer["Refresh"]
     </button>
 </div>
 
@@ -153,50 +157,50 @@
         {
             new ()
             {
-                Name = "Time",
+                Name = Localizer["Time"],
                 Width = "120px",
                 RenderFragment = (rowData) =>
                     @<span class="time-cell">@rowData.Row.TimeCreated.ToString("MMM d, HH:mm")</span>
             },
             new ()
             {
-                Name = "Reason",
+                Name = Localizer["Reason"],
                 Width = "200px",
                 RenderFragment = (rowData) =>
-                    @<span class="reason-badge @GetReasonClass(rowData.Row.ReasonCode)">@GetReasonTitle(rowData.Row.ReasonCode)</span>
+                    @<span class="reason-badge @GetReasonClass(rowData.Row.ReasonCode)">@Localizer[GetReasonTitle(rowData.Row.ReasonCode)]</span>
             },
             new ()
             {
-                Name = "Reporter",
+                Name = Localizer["Reporter"],
                 Width = "180px",
                 RenderFragment = (rowData) =>
                     @<UserInfoMini UserId="@rowData.Row.ReportingUserId" />
             },
             new ()
             {
-                Name = "Reported User",
+                Name = Localizer["Reported User"],
                 Width = "180px",
                 RenderFragment = (rowData) =>
                     @<UserInfoMini UserId="@rowData.Row.ReportedUserId" />
             },
             new ()
             {
-                Name = "Description",
+                Name = Localizer["Description"],
                 RenderFragment = (rowData) =>
                     @<span class="description-cell" title="@rowData.Row.LongReason">@(string.IsNullOrWhiteSpace(rowData.Row.LongReason) ? "-" : rowData.Row.LongReason)</span>
             },
             new ()
             {
-                Name = "Status",
+                Name = Localizer["Status"],
                 Width = "130px",
                 RenderFragment = (rowData) =>
                     @<span class="status-badge @(rowData.Row.Resolution == ReportResolution.None ? "unresolved" : "resolved")">
-                        @(rowData.Row.Resolution == ReportResolution.None ? "Unresolved" : "Resolved")
+                        @(rowData.Row.Resolution == ReportResolution.None ? Localizer["Unresolved"] : Localizer["Resolved"])
                     </span>
             },
             new ()
             {
-                Name = "Actions",
+                Name = Localizer["Actions"],
                 Width = "220px",
                 RenderFragment = (rowData) =>
                     @<div class="report-actions">
@@ -204,11 +208,11 @@
                         {
                             @if (rowData.Row.ReportedUserId.HasValue)
                             {
-                                <button class="v-btn danger small" @onclick="@(() => DisableUserQuick(rowData.Row))">Disable User</button>
+                                <button class="v-btn danger small" @onclick="@(() => DisableUserQuick(rowData.Row))">@Localizer["Disable User"]</button>
                             }
-                            <button class="v-btn secondary small" @onclick="@(() => NoActionQuick(rowData.Row))">No Action</button>
+                            <button class="v-btn secondary small" @onclick="@(() => NoActionQuick(rowData.Row))">@Localizer["No Action"]</button>
                         }
-                        <button class="v-btn primary small" @onclick="@(() => OpenDetailsModal(rowData.Row))">Details</button>
+                        <button class="v-btn primary small" @onclick="@(() => OpenDetailsModal(rowData.Row))">@Localizer["Details"]</button>
                     </div>
             }
         };
@@ -285,9 +289,9 @@
 
         var toastData = new ProgressToastData<TaskResult>()
         {
-            Title = "Disabling User",
-            SuccessMessage = "User has been disabled",
-            Message = "Waiting for result...",
+            Title = UQLocalizer["Disabling User"],
+            SuccessMessage = UQLocalizer["User has been disabled"],
+            Message = CommonLocalizer["Waiting for result..."],
             ProgressTask = StaffService.SetUserDisabledAsync(report.ReportedUserId.Value, true)
         };
 
@@ -305,9 +309,9 @@
     {
         var toastData = new ProgressToastData<TaskResult>()
         {
-            Title = "Resolving Report",
-            SuccessMessage = "Report marked as No Action Needed",
-            Message = "Waiting for result...",
+            Title = Localizer["Resolving Report"],
+            SuccessMessage = Localizer["Report marked as No Action Needed"],
+            Message = CommonLocalizer["Waiting for result..."],
             ProgressTask = StaffService.ResolveReportAsync(report.Id, ReportResolution.NoAction, "Quick action: No action needed")
         };
 
@@ -331,7 +335,7 @@
 
             var toastData = new ProgressToastData()
             {
-                Message = "Error",
+                Message = CommonLocalizer["Error"],
                 ProgressTask = task,
             };
 

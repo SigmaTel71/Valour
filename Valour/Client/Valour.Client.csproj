@@ -72,6 +72,16 @@
     </EmbeddedResource>
     <EmbeddedResource Update="Resources\Components\Menus\Modals\Users\Edit\EditUserComponent.ru-RU.resx">
     </EmbeddedResource>
+    <EmbeddedResource Update="Resources\Components\Staff\ReportDetailsModal.ru-RU.resx">
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\Components\Staff\ReportsQueryTable.ru-RU.resx">
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\Components\Staff\StaffEmailComponent.ru-RU.resx">
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\Components\Staff\StaffUserQueryTable.ru-RU.resx">
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\Components\Staff\StaffVerifyUserComponent.ru-RU.resx">
+    </EmbeddedResource>
     <EmbeddedResource Update="Resources\Components\Utility\TabContainerComponent.resx">
     </EmbeddedResource>
     <EmbeddedResource Update="Resources\Components\Utility\TabContainerComponent.ru-RU.resx">
