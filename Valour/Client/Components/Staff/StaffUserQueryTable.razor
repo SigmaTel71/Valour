@@ -1,13 +1,16 @@
 @using Valour.Sdk.ModelLogic.QueryEngines
 @inject ValourClient Client
 @inject StaffService StaffService
+@inject IStringLocalizer<StaffUserQueryTable> Localizer
+@inject IStringLocalizer<ValourApp> CommonLocalizer
 
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
 <QueryTable 
     @ref="@_table"
     Columns="@_columns"
     Engine="@_engine"
     ShowSearch="@true"
-    SearchPlaceholder="Search name..."
+    SearchPlaceholder=@Localizer["Search name..."]
     Infinite="@true"
 />
 
@@ -31,31 +34,31 @@
         {
             new ()
             {
-                Name = "Card",
+                Name = Localizer["Card"],
                 RenderFragment = (rowData) =>
                     @<UserInfoComponent User="@rowData.Row" ShowBadges="false" ShowState="false" />
             },
             new ()
             {
-                Name = "Name",
+                Name = Localizer["Name"],
                 RenderFragment = (rowData) =>
                     @<span>@rowData.Row.NameAndTag</span>
             },
             new ()
             {
-                Name = "Actions",
+                Name = Localizer["Actions"],
                 RenderFragment = (rowData) =>
                     @<div class="button-row">
                         @if (rowData.Row.Disabled)
                         {
-                            <button class="v-btn primary" @onclick="@(async () => await EnableUser(rowData.Row.Id))">Enable</button>
+                            <button class="v-btn primary" @onclick="@(async () => await EnableUser(rowData.Row.Id))">@Localizer["Enable"]</button>
                         }
                         else
                         {
-                            <button class="v-btn secondary" @onclick="@(async () => await DisableUser(rowData.Row.Id))">Disable</button>
+                            <button class="v-btn secondary" @onclick="@(async () => await DisableUser(rowData.Row.Id))">@Localizer["Disable"]</button>
                         }
                         
-                        <button class="v-btn danger" @onclick="@(async () => await DeleteUser(rowData.Row))">Delete</button>
+                        <button class="v-btn danger" @onclick="@(async () => await DeleteUser(rowData.Row))">@Localizer["Delete"]</button>
                     </div>
             }
         };
@@ -67,9 +70,9 @@
     {
         var toastData = new ProgressToastData<TaskResult>()
         {
-            Title = "Disabling User",
-            SuccessMessage = "User has been disabled",
-            Message = "Waiting for result...",
+            Title = Localizer["Disabling User"],
+            SuccessMessage = Localizer["User has been disabled"],
+            Message = CommonLocalizer["Waiting for result..."],
             ProgressTask = StaffService.SetUserDisabledAsync(userId, true)
         };
         
@@ -85,9 +88,9 @@
     {
         var toastData = new ProgressToastData<TaskResult>()
         {
-            Title = "Enabling User",
-            SuccessMessage = "User has been enabled",
-            Message = "Waiting for result...",
+            Title = Localizer["Enabling User"],
+            SuccessMessage = Localizer["User has been enabled"],
+            Message = CommonLocalizer["Waiting for result..."],
             ProgressTask = StaffService.SetUserDisabledAsync(userId, false)
         };
         
@@ -103,17 +106,17 @@
     {
         ModalRoot.OpenModal<ConfirmModalComponent>(new ConfirmModalComponent.ModalParams()
         {
-            Title = $"Hard Delete {user.NameAndTag}?",
-            Description = "This CANNOT be undone. Are you sure you want to delete this user?",
-            CancelText = "Cancel",
-            ConfirmText = "DELETE",
+            Title = Localizer["Hard Delete {0}?", user.NameAndTag],
+            Description = Localizer["This CANNOT be undone. Are you sure you want to delete this user?"],
+            CancelText = Localizer["Cancel"],
+            ConfirmText = Localizer["Delete"].ToString().ToUpperInvariant(),
             ConfirmEvent = async () =>
             {
                 var toastData = new ProgressToastData<TaskResult>()
                 {
-                    Title = "Deleting User",
-                    SuccessMessage = "User has been deleted",
-                    Message = "Waiting for result...",
+                    Title = Localizer["Deleting User"],
+                    SuccessMessage = Localizer["User has been deleted"],
+                    Message = CommonLocalizer["Waiting for result..."],
                     ProgressTask = StaffService.DeleteUserAsync(user.Id)
                 };
         
