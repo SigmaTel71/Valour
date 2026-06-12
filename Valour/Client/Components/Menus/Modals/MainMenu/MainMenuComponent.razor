@@ -1,5 +1,6 @@
 @implements IDisposable
 
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
 <div class="v-menu-container">
     <!-- Close button -->
     <button class="v-menu-close" @onclick="CloseMenu">
@@ -10,7 +11,7 @@
         <!-- Sidebar (always present, visibility controlled by CSS) -->
         <div class="v-menu-sidebar @(IsDropdownOpen ? "open" : "")">
             <div class="v-menu-sidebar-toggle" @onclick="ToggleDropdown">
-                <span>@(ActiveCategory?.Name ?? "Menu")</span>
+                <span>@(Localizer(ActiveCategory?.Name) ?? "Menu")</span>
                 <i class="bi bi-chevron-@(IsDropdownOpen ? "up" : "down")"></i>
             </div>
             
@@ -20,7 +21,7 @@
                     <div class="v-menu-category @(ActiveCategory == category ? "active" : "")" 
                          @onclick="() => SelectCategory(category)">
                         <i class="bi bi-@category.Icon"></i>
-                        <span>@category.Name</span>
+                        <span>@Localizer(category.Name)</span>
                         <i class="bi bi-chevron-right"></i>
                     </div>
 
@@ -34,7 +35,7 @@
                                     {
                                         <i class="bi bi-@item.Icon" style="@(item.Color != null ? $"color:{item.Color}" : "")"></i>
                                     }
-                                    <span style="@(item.Color != null ? $"color:{item.Color}" : "")">@item.Name</span>
+                                    <span style="@(item.Color != null ? $"color:{item.Color}" : "")">@Localizer(item.Name)</span>
                                 </div>
                             }
                         </div>
@@ -64,6 +65,17 @@
     [Parameter]
     public string DefaultItem { get; set; }
 
+    [Parameter]
+    public IStringLocalizer<ComponentBase> ParentComponentLocalizer { get; set; } = null;
+
+    private string Localizer(string key)
+    {
+        if (ParentComponentLocalizer is null)
+            return key;
+
+        return ParentComponentLocalizer.GetString(key);
+    }
+
     private MainMenu.MenuCategory ActiveCategory { get; set; }
     private MainMenu.MenuItem ActiveItem { get; set; }
     private bool IsDropdownOpen { get; set; } = false;
@@ -88,16 +100,16 @@
         <div class="v-menu-content-header">
             @if (item.Icon is not null)
             {
-                <p><i class="bi bi-@item.Icon"></i> <h2>@item.Name</h2></p>
+                <p><i class="bi bi-@item.Icon"></i> <h2>@Localizer(item.Name)</h2></p>
             }
             else
             {
-                <h2>@item.Name</h2>
+                <h2>@Localizer(item.Name)</h2>
             }
 
             @if (item.Description is not null)
             {
-                <h3 class="subtitle">@item.Description</h3>
+                <h3 class="subtitle">@Localizer(item.Description)</h3>
             }
         </div>
 

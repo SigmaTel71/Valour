@@ -1,3 +1,6 @@
+@inject IStringLocalizer<ValourApp> CommonLocalizer
+
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
 @if (Result is null)
 {
     return;
@@ -7,7 +10,7 @@
 {
     <div class="result-message success">
         <p>
-            <i class="bi bi-check-circle"></i> @(Result.Message ?? "Success!")
+            <i class="bi bi-check-circle"></i> @(Localizer(Result.Message) ?? CommonLocalizer["Success!"])
         </p>
     </div>
 }
@@ -15,8 +18,8 @@ else
 {
     <div class="result-message error">
         <p>
-            <span><i class="bi bi-exclamation-circle"></i> @(Result.Message ?? "An error occured.")</span>
-            <a class="details" @onclick="@OnDetails">Details</a>
+            <span><i class="bi bi-exclamation-circle"></i> @(Localizer(Result.Message) ?? CommonLocalizer["An error occured."])</span>
+            <a class="details" @onclick="@OnDetails">@CommonLocalizer["Details"]</a>
         </p>
     </div>
 }
@@ -31,6 +34,18 @@ else
     
     [Parameter]
     public string Style { get; set; }
+
+    [Parameter]
+    public IStringLocalizer<ComponentBase> ParentComponentLocalizer { get; set; } = null;
+
+    private string Localizer(string key)
+    {
+        if (ParentComponentLocalizer is null)
+            return key;
+
+        return ParentComponentLocalizer.GetString(key);
+    }
+
     
     private void OnDetails()
     {
