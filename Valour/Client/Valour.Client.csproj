@@ -72,6 +72,11 @@
     </EmbeddedResource>
     <EmbeddedResource Update="Resources\Components\Menus\Modals\Users\Edit\EditUserComponent.ru-RU.resx">
     </EmbeddedResource>
+    <EmbeddedResource Update="Resources\Components\Utility\TabContainerComponent.resx">
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\Components\Utility\TabContainerComponent.ru-RU.resx">
+      <DependentUpon>TabContainerComponent.resx</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Update="Resources\ValourApp.ru-RU.resx">
     </EmbeddedResource>
   </ItemGroup>
