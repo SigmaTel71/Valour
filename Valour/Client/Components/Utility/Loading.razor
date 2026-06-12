@@ -1,5 +1,7 @@
 ﻿@implements IAsyncDisposable
+@inject IStringLocalizer<Loading> Localizer
 
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
 <div class="loading-container @(Spin ? "compact" : "")">
     <div class="loading-center">
         <img alt="" src="_content/Valour.Client/media/victor/victor-astronaut.svg" class="loading-logo" draggable="false"/>
@@ -11,38 +13,27 @@
 @code {
     #nullable enable
 
-    private static readonly string[] _loadingBlurbs = [
-        "reticulating splines",
-        "fetching victor treats",
-        "surviving tsunamis",
-        "hacking the mainframe",
-        "preaching vooperism",
-        "finding new interns",
-        "solving the halting problem",
-        "debugging the debugger",
-        "simulating empires",
-        "pretending to work",
-        "not slacking",
-        "drop-kicking bugs",
-    ];
-    
+    private static string[] _loadingBlurbs = [];
+
     [Parameter]
     public string Title { get; set; } = "Valour";
-    
+
     [Parameter]
     public string? Subtext { get; set; }
-    
+
     /// <summary>
     /// Uses the smaller layout meant for loading inside a window.
     /// </summary>
     [Parameter]
     public bool Spin { get; set; }
-    
+
     // If the subtext is not provided, rotate random blurbs every 3 seconds
     private Timer? _timer;
-    
+
     protected override void OnInitialized()
     {
+        _loadingBlurbs = Localizer.GetAllStrings().Select(str => str.Value).ToArray();
+
         if (string.IsNullOrWhiteSpace(Subtext))
         {
             Subtext = _loadingBlurbs[new Random().Next(0, _loadingBlurbs.Length)];

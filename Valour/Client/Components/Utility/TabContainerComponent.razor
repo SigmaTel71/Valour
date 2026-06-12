@@ -1,4 +1,5 @@
-﻿<div class="v-tab-container @(_sizeClass)">
+﻿<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
+<div class="v-tab-container @(_sizeClass)">
     <div class="v-tab-header">
         <div class="v-tab-indicator" style="width: calc(100% / @_tabCount); transform: translateX(@(_active * 100)%);">
             <div class="v-tab-indicator-bar"></div>
@@ -10,7 +11,7 @@
                 {
                     <i class="bi bi-@IconOne v-tab-icon"></i>
                 }
-                <span>@_titleOne</span>
+                <span>@Localizer(_titleOne)</span>
                 @if (BadgeOne.HasValue && BadgeOne.Value > 0)
                 {
                     <span class="v-tab-badge">@BadgeOne</span>
@@ -24,7 +25,7 @@
                 {
                     <i class="bi bi-@IconTwo v-tab-icon"></i>
                 }
-                <span>@_titleTwo</span>
+                <span>@Localizer(_titleTwo)</span>
                 @if (BadgeTwo.HasValue && BadgeTwo.Value > 0)
                 {
                     <span class="v-tab-badge">@BadgeTwo</span>
@@ -38,7 +39,7 @@
                 {
                     <i class="bi bi-@IconThree v-tab-icon"></i>
                 }
-                <span>@_titleThree</span>
+                <span>@Localizer(_titleThree)</span>
                 @if (BadgeThree.HasValue && BadgeThree.Value > 0)
                 {
                     <span class="v-tab-badge">@BadgeThree</span>
@@ -52,7 +53,7 @@
                 {
                     <i class="bi bi-@IconFour v-tab-icon"></i>
                 }
-                <span>@_titleFour</span>
+                <span>@Localizer(_titleFour)</span>
                 @if (BadgeFour.HasValue && BadgeFour.Value > 0)
                 {
                     <span class="v-tab-badge">@BadgeFour</span>
@@ -66,7 +67,7 @@
                 {
                     <i class="bi bi-@IconFive v-tab-icon"></i>
                 }
-                <span>@_titleFive</span>
+                <span>@Localizer(_titleFive)</span>
                 @if (BadgeFive.HasValue && BadgeFive.Value > 0)
                 {
                     <span class="v-tab-badge">@BadgeFive</span>
@@ -80,7 +81,7 @@
                 {
                     <i class="bi bi-@IconSix v-tab-icon"></i>
                 }
-                <span>@_titleSix</span>
+                <span>@Localizer(_titleSix)</span>
                 @if (BadgeSix.HasValue && BadgeSix.Value > 0)
                 {
                     <span class="v-tab-badge">@BadgeSix</span>
@@ -100,7 +101,7 @@
     {
         return index == _active ? "active" : "";
     }
-    
+
     [Parameter]
     public string ContentStyle { get; set; }
 
@@ -114,10 +115,10 @@
 
     [Parameter]
     public string[] Titles { get; set; }
-    
+
     [Parameter]
     public string MaxHeight { get; set; } = "400px";
-    
+
     [Parameter]
     public string IconOne { get; set; }
 
@@ -153,6 +154,18 @@
 
     [Parameter]
     public int? BadgeSix { get; set; }
+
+
+    [Parameter]
+    public IStringLocalizer<ComponentBase> ParentComponentLocalizer { get; set; } = null;
+
+    private string Localizer(string key)
+    {
+        if (ParentComponentLocalizer is null)
+            return key;
+
+        return ParentComponentLocalizer.GetString(key);
+    }
 
     private string GetPositionClass(int index)
     {
