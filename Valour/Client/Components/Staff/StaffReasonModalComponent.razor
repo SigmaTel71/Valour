@@ -1,23 +1,25 @@
 @inherits Modal<StaffReasonModalComponent.ModalParams>
+@inject IStringLocalizer<StaffLookupComponent> SLCLocalizer
+@inject IStringLocalizer<ValourApp> CommonLocalizer
 
 <!-- Collects a required reason for a staff action. Every sensitive staff
      tool call is audit-logged with this reason. -->
-
-<BasicModalLayout Title="@Data.Title" Icon="clipboard-check" MaxWidth="450px">
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
+<BasicModalLayout Title="@Data.Title" Icon="clipboard-check" MaxWidth="470px">
     <MainArea>
         <p>@Data.Description</p>
         <div class="form-group">
-            <label>Reason (required, audit-logged)</label>
+            <label>@SLCLocalizer["Reason (required, audit-logged)"]</label>
             <textarea class="form-control" rows="3" maxlength="512"
-                      placeholder="Why is this action being taken?"
+                      placeholder="@SLCLocalizer["Why is this action being taken?"]"
                       @bind="_reason" @bind:event="oninput"></textarea>
         </div>
     </MainArea>
     <ButtonArea>
         <div class="basic-modal-buttons">
-            <button @onclick="@OnCancel" class="v-btn">@Data.CancelText</button>
+            <button @onclick="@OnCancel" class="v-btn">@CommonLocalizer[Data.CancelText]</button>
             <button @onclick="@OnConfirm" class="v-btn @(Data.Danger ? "danger" : "primary")"
-                    disabled="@(string.IsNullOrWhiteSpace(_reason))">@Data.ConfirmText</button>
+                    disabled="@(string.IsNullOrWhiteSpace(_reason))">@CommonLocalizer[Data.ConfirmText]</button>
         </div>
     </ButtonArea>
 </BasicModalLayout>
