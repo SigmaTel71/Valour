@@ -1,41 +1,44 @@
 @inherits Modal<ReportDetailsModal.ModalParams>
 @inject StaffService StaffService
 @inject ValourClient Client
+@inject IStringLocalizer<ReportDetailsModal> Localizer
+@inject IStringLocalizer<ReportsQueryTable> RQTLocalizer
+@inject IStringLocalizer<ValourApp> CommonLocalizer
 
-<BasicModalLayout Title="Report Details" Icon="flag-fill" MaxWidth="700px">
+<BasicModalLayout Title="@Localizer["Report Details"]" Icon="flag-fill" MaxWidth="700px">
     <MainArea>
         <div class="report-details">
             <div class="report-section">
-                <h4>Report Information</h4>
+                <h4>@Localizer["Report Information"]</h4>
                 <div class="info-grid">
                     <div class="info-item">
-                        <span class="label">Report ID</span>
+                        <span class="label">@Localizer["Report ID"]</span>
                         <span class="value">@Data.Report.Id</span>
                     </div>
                     <div class="info-item">
-                        <span class="label">Created</span>
+                        <span class="label">@Localizer["Created"]</span>
                         <span class="value">@Data.Report.TimeCreated.ToString("g")</span>
                     </div>
                     <div class="info-item">
-                        <span class="label">Reason</span>
-                        <span class="value reason-badge @GetReasonClass()">@GetReasonTitle()</span>
+                        <span class="label">@RQTLocalizer["Reason"]</span>
+                        <span class="value reason-badge @GetReasonClass()">@RQTLocalizer[GetReasonTitle()]</span>
                     </div>
                     <div class="info-item">
-                        <span class="label">Status</span>
-                        <span class="value status-badge @GetStatusClass()">@GetStatusText()</span>
+                        <span class="label">@RQTLocalizer["Status"]</span>
+                        <span class="value status-badge @GetStatusClass()">@RQTLocalizer[GetStatusText()]</span>
                     </div>
                 </div>
             </div>
 
             <div class="report-section">
-                <h4>Users</h4>
+                <h4>@Localizer["Users"]</h4>
                 <div class="users-grid">
                     <div class="user-item">
-                        <span class="label">Reporter</span>
+                        <span class="label">@RQTLocalizer["Reporter"]</span>
                         <UserInfoMini UserId="@Data.Report.ReportingUserId" />
                     </div>
                     <div class="user-item">
-                        <span class="label">Reported User</span>
+                        <span class="label">@RQTLocalizer["Reported User"]</span>
                         @if (Data.Report.ReportedUserId.HasValue)
                         {
                             <UserInfoMini UserId="@Data.Report.ReportedUserId" />
@@ -51,7 +54,7 @@
             @if (!string.IsNullOrWhiteSpace(Data.Report.LongReason))
             {
                 <div class="report-section">
-                    <h4>Description</h4>
+                    <h4>@RQTLocalizer["Description"]</h4>
                     <div class="description-box">
                         @Data.Report.LongReason
                     </div>
@@ -61,17 +64,17 @@
             @if (Data.Report.ThreadId.HasValue)
             {
                 <div class="report-section">
-                    <h4>@(Data.Report.ThreadCommentId.HasValue ? "Reported Thread Comment" : "Reported Thread")</h4>
+                    <h4>@(Data.Report.ThreadCommentId.HasValue ? Localizer["Reported Thread Comment"] : Localizer["Reported Thread"])</h4>
                     @if (_isLoadingThread)
                     {
-                        <div class="message-loading">Loading thread content...</div>
+                        <div class="message-loading">@Localizer["Loading thread content..."]</div>
                     }
                     else if (Data.Report.ThreadCommentId.HasValue && _reportedComment is not null)
                     {
                         <div class="reported-message-container">
                             @if (_reportedComment.IsDeleted)
                             {
-                                <p><i>This comment was deleted.</i></p>
+                                <p><i>@Localizer["This comment was deleted."]</i></p>
                             }
                             else
                             {
@@ -88,8 +91,8 @@
                     else
                     {
                         <div class="message-error">
-                            <span>Thread content could not be loaded (ID: @Data.Report.ThreadId)</span>
-                            <button class="v-btn small secondary" @onclick="LoadThread">Retry</button>
+                            <span>@Localizer["Thread content could not be loaded (ID: {0})", Data.Report.ThreadId]</span>
+                            <button class="v-btn small secondary" @onclick="LoadThread">@CommonLocalizer["Retry"]</button>
                         </div>
                     }
                 </div>
@@ -98,10 +101,10 @@
             @if (Data.Report.MessageId.HasValue)
             {
                 <div class="report-section">
-                    <h4>Reported Message</h4>
+                    <h4>@Localizer["Reported Message"]</h4>
                     @if (_isLoadingMessage)
                     {
-                        <div class="message-loading">Loading message...</div>
+                        <div class="message-loading">@Localizer["Loading message..."]</div>
                     }
                     else if (_reportedMessage is not null)
                     {
@@ -112,8 +115,8 @@
                     else
                     {
                         <div class="message-error">
-                            <span>Message could not be loaded (ID: @Data.Report.MessageId)</span>
-                            <button class="v-btn small secondary" @onclick="LoadMessage">Retry</button>
+                            <span>@Localizer["Message could not be loaded (ID: {0})", Data.Report.MessageId]</span>
+                            <button class="v-btn small secondary" @onclick="LoadMessage">@CommonLocalizer["Retry"]</button>
                         </div>
                     }
                 </div>
@@ -122,18 +125,18 @@
             @if (Data.Report.Resolution != ReportResolution.None)
             {
                 <div class="report-section resolved-section">
-                    <h4>Resolution</h4>
+                    <h4>@Localizer["Resolution"]</h4>
                     <div class="info-grid">
                         <div class="info-item">
-                            <span class="label">Resolution</span>
-                            <span class="value">@GetResolutionDisplayName()</span>
+                            <span class="label">@Localizer["Resolution"]</span>
+                            <span class="value">@Localizer[GetResolutionDisplayName()]</span>
                         </div>
                         <div class="info-item">
-                            <span class="label">Resolved At</span>
+                            <span class="label">@Localizer["Resolved At"]</span>
                             <span class="value">@Data.Report.ResolvedAt?.ToString("g")</span>
                         </div>
                         <div class="info-item">
-                            <span class="label">Resolved By</span>
+                            <span class="label">@Localizer["Resolved By"]</span>
                             @if (Data.Report.ResolvedById.HasValue)
                             {
                                 <UserInfoMini UserId="@Data.Report.ResolvedById" />
@@ -147,7 +150,7 @@
                     @if (!string.IsNullOrWhiteSpace(Data.Report.StaffNotes))
                     {
                         <div class="staff-notes">
-                            <span class="label">Staff Notes</span>
+                            <span class="label">@Localizer["Staff Notes"]</span>
                             <div class="notes-box">@Data.Report.StaffNotes</div>
                         </div>
                     }
@@ -156,30 +159,30 @@
             else
             {
                 <div class="report-section resolve-form">
-                    <h4>Resolve Report</h4>
+                    <h4>@Localizer["Resolve Report"]</h4>
                     <div class="form-group">
-                        <label>Resolution</label>
+                        <label>@Localizer["Resolution"]</label>
                         <select class="form-control" @bind="_selectedResolution">
-                            <option value="@ReportResolution.NoAction">No Action Needed</option>
-                            <option value="@ReportResolution.Warning">Warning Issued</option>
-                            <option value="@ReportResolution.UserDisabled">User Disabled</option>
-                            <option value="@ReportResolution.ContentRemoved">Content Removed</option>
-                            <option value="@ReportResolution.UserDeleted">User Deleted</option>
-                            <option value="@ReportResolution.Duplicate">Duplicate Report</option>
+                            <option value="@ReportResolution.NoAction">@Localizer["No Action Needed"]</option>
+                            <option value="@ReportResolution.Warning">@Localizer["Warning Issued"]</option>
+                            <option value="@ReportResolution.UserDisabled">@Localizer["User Disabled"]</option>
+                            <option value="@ReportResolution.ContentRemoved">@Localizer["Content Removed"]</option>
+                            <option value="@ReportResolution.UserDeleted">@Localizer["User Deleted"]</option>
+                            <option value="@ReportResolution.Duplicate">@Localizer["Duplicate Report"]</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Staff Notes</label>
-                        <textarea class="form-control" @bind="_staffNotes" rows="3" placeholder="Add internal notes about this report..."></textarea>
+                        <label>@Localizer["Staff Notes"]</label>
+                        <textarea class="form-control" @bind="_staffNotes" rows="3" placeholder="@Localizer["Add internal notes about this report..."]"></textarea>
                     </div>
                     <div class="quick-actions">
-                        <h5>Quick Actions</h5>
+                        <h5>@Localizer["Quick Actions"]</h5>
                         <div class="action-buttons">
                             @if (Data.Report.ReportedUserId.HasValue)
                             {
-                                <button class="v-btn danger" @onclick="DisableUserAndResolve">Disable User</button>
+                                <button class="v-btn danger" @onclick="DisableUserAndResolve">@RQTLocalizer["Disable User"]</button>
                             }
-                            <button class="v-btn secondary" @onclick="() => ResolveReport(ReportResolution.NoAction)">No Action</button>
+                            <button class="v-btn secondary" @onclick="() => ResolveReport(ReportResolution.NoAction)">@RQTLocalizer["No Action"]</button>
                         </div>
                     </div>
                 </div>
@@ -188,17 +191,17 @@
     </MainArea>
     <ButtonArea>
         <div class="basic-modal-buttons">
-            <button @onclick="Close" class="v-btn">Close</button>
+            <button @onclick="Close" class="v-btn">@CommonLocalizer["Close"]</button>
             @if (Data.Report.Resolution == ReportResolution.None)
             {
                 <button @onclick="SubmitResolution" class="v-btn primary" disabled="@_isSubmitting">
                     @if (_isSubmitting)
                     {
-                        <span>Resolving...</span>
+                        <span>@Localizer["Resolving..."]</span>
                     }
                     else
                     {
-                        <span>Resolve Report</span>
+                        <span>@Localizer["Resolve Report"]</span>
                     }
                 </button>
             }
@@ -559,7 +562,7 @@
         {
             ToastContainer.Instance.AddToast(new ProgressToastData()
             {
-                Message = $"Failed to disable user: {disableResult.Message}",
+                Message = Localizer["Failed to disable user: {0}", disableResult.Message],
                 ProgressTask = Task.FromException(new Exception(disableResult.Message))
             });
             _isSubmitting = false;
@@ -589,7 +592,7 @@
         {
             ToastContainer.Instance.AddToast(new ProgressToastData()
             {
-                Message = $"Failed to resolve report: {result.Message}",
+                Message = Localizer["Failed to resolve report: {0}", result.Message],
                 ProgressTask = Task.FromException(new Exception(result.Message))
             });
             StateHasChanged();
@@ -603,8 +606,8 @@
 
         ToastContainer.Instance.AddToast(new ProgressToastData()
         {
-            Title = "Success",
-            Message = "Report resolved successfully",
+            Title = Localizer["Success"],
+            Message = Localizer["Report resolved successfully"],
             ProgressTask = Task.CompletedTask
         });
 
