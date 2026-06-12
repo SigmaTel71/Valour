@@ -1,28 +1,30 @@
 @inject ValourClient Client
 @inject AppBannerService Banners
+@inject IStringLocalizer<StaffPlatformBannerComponent> Localizer
 
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
 <div class="staff-banner-page">
     <div class="banner-preview kind-@_kind.ToString().ToLowerInvariant()">
         <i class="bi bi-megaphone-fill"></i>
-        <div><strong>@(string.IsNullOrWhiteSpace(_title) ? "Banner preview" : _title)</strong><span>@(string.IsNullOrWhiteSpace(_message) ? "Your message will appear here." : _message)</span></div>
+        <div><strong>@(string.IsNullOrWhiteSpace(_title) ? Localizer["Banner preview"] : _title)</strong><span>@(string.IsNullOrWhiteSpace(_message) ? Localizer["Your message will appear here."] : _message)</span></div>
     </div>
 
     <div style="display: flex; flex-direction: column; gap: 0.5em;">
-        <label>Type</label>
+        <label>@Localizer["Type"]</label>
         <InputSelect class="v-input" @bind-Value="_kind">
-            <option value="@PlatformBannerKind.Information">Information</option>
-            <option value="@PlatformBannerKind.Warning">Warning</option>
-            <option value="@PlatformBannerKind.Critical">Critical</option>
+            <option value="@PlatformBannerKind.Information">@Localizer["Information"]</option>
+            <option value="@PlatformBannerKind.Warning">@Localizer["Warning"]</option>
+            <option value="@PlatformBannerKind.Critical">@Localizer["Critical"]</option>
         </InputSelect>
-        <label>Title</label>
-        <input class="v-input" maxlength="80" @bind="_title" @bind:event="oninput" placeholder="Scheduled maintenance" />
-        <label>Message</label>
-        <textarea class="v-input" maxlength="500" rows="5" @bind="_message" @bind:event="oninput" placeholder="Tell people what is happening and what they should expect."></textarea>
+        <label>@Localizer["Title"]</label>
+        <input class="v-input" maxlength="80" @bind="_title" @bind:event="oninput" placeholder="@Localizer["Scheduled maintenance"]" />
+        <label>@Localizer["Message"]</label>
+        <textarea class="v-input" maxlength="500" rows="5" @bind="_message" @bind:event="oninput" placeholder="@Localizer["Tell people what is happening and what they should expect."]"></textarea>
         <span class="counter">@_message.Length/500</span>
 
         <div class="actions">
-            <VButton Variant="primary" Icon="broadcast" OnClick="PublishAsync" Disabled="@_saving">Publish banner</VButton>
-            <VButton Variant="danger" Icon="trash3" OnClick="ClearAsync" Disabled="@(_saving || Client.InstanceManifest?.PlatformBanner is null)">Clear active banner</VButton>
+            <VButton Variant="primary" Icon="broadcast" OnClick="PublishAsync" Disabled="@_saving">@Localizer["Publish banner"]</VButton>
+            <VButton Variant="danger" Icon="trash3" OnClick="ClearAsync" Disabled="@(_saving || Client.InstanceManifest?.PlatformBanner is null)">@Localizer["Clear active banner"]</VButton>
         </div>
 
         <ResultLabel Result="@_result" />
