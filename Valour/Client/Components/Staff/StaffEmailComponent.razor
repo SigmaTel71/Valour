@@ -1,23 +1,25 @@
 @inject StaffService StaffService
+@inject IStringLocalizer<StaffEmailComponent> Localizer
 
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
 <div class="verify-user-container">
-    <h5>Send Mass Email</h5>
+    <h5>@Localizer["Send Mass Email"]</h5>
     <p class="verify-user-help">
-        Send an email to all verified users. This action cannot be undone.
+        @Localizer["Send an email to all verified users. This action cannot be undone."]
     </p>
 
     <div style="display: flex; flex-direction: column; gap: 0.5em;">
         <input class="v-input"
-               placeholder="Subject"
+               placeholder="@Localizer["Subject"]"
                @bind-value="_subject" />
         <textarea class="v-input"
-                  placeholder="HTML body content"
+                  placeholder="@Localizer["HTML body content"]"
                   rows="8"
                   @bind="_htmlBody"></textarea>
         <button class="v-btn primary"
                 disabled="@_isSubmitting"
                 @onclick="OnSendClicked">
-            Send to All Verified Users
+            @Localizer["Send to All Verified Users"]
         </button>
     </div>
 
@@ -37,15 +39,15 @@
     {
         if (string.IsNullOrWhiteSpace(_subject) || string.IsNullOrWhiteSpace(_htmlBody))
         {
-            _result = TaskResult.FromFailure("Subject and body are required.");
+            _result = TaskResult.FromFailure(Localizer["Subject and body are required."]);
             return;
         }
 
         var cData = new ConfirmModalComponent.ModalParams(
-            "Mass Email",
-            "Are you sure you want to send this email to ALL verified users?",
-            "Yes, send it",
-            "Cancel",
+            Localizer["Mass Email"],
+            Localizer["Are you sure you want to send this email to ALL verified users?"],
+            Localizer["Yes, send it"],
+            Localizer["Cancel"],
             async () => await SendEmailAsync(),
             () => Task.CompletedTask
         );
@@ -60,9 +62,9 @@
 
         var toastData = new ProgressToastData<TaskResult>()
         {
-            Title = "Mass Email",
-            Message = "Sending emails...",
-            SuccessMessage = "Mass email sent!",
+            Title = Localizer["Mass Email"],
+            Message = Localizer["Sending emails..."],
+            SuccessMessage = Localizer["Mass email sent!"],
             ProgressTask = StaffService.SendMassEmailAsync(_subject.Trim(), _htmlBody.Trim())
         };
 

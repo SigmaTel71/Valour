@@ -1,31 +1,33 @@
 @inject ValourClient Client
+@inject IStringLocalizer<StaffAuditLogComponent> Localizer
+@inject IStringLocalizer<ValourApp> CommonLocalizer
 @using Valour.Shared.Models.Staff
 @using Valour.Shared.Queries
 
 <!-- Read-only view of the staff action audit trail. -->
-
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
 <div class="staff-audit">
     <div class="audit-controls">
-        <input class="form-control" placeholder="Filter by target user id..."
+        <input class="form-control" placeholder="@Localizer["Filter by target user id..."]"
                @bind="_targetFilter" @bind:event="oninput" />
-        <button class="v-btn primary" @onclick="Reload">Search</button>
+        <button class="v-btn primary" @onclick="Reload">@CommonLocalizer["Search"]</button>
     </div>
 
     @if (_entries.Count == 0 && _loaded)
     {
-        <p class="mt-2">No audit entries found.</p>
+        <p class="mt-2">@Localizer["No audit entries found."]</p>
     }
     else
     {
         <table class="audit-table mt-2">
             <thead>
             <tr>
-                <th>Time (UTC)</th>
-                <th>Staff</th>
-                <th>Action</th>
-                <th>Target</th>
-                <th>Reason</th>
-                <th>Details</th>
+                <th>@Localizer["Time (UTC)"]</th>
+                <th>@Localizer["Staff"]</th>
+                <th>@Localizer["Action"]</th>
+                <th>@Localizer["Target"]</th>
+                <th>@Localizer["Reason"]</th>
+                <th>@Localizer["Details"]</th>
             </tr>
             </thead>
             <tbody>
@@ -34,7 +36,7 @@
                 <tr>
                     <td>@entry.TimeCreated.ToString("yyyy-MM-dd HH:mm")</td>
                     <td>@(entry.StaffName ?? entry.StaffUserId.ToString())</td>
-                    <td>@FormatAction(entry.ActionType)</td>
+                    <td>@Localizer[FormatAction(entry.ActionType)]</td>
                     <td>@(entry.TargetName ?? entry.TargetUserId?.ToString() ?? "-")</td>
                     <td class="audit-reason">@entry.Reason</td>
                     <td class="audit-reason">@entry.Details</td>
@@ -45,7 +47,7 @@
 
         @if (_hasMore)
         {
-            <button class="v-btn mt-2" @onclick="LoadMore">Load more</button>
+            <button class="v-btn mt-2" @onclick="LoadMore">@Localizer["Load more"]</button>
         }
     }
 </div>

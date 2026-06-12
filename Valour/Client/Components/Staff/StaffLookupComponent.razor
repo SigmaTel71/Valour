@@ -1,24 +1,28 @@
 @inject ValourClient Client
 @inject StaffService StaffService
+@inject IStringLocalizer<StaffLookupComponent> Localizer
+@inject IStringLocalizer<ValourApp> CommonLocalizer
+
 @using Valour.Shared.Models.Staff
 
 <!-- Staff PII lookup: user -> email and email -> user. Requires a reason
      and is audit-logged, because this surfaces private data. -->
 
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
 <div class="staff-lookup">
     <div class="form-group">
-        <label>User id, username, username#tag, or email</label>
-        <input class="form-control" placeholder="e.g. spike@valour.gg or SpikeViper#0000"
+        <label>@Localizer["User id, username, username#tag, or email"]</label>
+        <input class="form-control" placeholder="@Localizer["e.g. spike@valour.gg or SpikeViper#0000"]"
                @bind="_identifier" @bind:event="oninput" />
     </div>
     <div class="form-group">
-        <label>Reason (required, audit-logged)</label>
-        <input class="form-control" maxlength="512" placeholder="e.g. Support ticket #123"
+        <label>@Localizer["Reason (required, audit-logged)"]</label>
+        <input class="form-control" maxlength="512" placeholder="@Localizer["e.g. Support ticket #123"]"
                @bind="_reason" @bind:event="oninput" />
     </div>
     <button class="v-btn primary"
             disabled="@(string.IsNullOrWhiteSpace(_identifier) || string.IsNullOrWhiteSpace(_reason))"
-            @onclick="Lookup">Look up</button>
+            @onclick="Lookup">@Localizer["Look up"]</button>
 
     @if (_error is not null)
     {
@@ -30,32 +34,32 @@
         <div class="lookup-result mt-3">
             <table class="lookup-table">
                 <tbody>
-                <tr><td>User</td><td>@_result.Name#@_result.Tag (@_result.UserId)</td></tr>
-                <tr><td>Email</td><td>@_result.Email @(_result.EmailVerified ? "(verified)" : "(unverified)")</td></tr>
-                <tr><td>Created</td><td>@_result.TimeCreated.ToString("u")</td></tr>
-                <tr><td>Disabled</td><td>@(_result.Disabled ? "Yes" : "No")</td></tr>
-                <tr><td>Bot</td><td>@(_result.Bot ? $"Yes (owner: {_result.OwnerId})" : "No")</td></tr>
+                <tr><td>@Localizer["User"]</td><td>@_result.Name#@_result.Tag (@_result.UserId)</td></tr>
+                <tr><td>@Localizer["Email"]</td><td>@_result.Email @(_result.EmailVerified ? Localizer["(verified)"] : Localizer["(unverified)"])</td></tr>
+                <tr><td>@Localizer["Created"]</td><td>@_result.TimeCreated.ToString("u")</td></tr>
+                <tr><td>@Localizer["Disabled"]</td><td>@(_result.Disabled ? CommonLocalizer["Yes"] : CommonLocalizer["No"])</td></tr>
+                <tr><td>@Localizer["Bot"]</td><td>@(_result.Bot ? Localizer["Yes (owner: {0})", _result.OwnerId] : CommonLocalizer["No"])</td></tr>
                 <tr>
-                    <td>Prior name</td>
+                    <td>@Localizer["Prior name"]</td>
                     <td>
                         @if (string.IsNullOrWhiteSpace(_result.PriorName))
                         {
-                            <span>None</span>
+                            <span>@Localizer["None"]</span>
                         }
                         else
                         {
-                            <span>@_result.PriorName @(_result.HidePriorName ? "(hidden from users)" : "(visible)")</span>
+                            <span>@_result.PriorName @(_result.HidePriorName ? Localizer["(hidden from users)"] : Localizer["(visible)"])</span>
                         }
                     </td>
                 </tr>
-                <tr><td>2FA</td><td>@(_result.HasMfa ? "Enabled" : "Not set up")</td></tr>
+                <tr><td>@Localizer["2FA"]</td><td>@(_result.HasMfa ? Localizer["Enabled"] : Localizer["Not set up"])</td></tr>
                 @if (_result.PendingMfaRemovalAt is not null)
                 {
-                    <tr><td>2FA removal</td><td class="text-danger">Pending — executes @_result.PendingMfaRemovalAt?.ToString("u")</td></tr>
+                    <tr><td>@Localizer["2FA removal"]</td><td class="text-danger">@Localizer["Pending — executes {0}", _result.PendingMfaRemovalAt?.ToString("u")]</td></tr>
                 }
                 </tbody>
             </table>
-            <button class="v-btn secondary mt-2" @onclick="OpenTools">Open staff tools</button>
+            <button class="v-btn secondary mt-2" @onclick="OpenTools">@Localizer["Open staff tools"]</button>
         </div>
     }
 </div>

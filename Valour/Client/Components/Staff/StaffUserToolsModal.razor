@@ -1,62 +1,62 @@
 @inherits Modal<StaffUserToolsModal.ModalParams>
 @inject ValourClient Client
 @inject StaffService StaffService
+@inject IStringLocalizer<StaffUserToolsModal> Localizer
+@inject IStringLocalizer<ValourApp> CommonLocalizer
 
 <!-- Support & moderation tools for one account. Staff never see or set
      credentials here: password resets go to the user's own email, and MFA
      removal waits out a safety delay with the account notified. Every
      action requires a reason and is audit-logged. -->
 
-<BasicModalLayout Title="@($"Staff Tools: {Data.User.NameAndTag}")" Icon="tools" MaxWidth="520px">
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
+<BasicModalLayout Title="@(Localizer["Staff Tools: {0}", Data.User.NameAndTag])" Icon="tools" MaxWidth="520px">
     <MainArea>
         <div class="staff-tools-user">
             <UserInfoComponent User="@Data.User" ShowBadges="false" ShowState="false" />
         </div>
 
-        <h6 class="mt-3">Account recovery</h6>
+        <h6 class="mt-3">@Localizer["Account recovery"]</h6>
         <div class="form-group">
             <label>
                 <input type="checkbox" @bind="_invalidateSessions" />
-                Also sign out all sessions (suspected compromise)
+                @Localizer["Also sign out all sessions (suspected compromise)"]
             </label>
         </div>
         <div class="button-row">
-            <button class="v-btn primary" @onclick="TriggerPasswordReset">Send password reset email</button>
-            <button class="v-btn danger" @onclick="ScheduleMfaRemoval">Schedule 2FA removal</button>
-            <button class="v-btn" @onclick="CancelMfaRemoval">Cancel pending 2FA removal</button>
+            <button class="v-btn primary" @onclick="TriggerPasswordReset">@Localizer["Send password reset email"]</button>
+            <button class="v-btn danger" @onclick="ScheduleMfaRemoval">@Localizer["Schedule 2FA removal"]</button>
+            <button class="v-btn" @onclick="CancelMfaRemoval">@Localizer["Cancel pending 2FA removal"]</button>
         </div>
         <p class="staff-tools-note">
-            Password resets are emailed to the account's own address — staff never
-            see or choose passwords. 2FA removal executes after a 48-hour delay;
-            the account is emailed immediately and can cancel it.
+            @Localizer["Password resets are emailed to the account's own address — staff never see or choose passwords. 2FA removal executes after a 48-hour delay; the account is emailed immediately and can cancel it."]
         </p>
 
-        <h6 class="mt-3">Identity</h6>
+        <h6 class="mt-3">@Localizer["Identity"]</h6>
         <div class="button-row">
-            <button class="v-btn secondary" @onclick="ResetUsername">Reset username</button>
+            <button class="v-btn secondary" @onclick="ResetUsername">@Localizer["Reset username"]</button>
             @if (Data.User.HidePriorName)
             {
-                <button class="v-btn" @onclick="@(() => SetPriorNameHidden(false))">Unhide prior name</button>
+                <button class="v-btn" @onclick="@(() => SetPriorNameHidden(false))">@Localizer["Unhide prior name"]</button>
             }
             else
             {
-                <button class="v-btn" @onclick="@(() => SetPriorNameHidden(true))">Hide prior name</button>
+                <button class="v-btn" @onclick="@(() => SetPriorNameHidden(true))">@Localizer["Hide prior name"]</button>
             }
         </div>
         <p class="staff-tools-note">
-            Resetting a username assigns a neutral placeholder and hides the old
-            name automatically.
+            @Localizer["Resetting a username assigns a neutral placeholder and hides the old name automatically."]
         </p>
 
-        <h6 class="mt-3">Owned bots</h6>
+        <h6 class="mt-3">@Localizer["Owned bots"]</h6>
         <div class="button-row">
-            <button class="v-btn" @onclick="LoadBots">View owned bots</button>
+            <button class="v-btn" @onclick="LoadBots">@Localizer["View owned bots"]</button>
         </div>
         @if (_botsLoaded)
         {
             @if (_bots is null || _bots.Count == 0)
             {
-                <p class="staff-tools-note">This user owns no bots.</p>
+                <p class="staff-tools-note">@Localizer["This user owns no bots."]</p>
             }
             else
             {
@@ -71,7 +71,7 @@
     </MainArea>
     <ButtonArea>
         <div class="basic-modal-buttons">
-            <button @onclick="@(() => Close())" class="v-btn">Close</button>
+            <button @onclick="@(() => Close())" class="v-btn">@CommonLocalizer["Close"]</button>
         </div>
     </ButtonArea>
 </BasicModalLayout>
@@ -101,18 +101,18 @@
     private void TriggerPasswordReset()
     {
         var invalidate = _invalidateSessions;
-        AskReason($"Send password reset to {Data.User.NameAndTag}?",
+        AskReason(Localizer["Send password reset to {0}?", Data.User.NameAndTag],
             invalidate
-                ? "A reset email goes to the account's address and every session is signed out."
-                : "A reset email goes to the account's address.",
-            "Send", danger: false,
+                ? Localizer["A reset email goes to the account's address and every session is signed out."]
+                : Localizer["A reset email goes to the account's address."],
+            Localizer["Send"], danger: false,
             async reason =>
             {
                 var toastData = new ProgressToastData<TaskResult>()
                 {
-                    Title = "Sending Reset Email",
-                    SuccessMessage = "Reset email sent",
-                    Message = "Waiting for result...",
+                    Title = Localizer["Sending Reset Email"],
+                    SuccessMessage = Localizer["Reset email sent"],
+                    Message = CommonLocalizer["Waiting for result..."],
                     ProgressTask = StaffService.TriggerPasswordResetAsync(Data.User.Id, invalidate, reason)
                 };
 
@@ -122,18 +122,16 @@
 
     private void ScheduleMfaRemoval()
     {
-        AskReason($"Schedule 2FA removal for {Data.User.NameAndTag}?",
-            "This is a common account-takeover target. The removal waits 48 hours, " +
-            "the account is emailed immediately, and the owner can cancel it. " +
-            "Verify the requester's identity before confirming.",
-            "Schedule removal", danger: true,
+        AskReason(Localizer["Schedule 2FA removal for {0}?", Data.User.NameAndTag],
+            Localizer["This is a common account-takeover target. The removal waits 48 hours, the account is emailed immediately, and the owner can cancel it. Verify the requester's identity before confirming."],
+            Localizer["Schedule removal"], danger: true,
             async reason =>
             {
                 var toastData = new ProgressToastData<TaskResult>()
                 {
                     Title = "Scheduling 2FA Removal",
                     SuccessMessage = "Removal scheduled; account notified",
-                    Message = "Waiting for result...",
+                    Message = CommonLocalizer["Waiting for result..."],
                     ProgressTask = StaffService.ScheduleMfaRemovalAsync(Data.User.Id, reason)
                 };
 
@@ -143,16 +141,16 @@
 
     private void CancelMfaRemoval()
     {
-        AskReason($"Cancel pending 2FA removal for {Data.User.NameAndTag}?",
-            "Cancels the scheduled removal if one is pending.",
-            "Cancel removal", danger: false,
+        AskReason(Localizer["Cancel pending 2FA removal for {0}?", Data.User.NameAndTag],
+            Localizer["Cancels the scheduled removal if one is pending."],
+            Localizer["Cancel removal"], danger: false,
             async reason =>
             {
                 var toastData = new ProgressToastData<TaskResult>()
                 {
-                    Title = "Cancelling 2FA Removal",
-                    SuccessMessage = "Pending removal cancelled",
-                    Message = "Waiting for result...",
+                    Title = Localizer["Cancelling 2FA Removal"],
+                    SuccessMessage = Localizer["Pending removal cancelled"],
+                    Message = CommonLocalizer["Waiting for result..."],
                     ProgressTask = StaffService.CancelMfaRemovalAsync(Data.User.Id, reason)
                 };
 
@@ -162,17 +160,16 @@
 
     private void ResetUsername()
     {
-        AskReason($"Reset username for {Data.User.NameAndTag}?",
-            "Assigns a neutral auto-generated name. The old name is stored as the " +
-            "prior name and hidden from other users.",
-            "Reset username", danger: true,
+        AskReason(Localizer["Reset username for {0}?", Data.User.NameAndTag],
+            Localizer["Assigns a neutral auto-generated name. The old name is stored as the prior name and hidden from other users."],
+            Localizer["Reset username"], danger: true,
             async reason =>
             {
                 var toastData = new ProgressToastData<TaskResult>()
                 {
-                    Title = "Resetting Username",
-                    SuccessMessage = "Username reset",
-                    Message = "Waiting for result...",
+                    Title = Localizer["Resetting Username"],
+                    SuccessMessage = Localizer["Username reset"],
+                    Message = CommonLocalizer["Waiting for result..."],
                     ProgressTask = StaffService.ResetUsernameAsync(Data.User.Id, reason)
                 };
 
@@ -183,19 +180,19 @@
     private void SetPriorNameHidden(bool hidden)
     {
         AskReason(hidden
-                ? $"Hide prior name of {Data.User.NameAndTag}?"
-                : $"Unhide prior name of {Data.User.NameAndTag}?",
+                ? Localizer["Hide prior name of {0}?", Data.User.NameAndTag]
+                : Localizer["Unhide prior name of {0}?", Data.User.NameAndTag],
             hidden
-                ? "The user's previous username stops being shown to other users."
-                : "The user's previous username becomes visible to other users again.",
-            hidden ? "Hide" : "Unhide", danger: false,
+                ? Localizer["The user's previous username stops being shown to other users."]
+                : Localizer["The user's previous username becomes visible to other users again."],
+            hidden ? Localizer["Hide"] : Localizer["Unhide"], danger: false,
             async reason =>
             {
                 var toastData = new ProgressToastData<TaskResult>()
                 {
-                    Title = "Updating Prior Name Visibility",
-                    SuccessMessage = "Updated",
-                    Message = "Waiting for result...",
+                    Title = Localizer["Updating Prior Name Visibility"],
+                    SuccessMessage = Localizer["Updated"],
+                    Message = CommonLocalizer["Waiting for result..."],
                     ProgressTask = StaffService.SetPriorNameHiddenAsync(Data.User.Id, hidden, reason)
                 };
 
