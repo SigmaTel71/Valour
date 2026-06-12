@@ -1,6 +1,7 @@
 @inherits Modal<ReportDetailsModal.ModalParams>
 @inject StaffService StaffService
 @inject ValourClient Client
+@inject IStringLocalizer<ReportsQueryTable> RQLocalizer
 
 <BasicModalLayout Title="Report Details" Icon="flag-fill" MaxWidth="700px">
     <MainArea>
@@ -17,12 +18,12 @@
                         <span class="value">@Data.Report.TimeCreated.ToString("g")</span>
                     </div>
                     <div class="info-item">
-                        <span class="label">Reason</span>
-                        <span class="value reason-badge @GetReasonClass()">@GetReasonTitle()</span>
+                        <span class="label">@RQLocalizer["Reason"]</span>
+                        <span class="value reason-badge @GetReasonClass()">@RQLocalizer[GetReasonTitle()]</span>
                     </div>
                     <div class="info-item">
-                        <span class="label">Status</span>
-                        <span class="value status-badge @GetStatusClass()">@GetStatusText()</span>
+                        <span class="label">@RQLocalizer["Status"]</span>
+                        <span class="value status-badge @GetStatusClass()">@RQLocalizer[GetStatusText()]</span>
                     </div>
                 </div>
             </div>
@@ -31,11 +32,11 @@
                 <h4>Users</h4>
                 <div class="users-grid">
                     <div class="user-item">
-                        <span class="label">Reporter</span>
+                        <span class="label">@RQLocalizer["Reporter"]</span>
                         <UserInfoMini UserId="@Data.Report.ReportingUserId" />
                     </div>
                     <div class="user-item">
-                        <span class="label">Reported User</span>
+                        <span class="label">@RQLocalizer["Reported User"]</span>
                         @if (Data.Report.ReportedUserId.HasValue)
                         {
                             <UserInfoMini UserId="@Data.Report.ReportedUserId" />
@@ -51,7 +52,7 @@
             @if (!string.IsNullOrWhiteSpace(Data.Report.LongReason))
             {
                 <div class="report-section">
-                    <h4>Description</h4>
+                    <h4>@RQLocalizer["Description"]</h4>
                     <div class="description-box">
                         @Data.Report.LongReason
                     </div>

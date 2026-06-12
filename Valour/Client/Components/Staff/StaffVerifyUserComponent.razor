@@ -1,15 +1,16 @@
 @inject StaffService StaffService
+@inject IStringLocalizer<StaffVerifyUserComponent> Localizer
 
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
 <div class="verify-user-container">
-    <h5>Manual Email Verification</h5>
+    <h5>@Localizer["Manual Email Verification"]</h5>
     <p class="verify-user-help">
-        Enter an email, username, or <code>username#tag</code>.
-        If a username has multiple matches, use <code>username#tag</code>.
+        @((MarkupString)Localizer["Enter an email, username, or <code>username#tag</code>. If a username has multiple matches, use <code>username#tag</code>."].Value)
     </p>
 
     <div class="verify-user-row">
         <input class="form-control"
-               placeholder="user@example.com or SpikeViper#A1B2"
+               placeholder="@Localizer["user@example.com or SpikeViper#A1B2"]"
                @bind-value="_identifier"
                @onkeydown="OnIdentifierKeyDown" />
         <button class="v-btn primary"
@@ -43,7 +44,7 @@
 
         if (string.IsNullOrWhiteSpace(_identifier))
         {
-            _result = TaskResult.FromFailure("Please enter a username, username#tag, or email.");
+            _result = TaskResult.FromFailure(Localizer["Please enter a username, username#tag, or email."]);
             return;
         }
 
@@ -51,9 +52,9 @@
 
         var toastData = new ProgressToastData<TaskResult>()
         {
-            Title = "Manual Verification",
-            Message = "Verifying account...",
-            SuccessMessage = "User verification updated.",
+            Title = Localizer["Manual Verification"],
+            Message = Localizer["Verifying account..."],
+            SuccessMessage = Localizer["User verification updated."],
             ProgressTask = StaffService.VerifyUserAsync(_identifier.Trim())
         };
 
