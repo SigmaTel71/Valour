@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!--  
     Microsoft ResX Schema 
@@ -117,25 +117,113 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Prefer12Hours" xml:space="preserve">
-    <value>12 saatlik</value>
+  <data name="Loading user..." xml:space="preserve">
+    <value>Kullanıcı yükleniyor...</value>
   </data>
-  <data name="Prefer24Hours" xml:space="preserve">
-    <value>24 saatlik</value>
+  <data name="General Settings" xml:space="preserve">
+    <value>Genel Ayarlar</value>
   </data>
-  <data name="PreferAuto" xml:space="preserve">
-    <value>Otomatik</value>
+  <data name="Language &amp; Time" xml:space="preserve">
+    <value>Dil ve Zaman</value>
   </data>
-  <data name="SyncLangBetweenDevices" xml:space="preserve">
-    <value>Cihazlar arasında senkronize et</value>
+  <data name="Manage user interface language and time preferences" xml:space="preserve">
+    <value>Arayüz dilini ve saaty ayarlarını yönetimi</value>
   </data>
-  <data name="SyncLangBetweenDevicesDesc" xml:space="preserve">
-    <value>Dil tercihleri, bu ayar etkinken tüm cihazlarda senkronize edilecektir.</value>
+  <data name="Profile" xml:space="preserve">
+    <value>Profil</value>
   </data>
-  <data name="TimeFormat" xml:space="preserve">
-    <value>Zaman Formatı</value>
+  <data name="Edit your profile, avatar, and appearance" xml:space="preserve">
+    <value>Profilini, avatarını ve görünümünü düzenle</value>
   </data>
-  <data name="SelectLanguage" xml:space="preserve">
-    <value>Dil Seçimi</value>
+  <data name="Friends" xml:space="preserve">
+    <value>Arkadaşlar</value>
+  </data>
+  <data name="Manage your friends and requests" xml:space="preserve">
+    <value>Arkadaş listesini ve arkadaşlık isteklerini yönetimi</value>
+  </data>
+  <data name="Safety" xml:space="preserve">
+    <value>Emniyet</value>
+  </data>
+  <data name="Manage blocks and DM privacy" xml:space="preserve">
+    <value>Bloklama ve DM gizliliği yönetimi</value>
+  </data>
+  <data name="Attachments" xml:space="preserve">
+    <value>Eklentiler</value>
+  </data>
+  <data name="View, search, and delete uploaded attachments" xml:space="preserve">
+    <value>Yüklenen ekleri görüntüleyin, arayın ve silin</value>
+  </data>
+  <data name="Themes" xml:space="preserve">
+    <value>Temalar</value>
+  </data>
+  <data name="Create and install custom themes" xml:space="preserve">
+    <value>Kişisel temalar oluşturulması ve yüklenmesi</value>
+  </data>
+  <data name="Subscriptions" xml:space="preserve">
+    <value>Abonelikler</value>
+  </data>
+  <data name="Upgrade your experience!" xml:space="preserve">
+    <value>Deneyiminizi bir üst seviyeye taşıyın!</value>
+  </data>
+  <data name="Referrals" xml:space="preserve">
+    <value>Yönlendirme</value>
+  </data>
+  <data name="Invite friends and earn rewards" xml:space="preserve">
+    <value>Arkadaşlarını davet et ve ödüller kazan</value>
+  </data>
+  <data name="Notifications" xml:space="preserve">
+    <value>Bildirimler</value>
+  </data>
+  <data name="Manage notification preferences and sound" xml:space="preserve">
+    <value>Bildirim tercihlerini ve ses ayarlarını yönetimi</value>
+  </data>
+  <data name="Device Preferences" xml:space="preserve">
+    <value>Cihaz Tercihleri</value>
+  </data>
+  <data name="Manage device preferences" xml:space="preserve">
+    <value>Cihaz ayarlarını yönetimi</value>
+  </data>
+  <data name="Security" xml:space="preserve">
+    <value>Güvenlik</value>
+  </data>
+  <data name="MFA, password, and active sessions" xml:space="preserve">
+    <value>MFA, şifre ve etkin oturumlar</value>
+  </data>
+  <data name="Log Out" xml:space="preserve">
+    <value>Oturumdan Çık</value>
+  </data>
+  <data name="Developer" xml:space="preserve">
+    <value>Geliştirici</value>
+  </data>
+  <data name="Bots" xml:space="preserve">
+    <value>Botlar</value>
+  </data>
+  <data name="Create and manage bot accounts" xml:space="preserve">
+    <value>Bot hesaplarının oluşturulması ve yönetimi</value>
+  </data>
+  <data name="OAuth Apps" xml:space="preserve">
+    <value>OAuth Uygulamaları</value>
+  </data>
+  <data name="Manage your OAuth applications and API access" xml:space="preserve">
+    <value>OAuth uygulamalarınızı ve API erişiminizi yönetimi</value>
+  </data>
+  <data name="Staff" xml:space="preserve">
+    <value>Yönetim</value>
+    <comment>Basing this of off the Russian translation</comment>
+  </data>
+  <data name="Manage users and reports" xml:space="preserve">
+    <value>Kullanıcı ve şikayet yönetimi</value>
+  </data>
+  <data name="Staff Tools" xml:space="preserve">
+    <value>Yönetim Araçları</value>
+  </data>
+  <data name="Are you sure?" xml:space="preserve">
+    <value>Emin misin?</value>
+  </data>
+  <data name="Yes, log out" xml:space="preserve">
+    <value>Evet, oturumdan çık</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>İptal</value>
   </data>
 </root>
