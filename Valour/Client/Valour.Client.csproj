@@ -81,23 +81,33 @@
 
     <EmbeddedResource Update="Resources\Components\Staff\ReportsQueryTable.ru-RU.resx">
     </EmbeddedResource>
+    <EmbeddedResource Update="Resources\Components\Staff\ReportsQueryTable.tr-TR.resx">
+    </EmbeddedResource>
 
     <EmbeddedResource Update="Resources\Components\Staff\StaffEmailComponent.ru-RU.resx">
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\Components\Staff\StaffEmailComponent.tr-TR.resx">
     </EmbeddedResource>
 
     <EmbeddedResource Update="Resources\Components\Staff\StaffUserQueryTable.ru-RU.resx">
     </EmbeddedResource>
+    <EmbeddedResource Update="Resources\Components\Staff\StaffUserQueryTable.tr-TR.resx">
+    </EmbeddedResource>
 
     <EmbeddedResource Update="Resources\Components\Staff\StaffVerifyUserComponent.ru-RU.resx">
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\Components\Staff\StaffVerifyUserComponent.tr-TR.resx">
     </EmbeddedResource>
 
     <EmbeddedResource Update="Resources\Components\Utility\TabContainerComponent.resx">
     </EmbeddedResource>
-
     <EmbeddedResource Update="Resources\Components\Utility\TabContainerComponent.ru-RU.resx">
       <DependentUpon>TabContainerComponent.resx</DependentUpon>
     </EmbeddedResource>
-    
+    <EmbeddedResource Update="Resources\Components\Utility\TabContainerComponent.tr-TR.resx">
+      <DependentUpon>TabContainerComponent.resx</DependentUpon>
+    </EmbeddedResource>
+
     <EmbeddedResource Update="Resources\ValourApp.ru-RU.resx">
     </EmbeddedResource>
     <EmbeddedResource Update="Resources\ValourApp.tr-TR.resx">
