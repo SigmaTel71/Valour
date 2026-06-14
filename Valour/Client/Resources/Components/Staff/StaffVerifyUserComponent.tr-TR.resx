@@ -121,8 +121,8 @@
     <value>Manuel E-posta Doğrulama</value>
   </data>
   <data name="user@example.com or SpikeViper#A1B2" xml:space="preserve">
-    <value>kullanıcı@örnek.com veya Andre Doruk#SLAY</value>
-    <comment>Im using my name as SigmaTel did it too, probably change it later</comment>
+    <value>user@example.com veya Andre Doruk#SLAY</value>
+    <comment>Im using my name as an example</comment>
   </data>
   <data name="Enter an email, username, or &lt;code&gt;username#tag&lt;/code&gt;. If a username has multiple matches, use &lt;code&gt;username#tag&lt;/code&gt;." xml:space="preserve">
     <value>Bir e-posta adresi, kullanıcı adı veya &lt;code&gt;kullanıcı adı#etiket&lt;/code&gt; girin. Bir kullanıcı adı için birden fazla eşleşme varsa, &lt;code&gt;kullanıcı adı#etiket&lt;/code&gt; kullanın.</value>
