@@ -117,55 +117,60 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ActionDelete" xml:space="preserve">
+  <data name="Delete" xml:space="preserve">
     <value>Sil</value>
   </data>
-  <data name="ActionDisable" xml:space="preserve">
-    <value>Disable</value>
+  <data name="Disable" xml:space="preserve">
+    <value>Devre dışı bırak</value>
   </data>
-  <data name="ActionEnable" xml:space="preserve">
-    <value>Enable</value>
+  <data name="Enable" xml:space="preserve">
+    <value>Etkinleştir</value>
   </data>
   <data name="Actions" xml:space="preserve">
-    <value>Actions</value>
+    <value>Eylemler</value>
   </data>
   <data name="Card" xml:space="preserve">
-    <value>Card</value>
+    <value>Profil kartı</value>
+    <comment>Translating this as "profile card"</comment>
   </data>
-  <data name="DisablingUserSuccessful" xml:space="preserve">
-    <value>User has been disabled</value>
+  <data name="User has been disabled" xml:space="preserve">
+    <value>Kullanıcı devre dışı bırakıldı</value>
   </data>
-  <data name="DisablingUser" xml:space="preserve">
-    <value>Disabling User</value>
+  <data name="Disabling User" xml:space="preserve">
+    <value>Kullanıcıyı Devre Dışı Bırakma</value>
+    <comment>
+</comment>
   </data>
-  <data name="EnablingUser" xml:space="preserve">
-    <value>Enabling User</value>
+  <data name="Enabling User" xml:space="preserve">
+    <value>Kullanıcıyı Etkinleştirme</value>
   </data>
-  <data name="EnablingUserSuccessful" xml:space="preserve">
-    <value>User has been enabled</value>
+  <data name="User has been enabled" xml:space="preserve">
+    <value>Kullanıcı etkinleştirildi</value>
   </data>
   <data name="Name" xml:space="preserve">
     <value>İsim</value>
   </data>
-  <data name="SearchPlaceholder" xml:space="preserve">
-    <value>Search name...</value>
+  <data name="Search name..." xml:space="preserve">
+    <value>İsim ara...</value>
   </data>
-  <data name="ToastProgress" xml:space="preserve">
-    <value>Waiting for result...</value>
+  <data name="Waiting for result..." xml:space="preserve">
+    <value>Sonuç bekleniyor...</value>
   </data>
-  <data name="DeletingUser" xml:space="preserve">
-    <value>Deleting User</value>
+  <data name="Deleting User" xml:space="preserve">
+    <value>Kullanıcı Sil</value>
   </data>
-  <data name="DeletingUserSuccessful" xml:space="preserve">
-    <value>User has been deleted</value>
+  <data name="User has been deleted" xml:space="preserve">
+    <value>Kullanıcı silindi</value>
   </data>
-  <data name="DeleteModalTitle" xml:space="preserve">
-    <value>Hard Delete {0}?</value>
+  <data name="Hard Delete {0}?" xml:space="preserve">
+    <value>{0} kalıcı olarak silmeyi istiyor musun?</value>
+    <comment>Translated this as "Do you want to permanently delete {0}?" also not formal</comment>
   </data>
-  <data name="DeleteModalDesc" xml:space="preserve">
-    <value>This CANNOT be undone. Are you sure you want to delete this user?</value>
+  <data name="This CANNOT be undone. Are you sure you want to delete this user?" xml:space="preserve">
+    <value>Bu işlem GERİ ALINAMAZ. Bu kullanıcıyı silmek istediğinden emin misin?</value>
+    <comment>Didnt translate it as formal</comment>
   </data>
   <data name="Cancel" xml:space="preserve">
-    <value>Cancel</value>
+    <value>İptal</value>
   </data>
 </root>
