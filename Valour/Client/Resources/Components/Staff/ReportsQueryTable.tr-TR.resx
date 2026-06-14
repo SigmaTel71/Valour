@@ -118,87 +118,92 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Actions" xml:space="preserve">
-    <value>Действия</value>
+    <value>Eylemler</value>
   </data>
   <data name="All" xml:space="preserve">
     <value>Hepsi</value>
   </data>
   <data name="All Reasons" xml:space="preserve">
-    <value>Все причины</value>
+    <value>Tüm Nedenler</value>
   </data>
   <data name="Ban Evasion" xml:space="preserve">
-    <value>Обход бана</value>
+    <value>Yasaklanmadan Kaçınma</value>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Описание</value>
+    <value>Açıklama</value>
+    <comment>Translates more as "definition"</comment>
   </data>
   <data name="Details" xml:space="preserve">
-    <value>Подробности</value>
+    <value>Detaylar</value>
   </data>
   <data name="Disable User" xml:space="preserve">
-    <value>Отключить</value>
+    <value>Kullanıcıyı Devre Dışı Bırakma</value>
   </data>
   <data name="Minor Sexual Content" xml:space="preserve">
-    <value>Детская порнография</value>
+    <value>Küçüklerin Cinsel İçeriği</value>
   </data>
   <data name="No Action" xml:space="preserve">
-    <value>Пропустить</value>
+    <value>İşlem yapılmadı</value>
   </data>
   <data name="Non Consensual Images" xml:space="preserve">
-    <value>Фотографии без согласия</value>
+    <value>Rıza Dışı Görüntüler</value>
   </data>
   <data name="Other Issues" xml:space="preserve">
-    <value>Другие проблемы</value>
+    <value>Diğer Sorunlar</value>
   </data>
   <data name="Promoting Illegal Activity" xml:space="preserve">
-    <value>Пропаганда незаконной деятельности</value>
+    <value>Yasa Dışı Faaliyeti Teşviği</value>
   </data>
   <data name="Reason" xml:space="preserve">
-    <value>Причина</value>
+    <value>Neden</value>
+    <comment>Translates more as "Why"</comment>
   </data>
   <data name="Refresh" xml:space="preserve">
-    <value>Обновить</value>
+    <value>Yenile</value>
   </data>
   <data name="Reported User" xml:space="preserve">
-    <value>Жалоба на</value>
+    <value>Şikayet Edilen Kullanıcı</value>
+    <comment>Translates more as "Complained user"</comment>
   </data>
   <data name="Reporter" xml:space="preserve">
-    <value>Жалоба от</value>
+    <value>Şikayet Eden</value>
+    <comment>Translated more as "Complainant"</comment>
   </data>
   <data name="Resolved" xml:space="preserve">
-    <value>Закрыто</value>
+    <value>Çözüldü</value>
   </data>
   <data name="Scam or Fraud" xml:space="preserve">
-    <value>Мошенничество или обман</value>
+    <value>Dolandırıcılık veya Sahtekarlık</value>
   </data>
   <data name="Spam" xml:space="preserve">
-    <value>Спам</value>
+    <value>Spam</value>
+    <comment>Turns out its the same word? "Spam ya da istenmeyen mesaj" - Vikipedia</comment>
   </data>
   <data name="Status" xml:space="preserve">
-    <value>Статус</value>
+    <value>Durum</value>
   </data>
   <data name="Targeted Harassment" xml:space="preserve">
-    <value>Целенаправленное преследование</value>
+    <value>Hedefli Taciz</value>
   </data>
   <data name="Terrorist Content" xml:space="preserve">
-    <value>Терроризм</value>
+    <value>Terör İçeriği</value>
   </data>
   <data name="Threats or Violence" xml:space="preserve">
-    <value>Угрозы или жестокость</value>
+    <value>Tehditler veya Şiddet</value>
   </data>
   <data name="Time" xml:space="preserve">
     <value>Zaman</value>
   </data>
   <data name="Underage User" xml:space="preserve">
-    <value>Обход возрастного ограничения</value>
+    <value>Reşit Olmayan Kullanıcı</value>
   </data>
   <data name="Unknown" xml:space="preserve">
-    <value>Неизвестно</value>
+    <value>Bilinmeyen</value>
   </data>
   <data name="Unresolved" xml:space="preserve">
-    <value>Открыто</value>
+    <value>Çözülmedi</value>
   </data>
   <data name="Valour Bug Abuse" xml:space="preserve">
-    <value>Эксплуатация багов Valour</value>
+    <value>Valour Hata İstismarı</value>
   </data>
 </root>
