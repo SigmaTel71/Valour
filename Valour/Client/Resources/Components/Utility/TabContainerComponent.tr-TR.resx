@@ -118,8 +118,8 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="StaffToolsTabMassEmail" xml:space="preserve">
-    <value>Kullanıcılara E-posta Gönder</value>
-    <comment>I translated it as "Send e-mail to users"</comment>
+    <value>E-posta Gönder</value>
+    <comment>I translated it as "Send e-mail" removed "to users" as its too long for the tab</comment>
   </data>
   <data name="StaffToolsTabMembers" xml:space="preserve">
     <value>Üyeler</value>
