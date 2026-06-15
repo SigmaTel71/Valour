@@ -209,7 +209,7 @@
     <value>Valour Hata İstismarı</value>
   </data>
   <data name="Resolving Report" xml:space="preserve">
-    <value>Şikayet Sonuçlandırılıyor</value>
+    <value>Şikayet Çözülüyor</value>
     <comment>"Complaint Is Being Resolved"</comment>
   </data>
 </root>
