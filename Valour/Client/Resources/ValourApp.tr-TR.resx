@@ -147,4 +147,10 @@
   <data name="Waiting for result..." xml:space="preserve">
     <value>Sonuç bekleniyor..</value>
   </data>
+  <data name="Error" xml:space="preserve">
+    <value>Hata</value>
+  </data>
+  <data name="Details" xml:space="preserve">
+    <value>Detaylar</value>
+  </data>
 </root>
