@@ -80,6 +80,8 @@
     </EmbeddedResource>
     <EmbeddedResource Update="Resources\Components\Staff\ReportDetailsModal.ru-RU.resx">
     </EmbeddedResource>
+    <EmbeddedResource Update="Resources\Components\Staff\ReportDetailsModal.tr-TR.resx">
+    </EmbeddedResource>
     <EmbeddedResource Update="Resources\Components\Staff\ReportsQueryTable.ru-RU.resx">
     </EmbeddedResource>
     <EmbeddedResource Update="Resources\Components\Staff\ReportsQueryTable.tr-TR.resx">
