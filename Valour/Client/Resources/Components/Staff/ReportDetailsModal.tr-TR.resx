@@ -117,98 +117,126 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Actions" xml:space="preserve">
-    <value>Eylemler</value>
+  <data name="Content Removed" xml:space="preserve">
+    <value>İçerik Kaldırıldı</value>
   </data>
-  <data name="All" xml:space="preserve">
-    <value>Hepsi</value>
+  <data name="Created" xml:space="preserve">
+    <value>Oluşturuldu</value>
   </data>
-  <data name="All Reasons" xml:space="preserve">
-    <value>Tüm Nedenler</value>
+  <data name="Duplicate Report" xml:space="preserve">
+    <value>Kopya Şikayet</value>
+    <comment>if you see "report" know its translated as "complaint". Translated as "Copy Complaint"</comment>
   </data>
-  <data name="Ban Evasion" xml:space="preserve">
-    <value>Yasaklanmadan Kaçınma</value>
+  <data name="Loading message..." xml:space="preserve">
+    <value>Mesaj yükleniyor...</value>
   </data>
-  <data name="Description" xml:space="preserve">
-    <value>Açıklama</value>
-    <comment>Translates more as "definition"</comment>
+  <data name="Loading thread content..." xml:space="preserve">
+    <value>Konu içeriği yükleniyor...</value>
   </data>
-  <data name="Details" xml:space="preserve">
-    <value>Detaylar</value>
+  <data name="Message could not be loaded (ID: {0})" xml:space="preserve">
+    <value>Mesaj yüklenemedi (ID: {0})</value>
   </data>
-  <data name="Disable User" xml:space="preserve">
-    <value>Kullanıcıyı Devre Dışı Bırakma</value>
+  <data name="No Action Needed" xml:space="preserve">
+    <value>Eylem Gerekmiyor</value>
   </data>
-  <data name="Minor Sexual Content" xml:space="preserve">
-    <value>Küçüklerin Cinsel İçeriği</value>
+  <data name="Quick Actions" xml:space="preserve">
+    <value>Hızlı İşlemler</value>
   </data>
-  <data name="No Action" xml:space="preserve">
-    <value>İşlem yapılmadı</value>
+  <data name="Report Details" xml:space="preserve">
+    <value>Şikayet Detayları</value>
   </data>
-  <data name="Non Consensual Images" xml:space="preserve">
-    <value>Rıza Dışı Görüntüler</value>
+  <data name="Report ID" xml:space="preserve">
+    <value>Şikayet Kimliği</value>
   </data>
-  <data name="Other Issues" xml:space="preserve">
-    <value>Diğer Sorunlar</value>
+  <data name="Report Information" xml:space="preserve">
+    <value>Şikayet Bilgisi</value>
   </data>
-  <data name="Promoting Illegal Activity" xml:space="preserve">
-    <value>Yasa Dışı Faaliyeti Teşviği</value>
+  <data name="Reported Message" xml:space="preserve">
+    <value>Bildirilen Mesaj</value>
   </data>
-  <data name="Reason" xml:space="preserve">
-    <value>Neden</value>
-    <comment>Translates more as "Why"</comment>
+  <data name="Reported Thread" xml:space="preserve">
+    <value>Bildirilen Konu</value>
   </data>
-  <data name="Report marked as No Action Needed" xml:space="preserve">
-    <value>Şikayet "Eylem Gerekmiyor" olarak işaretlendi</value>
-    <comment>Translates more as "The complaint has been marked as "No Action Needed""</comment>
+  <data name="Reported Thread Comment" xml:space="preserve">
+    <value>Bildirilen Konu Yorumu</value>
   </data>
-  <data name="Reported User" xml:space="preserve">
-    <value>Şikayet Edilen Kullanıcı</value>
-    <comment>Translates more as "Complained user"</comment>
+  <data name="Resolution" xml:space="preserve">
+    <value>Çözüm</value>
   </data>
-  <data name="Reporter" xml:space="preserve">
-    <value>Şikayet Eden</value>
-    <comment>Translated more as "Complainant"</comment>
+  <data name="Resolve Report" xml:space="preserve">
+    <value>Şikayeti Çöz</value>
   </data>
-  <data name="Resolved" xml:space="preserve">
-    <value>Çözüldü</value>
+  <data name="Resolved At" xml:space="preserve">
+    <value>Çözülme Zamanı</value>
   </data>
-  <data name="Scam or Fraud" xml:space="preserve">
-    <value>Dolandırıcılık veya Sahtekarlık</value>
+  <data name="Resolved By" xml:space="preserve">
+    <value>Çözen Kişi</value>
   </data>
-  <data name="Spam" xml:space="preserve">
-    <value>Spam</value>
-    <comment>Turns out its the same word? "Spam ya da istenmeyen mesaj" - Vikipedia</comment>
+  <data name="Staff Notes" xml:space="preserve">
+    <value>Yönetim Notları</value>
   </data>
-  <data name="Status" xml:space="preserve">
-    <value>Durum</value>
+  <data name="This comment was deleted." xml:space="preserve">
+    <value>Bu yorum silindi.</value>
   </data>
-  <data name="Targeted Harassment" xml:space="preserve">
-    <value>Hedefli Taciz</value>
+  <data name="Thread content could not be loaded (ID: {0})" xml:space="preserve">
+    <value>Konu içeriği yüklenemedi (ID: {0})</value>
   </data>
-  <data name="Terrorist Content" xml:space="preserve">
-    <value>Terör İçeriği</value>
+  <data name="User Deleted" xml:space="preserve">
+    <value>Kullanıcı Silindi</value>
   </data>
-  <data name="Threats or Violence" xml:space="preserve">
-    <value>Tehditler veya Şiddet</value>
+  <data name="User Disabled" xml:space="preserve">
+    <value>Kullanıcı Devre Dışı Bırakıldı</value>
   </data>
-  <data name="Time" xml:space="preserve">
-    <value>Zaman</value>
+  <data name="Users" xml:space="preserve">
+    <value>Kullanıcılar</value>
   </data>
-  <data name="Underage User" xml:space="preserve">
-    <value>Reşit Olmayan Kullanıcı</value>
+  <data name="Warning Issued" xml:space="preserve">
+    <value>Uyarı Verildi</value>
   </data>
-  <data name="Unknown" xml:space="preserve">
-    <value>Bilinmeyen</value>
+  <data name="Add internal notes about this report..." xml:space="preserve">
+    <value>Şikayet hakkında dahili notlar ekle...</value>
+  </data>
+  <data name="Resolving..." xml:space="preserve">
+    <value>Çözülüyor...</value>
   </data>
   <data name="Unresolved" xml:space="preserve">
     <value>Çözülmedi</value>
   </data>
-  <data name="Valour Bug Abuse" xml:space="preserve">
-    <value>Valour Hata İstismarı</value>
+  <data name="No Action" xml:space="preserve">
+    <value>Eylem Yok</value>
   </data>
-  <data name="Resolving Report" xml:space="preserve">
-    <value>Şikayet Çözülüyor</value>
-    <comment>"Complaint Is Being Resolved"</comment>
+  <data name="Warning" xml:space="preserve">
+    <value>Uyarı</value>
+  </data>
+  <data name="Disabled" xml:space="preserve">
+    <value>Devre Dışı</value>
+  </data>
+  <data name="Removed" xml:space="preserve">
+    <value>Kaldırıldı</value>
+  </data>
+  <data name="Duplicate" xml:space="preserve">
+    <value>Kopya</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>Bilinmeyen</value>
+  </data>
+  <data name="Banned" xml:space="preserve">
+    <value>Yasaklandı</value>
+  </data>
+  <data name="Kicked" xml:space="preserve">
+    <value>Atıldı</value>
+    <comment>translated more as "thrown"</comment>
+  </data>
+  <data name="Failed to disable user: {0}" xml:space="preserve">
+    <value>Kullanıcı devre dışı bırakılamadı: {0}</value>
+  </data>
+  <data name="Failed to resolve report: {0}" xml:space="preserve">
+    <value>Şikayet çözülemedi: {0}</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>Başarılı</value>
+  </data>
+  <data name="Report resolved successfully" xml:space="preserve">
+    <value>Şikayet başarıyla çözüldü</value>
   </data>
 </root>
