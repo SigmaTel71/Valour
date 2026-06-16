@@ -153,8 +153,6 @@
   </data>
   <data name="Reported Message" xml:space="preserve">
     <value>Bildirilen Mesaj</value>
-    <comment>
-</comment>
   </data>
   <data name="Reported Thread" xml:space="preserve">
     <value>Bildirilen Konu</value>
