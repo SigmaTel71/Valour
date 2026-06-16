@@ -160,8 +160,7 @@
   </data>
   <data name="Report marked as No Action Needed" xml:space="preserve">
     <value>Şikayet “İşlem Gerekmiyor” olarak işaretlendi</value>
-    <comment>Translates more as "The complaint has been marked as “No Action Needed”"
-</comment>
+    <comment>Translates more as "The complaint has been marked as “No Action Needed”"</comment>
   </data>
   <data name="Reported User" xml:space="preserve">
     <value>Şikayet Edilen Kullanıcı</value>
