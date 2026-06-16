@@ -159,8 +159,8 @@
     <comment>Translates more as "Why"</comment>
   </data>
   <data name="Report marked as No Action Needed" xml:space="preserve">
-    <value>Şikayet “İşlem Gerekmiyor” olarak işaretlendi</value>
-    <comment>Translates more as "The complaint has been marked as “No Action Needed”"</comment>
+    <value>Şikayet "Eylem Gerekmiyor" olarak işaretlendi</value>
+    <comment>Translates more as "The complaint has been marked as "No Action Needed""</comment>
   </data>
   <data name="Reported User" xml:space="preserve">
     <value>Şikayet Edilen Kullanıcı</value>
@@ -208,7 +208,7 @@
     <value>Valour Hata İstismarı</value>
   </data>
   <data name="Resolving Report" xml:space="preserve">
-    <value>Şikayet Çözülüyor</value>
+    <value>Şikayet Çözülüyor</value>
     <comment>"Complaint Is Being Resolved"</comment>
   </data>
 </root>
