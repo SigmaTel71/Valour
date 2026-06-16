@@ -139,4 +139,7 @@
   <data name="User verification updated." xml:space="preserve">
     <value>Kullanıcı doğrulaması güncellendi.</value>
   </data>
+  <data name="Verify" xml:space="preserve">
+    <value>Doğrula</value>
+  </data>
 </root>
