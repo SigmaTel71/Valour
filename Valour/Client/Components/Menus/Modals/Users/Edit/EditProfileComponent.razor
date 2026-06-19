@@ -1,16 +1,20 @@
 @using System.Net.Http.Headers
 @using Valour.Shared.Extensions
+@using Valour.Shared.Models
 @using System.IO
 @inject HttpClient Http
 @inject NavigationManager NavManager
 @inject ValourClient Client
 @inject AuthService AuthService
+@inject IStringLocalizer<EditProfileComponent> Localizer
+@inject IStringLocalizer<ValourApp> CommonLocalizer
 
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
 @if (_profile is null)
 {
     <div class="editor-section">
-        <h4>Error loading profile.</h4>
-        <p>Try again later?</p>
+        <h4>@Localizer["Error loading profile."]</h4>
+        <p>@Localizer["Try again later?"]</p>
     </div>
     return;
 }
@@ -21,7 +25,7 @@
     <div class="editor-section">
         <h3 class="editor-section-title">
             <i class="bi bi-image"></i>
-            Avatar
+            @Localizer["Avatar"]
         </h3>
 
         <div class="avatar-container">
@@ -29,9 +33,9 @@
             <div class="avatar-info">
                 <label for="avatar-upload" class="v-btn secondary">
                     <i class="bi bi-upload"></i>
-                    Upload Image
+                    @Localizer["Upload Image"]
                 </label>
-                <p class="helper-text">PNG, JPG, GIF, or WEBP. Square images look best.</p>
+                <p class="helper-text">@Localizer["PNG, JPG, GIF, or WEBP. Square images look best."]</p>
                 <ResultLabel Result="@_pfpChangeResult" />
             </div>
             <div style="display:none">
@@ -44,7 +48,7 @@
     <div class="editor-section">
         <h3 class="editor-section-title">
             <i class="bi bi-pencil-square"></i>
-            Profile Details
+            @Localizer["Profile Details"]
         </h3>
 
         <div class="preview">
@@ -52,41 +56,41 @@
         </div>
 
         <div class="form-group">
-            <label>Status Message</label>
+            <label>@Localizer["Status Message"]</label>
             <div class="input-group">
-                <input class="v-input" placeholder="Choose a status..." @bind="_status" />
-                <VButton Variant="primary" OnClick="@OnStatusApply">Apply</VButton>
+                <input class="v-input" placeholder="@Localizer["Choose a status..."]" @bind="_status" />
+                <VButton Variant="primary" OnClick="@OnStatusApply">@CommonLocalizer["Apply"]</VButton>
             </div>
             <ResultLabel Result="@_statusChangeResult" />
         </div>
 
         <div class="form-group">
-            <label>Status Code</label>
+            <label>@Localizer["Status Code"]</label>
             <div class="input-group">
                 <InputSelect class="v-input" @bind-Value="_statusCode">
-                    <option value="0">Automatic</option>
-                    <option value="4">Online</option>
-                    <option value="2">Away</option>
-                    <option value="3">Do Not Disturb</option>
-                    <option value="1">Offline</option>
+                    <option value="@UserState.Automatic.Value">@CommonLocalizer[UserState.Automatic.Name]</option>
+                    <option value="@UserState.Online.Value">@CommonLocalizer[UserState.Online.Name]</option>
+                    <option value="@UserState.Away.Value">@CommonLocalizer[UserState.Away.Name]</option>
+                    <option value="@UserState.DoNotDisturb.Value">@CommonLocalizer[UserState.DoNotDisturb.Name]</option>
+                    <option value="@UserState.Offline.Value">@CommonLocalizer[UserState.Offline.Name]</option>
                 </InputSelect>
-                <VButton Variant="primary" OnClick="@OnStatusCodeApply">Apply</VButton>
+                <VButton Variant="primary" OnClick="@OnStatusCodeApply">@CommonLocalizer["Apply"]</VButton>
             </div>
             <ResultLabel Result="@_statusCodeChangeResult" />
         </div>
 
         <div class="form-group">
-            <label>Headline</label>
-            <input class="v-input" placeholder="A short blurb" @bind="@_profile.Headline" />
+            <label>@Localizer["Headline"]</label>
+            <input class="v-input" placeholder="@Localizer["A short blurb"]" @bind="@_profile.Headline" />
         </div>
 
         <div class="form-group">
-            <label>Bio</label>
-            <textarea class="v-input" rows="4" placeholder="A little bit about me..." @bind="@_profile.Bio"></textarea>
+            <label>@Localizer["Bio"]</label>
+            <textarea class="v-input" rows="4" placeholder="@Localizer["A little bit about me..."]" @bind="@_profile.Bio"></textarea>
         </div>
 
         <div class="actions">
-            <VButton Variant="primary" OnClick="@OnClickSaveAsync">Save Changes</VButton>
+            <VButton Variant="primary" OnClick="@OnClickSaveAsync">@CommonLocalizer["Save Changes"]</VButton>
         </div>
 
         <ResultLabel Result="@_result" />
@@ -98,36 +102,36 @@
         <div class="editor-section">
             <h3 class="editor-section-title">
                 <i class="bi bi-star-fill"></i>
-                Stargazer Badge
+                @Localizer["Stargazer Badge"]
             </h3>
 
             <div class="star-preview">
                 <StarBadge UserId="Client.Me.Id" Color1="@_starPreviewColor1" Color2="@_starPreviewColor2" />
-                <span>Your Stargazer badge</span>
+                <span>@Localizer["Your Stargazer badge"]</span>
             </div>
 
             @if (Client.Me.HasStargazerPro)
             {
                 <div class="color-pickers">
                     <div class="color-picker-item">
-                        <span class="v-span">Gradient Start</span>
+                        <span class="v-span">@Localizer["Gradient Start"]</span>
                         <ColorPickerComponent StartColor="@_starPreviewColor1" OnColorChange="@(async (color) => { _starColor1 = color; _starPreviewColor1 = color; StateHasChanged(); })" />
                     </div>
                     <div class="color-picker-item">
-                        <span class="v-span">Gradient End</span>
+                        <span class="v-span">@Localizer["Gradient End"]</span>
                         <ColorPickerComponent StartColor="@_starPreviewColor2" OnColorChange="@(async (color) => { _starColor2 = color; _starPreviewColor2 = color; StateHasChanged(); })" />
                     </div>
                 </div>
 
                 <div class="actions">
-                    <VButton Variant="primary" OnClick="@OnSaveStarColors">Save Star Colors</VButton>
-                    <VButton Variant="secondary" OnClick="@OnResetStarColors">Reset to Default</VButton>
+                    <VButton Variant="primary" OnClick="@OnSaveStarColors">@Localizer["Save Star Colors"]</VButton>
+                    <VButton Variant="secondary" OnClick="@OnResetStarColors">@Localizer["Reset to Default"]</VButton>
                 </div>
                 <ResultLabel Result="@_starColorResult" />
             }
             else
             {
-                <p class="helper-text">Upgrade to Stargazer Pro to customize your star colors.</p>
+                <p class="helper-text">@Localizer["Upgrade to Stargazer Pro to customize your star colors."]</p>
             }
         </div>
     }
@@ -136,46 +140,46 @@
     <div class="editor-section">
         <h3 class="editor-section-title">
             <i class="bi bi-palette"></i>
-            Appearance
+            @Localizer["Appearance"]
         </h3>
 
         @if (Client.Me.Subscription is null)
         {
             <div class="toggle-item">
                 <div class="toggle-header">
-                    <span class="toggle-title">Gradient Borders</span>
+                    <span class="toggle-title">@Localizer["Gradient Borders"]</span>
                     <label class="switch">
                         <input type="checkbox" disabled>
                         <span class="slider round"></span>
                     </label>
                 </div>
-                <p class="toggle-description">You need a Stargazer Plus subscription to use this feature.</p>
+                <p class="toggle-description">@Localizer["You need a Stargazer Plus subscription to use this feature."]</p>
             </div>
         }
         else
         {
             <div class="toggle-item">
                 <div class="toggle-header">
-                    <span class="toggle-title">Gradient Borders</span>
+                    <span class="toggle-title">@Localizer["Gradient Borders"]</span>
                     <label class="switch">
                         <input type="checkbox" @onclick="OnGradientClick" checked="@_isGradientEnabled" disabled="@_isGradientBlocked">
                         <span class="slider round"></span>
                     </label>
                 </div>
-                <p class="toggle-description">Use three colors in a gradient as the border.</p>
+                <p class="toggle-description">@Localizer["Use three colors in a gradient as the border."]</p>
 
                 @if (_isGradientEnabled)
                 {
                     <div class="toggle-content">
                         <div class="toggle-item">
                             <div class="toggle-header">
-                                <span class="toggle-title">Animate Gradient</span>
+                                <span class="toggle-title">@Localizer["Animate Gradient"]</span>
                                 <label class="switch">
                                     <input type="checkbox" @onclick="OnAnimClick" checked="@_isAnimEnabled" disabled="@_isAnimBlocked">
                                     <span class="slider round"></span>
                                 </label>
                             </div>
-                            <p class="toggle-description">Animate the gradient border.</p>
+                            <p class="toggle-description">@Localizer["Animate the gradient border."]</p>
                         </div>
                     </div>
                 }
@@ -186,37 +190,37 @@
             @if (Client.Me.Subscription != null && _isGradientEnabled)
             {
                 <div class="color-picker-item">
-                    <span class="v-span">Primary color</span>
+                    <span class="v-span">@Localizer["Primary color"]</span>
                     <ColorPickerComponent StartColor="@_profile.PrimaryColor" OnColorChange="@(async (color) => { _profile.PrimaryColor = color; StateHasChanged(); })"></ColorPickerComponent>
                 </div>
                 <div class="color-picker-item">
-                    <span class="v-span">Secondary color</span>
+                    <span class="v-span">@Localizer["Secondary color"]</span>
                     <ColorPickerComponent StartColor="@_profile.SecondaryColor" OnColorChange="@(async (color) => { _profile.SecondaryColor = color; StateHasChanged(); })"></ColorPickerComponent>
                 </div>
                 <div class="color-picker-item">
-                    <span class="v-span">Tertiary color</span>
+                    <span class="v-span">@Localizer["Tertiary color"]</span>
                     <ColorPickerComponent StartColor="@_profile.TertiaryColor" OnColorChange="@(async (color) => { _profile.TertiaryColor = color; StateHasChanged(); })"></ColorPickerComponent>
                 </div>
             }
             else
             {
                 <div class="color-picker-item">
-                    <span class="v-span">Border color</span>
+                    <span class="v-span">@Localizer["Border color"]</span>
                     <ColorPickerComponent StartColor="@_profile.BorderColor" OnColorChange="@(async (color) => { _profile.BorderColor = color; StateHasChanged(); })"></ColorPickerComponent>
                 </div>
             }
             <div class="color-picker-item">
-                <span class="v-span">Glow color</span>
+                <span class="v-span">@Localizer["Glow color"]</span>
                 <ColorPickerComponent StartColor="@_profile.GlowColor" OnColorChange="@(async (color) => { _profile.GlowColor = color; StateHasChanged(); })"></ColorPickerComponent>
             </div>
             <div class="color-picker-item">
-                <span class="v-span">Text color</span>
+                <span class="v-span">@Localizer["Text color"]</span>
                 <ColorPickerComponent StartColor="@_profile.TextColor" OnColorChange="@(async (color) => { _profile.TextColor = color; StateHasChanged(); })"></ColorPickerComponent>
             </div>
         </div>
 
         <div class="actions">
-            <VButton Variant="primary" OnClick="@OnClickSaveAsync">Save Changes</VButton>
+            <VButton Variant="primary" OnClick="@OnClickSaveAsync">@CommonLocalizer["Save Changes"]</VButton>
         </div>
 
         <ResultLabel Result="@_result" />
@@ -226,42 +230,42 @@
     <div class="editor-section">
         <h3 class="editor-section-title">
             <i class="bi bi-image"></i>
-            Background Image
+            @Localizer["Background Image"]
         </h3>
 
         @if (Client.Me.Subscription is null)
         {
             <div class="toggle-item">
                 <div class="toggle-header">
-                    <span class="toggle-title">Custom Background Image</span>
+                    <span class="toggle-title">@Localizer["Custom Background Image"]</span>
                     <label class="switch">
                         <input type="checkbox" disabled>
                         <span class="slider round"></span>
                     </label>
                 </div>
-                <p class="toggle-description">You need a Stargazer Plus subscription to use this feature.</p>
+                <p class="toggle-description">@Localizer["You need a Stargazer Plus subscription to use this feature."]</p>
             </div>
         }
         else
         {
             <div class="toggle-item">
                 <div class="toggle-header">
-                    <span class="toggle-title">Custom Background Image</span>
+                    <span class="toggle-title">@Localizer["Custom Background Image"]</span>
                     <label class="switch">
                         <input type="checkbox" checked="@_isCustomBackgroundEnabled" @onclick="OnCustomBackgroundClick">
                         <span class="slider round"></span>
                     </label>
                 </div>
-                <p class="toggle-description">Choose a custom (safe for work) 300x400 image as your background!</p>
+                <p class="toggle-description">@Localizer["Choose a custom (safe for work) 300x400 image as your background!"]</p>
 
                 @if (_isCustomBackgroundEnabled)
                 {
                     <div class="toggle-content custom-file-input">
                         <label for="bg-upload" class="v-btn secondary">
                             <i class="bi bi-upload"></i>
-                            Upload Background
+                            @Localizer["Upload Background"]
                         </label>
-                        <p class="helper-text">PNG, JPG, or GIF. Up to 10mb.</p>
+                        <p class="helper-text">@Localizer["PNG, JPG, or GIF. Up to 10mb."]</p>
                         <div style="display:none">
                             <InputFile OnChange="LoadBackgroundImage" AdditionalAttributes="@_bgInputAttributes"></InputFile>
                         </div>
@@ -277,24 +281,24 @@
     <div class="editor-section">
         <h3 class="editor-section-title">
             <i class="bi bi-person-gear"></i>
-            Account
+            @Localizer["Account"]
         </h3>
 
         <div class="form-group">
-            <label>Tag</label>
+            <label>@Localizer["Tag"]</label>
             <div class="input-group">
-                <input class="v-input" placeholder="Tag" @bind="@_tag" maxlength="4" disabled="@(Client.Me.Subscription is null)" />
-                <VButton Variant="primary" OnClick="@OnTagApply" Disabled="@(Client.Me.Subscription is null)">Apply</VButton>
+                <input class="v-input" placeholder="@Localizer["Tag"]" @bind="@_tag" maxlength="4" disabled="@(Client.Me.Subscription is null)" />
+                <VButton Variant="primary" OnClick="@OnTagApply" Disabled="@(Client.Me.Subscription is null)">@CommonLocalizer["Apply"]</VButton>
             </div>
             @if (Client.Me.Subscription is null) {
-                <p class="helper-text">You need Stargazer to change your tag.</p>
+                <p class="helper-text">@Localizer["You need Stargazer to change your tag."]</p>
             }
             <ResultLabel Result="@_tagChangeResult" />
         </div>
 
         <div class="actions">
-            <VButton Variant="secondary" OnClick="@OnClickChangeUsername">Change Username</VButton>
-            <VButton Variant="danger" OnClick="@OnClickDeleteAccount">Delete Account</VButton>
+            <VButton Variant="secondary" OnClick="@OnClickChangeUsername">@Localizer["Change Username"]</VButton>
+            <VButton Variant="danger" OnClick="@OnClickDeleteAccount">@Localizer["Delete Account"]</VButton>
         </div>
     </div>
 
@@ -303,7 +307,7 @@
         <div class="editor-section">
             <h3 class="editor-section-title">
                 <i class="bi bi-eye"></i>
-                Preview
+                @Localizer["Preview"]
             </h3>
 
             <ProfileCard
@@ -422,7 +426,7 @@
     {
         if (_tag.Length != 4)
         {
-            _tagChangeResult = new TaskResult(false, "Tag must be 4 characters long.");
+            _tagChangeResult = new TaskResult(false, Localizer["Tag must be 4 characters long."]);
             StateHasChanged();
             return;
         }
@@ -431,7 +435,7 @@
         {
             if (!char.IsLetterOrDigit(c))
             {
-                _tagChangeResult = new TaskResult(false, "Tag must be alphanumeric.");
+                _tagChangeResult = new TaskResult(false, Localizer["Tag must be alphanumeric."]);
                 StateHasChanged();
                 return;
             }
@@ -463,7 +467,7 @@
 
         if (file.Size > 20971520)
         {
-            _pfpChangeResult = new TaskResult(false, "Max profile image size is 20mb.");
+            _pfpChangeResult = new TaskResult(false, Localizer["Max profile image size is 20mb."]);
             StateHasChanged();
             return;
         }
@@ -626,14 +630,14 @@
 
         if (file == null)
         {
-            _result = new TaskResult(false, "Could not load file as an image.");
+            _result = new TaskResult(false, Localizer["Could not load file as an image."]);
             StateHasChanged();
             return;
         }
 
         if (file.Size > 10485760)
         {
-            _result = new TaskResult(false, "Max background image size is 10mb.");
+            _result = new TaskResult(false, Localizer["Max background image size is 10mb."]);
             StateHasChanged();
             return;
         }
