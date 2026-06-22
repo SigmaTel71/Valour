@@ -1,25 +1,28 @@
 @inherits Modal<DeleteAccountModal.ModalParams>
 @inject NavigationManager NavManager
 @inject ValourClient Client
+@inject IStringLocalizer<DeleteAccountModal> Localizer
+@inject IStringLocalizer<ValourApp> CommonLocalizer
 
-<BasicModalLayout Title="Delete Account" Icon="trash-fill" MaxWidth="500px">
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
+<BasicModalLayout Title="@Localizer["Delete Account"]" Icon="trash-fill" MaxWidth="500px">
     <MainArea>
-        <p>This is a permanent action. You will lose all your data and will not be able to recover it, including eco balances and items.</p>
+        <p>@Localizer["This is a permanent action. You will lose all your data and will not be able to recover it, including eco balances and items."]</p>
         
         <div class="form-group">
-            <label>Password</label>
+            <label>@Localizer["Password"]</label>
             <input id="password-input" type="password" autocomplete="current-password" class="form-control" @bind-value="@_password" />
         </div>
         
         @if (!string.IsNullOrWhiteSpace(_errorSpan))
         {
-            <span id="password-span" class="text-danger">@_errorSpan (For help contact support@valour.gg)</span>
+            <span id="password-span" class="text-danger">@_errorSpan (@Localizer["For help contact support@valour.gg"])</span>
         }
     </MainArea>
     <ButtonArea>
         <div class="basic-modal-buttons">
-            <button @onclick="@OnCancel" class="v-btn">Cancel</button>
-            <button @onclick="@OnConfirm" class="v-btn danger">Confirm</button>
+            <button @onclick="@OnCancel" class="v-btn">@CommonLocalizer["Cancel"]</button>
+            <button @onclick="@OnConfirm" class="v-btn danger">@CommonLocalizer["Confirm"]</button>
         </div>
     </ButtonArea>
 </BasicModalLayout>
@@ -40,7 +43,7 @@
 		}
 		else
 		{
-			_errorSpan = "An error occured. Check your password or contact support@valour.gg";
+			_errorSpan = Localizer["An error occured. Check your password or contact support@valour.gg"];
 		}
 	}
 
