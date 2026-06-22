@@ -1,7 +1,9 @@
 @inject ValourClient Client
 @inject FriendService FriendService
 @inject ChannelService ChannelService
+@inject IStringLocalizer<ValourApp> CommonLocalizer
 
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
 <div id="@Id" class="card-wrapper" style="@CardStyle">
     <div class="card-glow"></div>
     <div
@@ -21,7 +23,7 @@
                     <div class="hero-topline">
                         <div class="presence-pill @_statusClass">
                             <span class="presence-dot"></span>
-                            <span>@_presenceName</span>
+                            <span>@CommonLocalizer[_presenceName]</span>
                         </div>
 
                         @if (!string.IsNullOrWhiteSpace(_lastSeenText))
