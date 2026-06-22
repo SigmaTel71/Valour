@@ -1,28 +1,30 @@
 @inject ValourClient Client
+@inject IStringLocalizer<BadgeOption> BadgeLocalizer
+@inject IStringLocalizer<EditBadgesComponent> Localizer
+@inject IStringLocalizer<ValourApp> CommonLocalizer
 
 <div class="badge-settings-page">
     <div class="editor-section">
         <h3 class="editor-section-title">
             <i class="bi bi-patch-check-fill"></i>
-            Badge visibility
+            @Localizer["Badge visibility"]
         </h3>
         <p class="section-description">
-            Choose which earned badges appear beside your avatar and on your profile.
-            Hidden badges remain attached to your account and can be shown again at any time.
+            @Localizer["Choose which earned badges appear beside your avatar and on your profile. Hidden badges remain attached to your account and can be shown again at any time."]
         </p>
 
         @if (_badges.Count == 0)
         {
             <div class="badge-empty-state">
                 <i class="bi bi-award"></i>
-                <span>You do not have any configurable badges yet.</span>
+                <span>@Localizer["You do not have any configurable badges yet."]</span>
             </div>
         }
         else
         {
             <div class="badge-preview" aria-label="Visible badge preview">
                 <div>
-                    <span class="preview-label">Preview</span>
+                    <span class="preview-label">@CommonLocalizer["Preview"]</span>
                     <strong>@Client.Me.Name</strong>
                 </div>
                 <UserBadges User="@Client.Me" />
@@ -37,8 +39,8 @@
                             <i class="bi @badge.Icon" aria-hidden="true"></i>
                         </span>
                         <div class="badge-copy">
-                            <span class="badge-title">@badge.Name</span>
-                            <span class="badge-description">@badge.Description</span>
+                            <span class="badge-title">@BadgeLocalizer[badge.Name]</span>
+                            <span class="badge-description">@BadgeLocalizer[badge.Description]</span>
                         </div>
                         <label class="switch" @key="@(badge.Badge.ToString() + ":" + _toggleRenderKey)">
                             <input type="checkbox"
