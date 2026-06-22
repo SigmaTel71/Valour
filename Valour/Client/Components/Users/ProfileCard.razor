@@ -3,7 +3,11 @@
 @inject FriendService FriendService
 @inject ChannelService ChannelService
 @inject ContextMenuService ContextMenuService
+@inject IStringLocalizer<ProfileCard> Localizer
+@inject IStringLocalizer<ValourApp> CommonLocalizer
+@using Humanizer
 
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
 <div id="@Id" class="card-wrapper" style="@CardStyle">
     @if (HasGlow)
     {
@@ -32,7 +36,7 @@
                 <section class="hero-section">
                     <div class="hero-topline">
                         <div class="avatar-frame">
-                            <img class="pfp" alt="@_displayName's profile picture" src="@_pfpUrl" @onerror="OnPfpError"/>
+                            <img class="pfp" alt="@Localizer["{0}'s profile picture", _displayName]" src="@_pfpUrl" @onerror="OnPfpError"/>
                             <span class="presence-dot @_statusClass" role="img" aria-label="@_presenceName" title="@_presenceName"></span>
                         </div>
 
@@ -77,7 +81,7 @@
                             @if (!string.IsNullOrWhiteSpace(User?.PriorName))
                             {
                                 <span class="separator" aria-hidden="true">&middot;</span>
-                                <span>formerly @User.PriorName</span>
+                                <span>@Localizer["Formerly {0}", User.PriorName]</span>
                             }
                         </p>
 
@@ -249,6 +253,8 @@
     private bool HasBio => !string.IsNullOrWhiteSpace(Profile?.Bio);
     private bool ShowActions => User is not null && Client.Me is not null && User.Id != Client.Me.Id;
     private string HeadlineText => Profile?.Headline?.Trim() ?? string.Empty;
+    private string StatusText => string.IsNullOrWhiteSpace(_status) ? Localizer["No status set."] : _status;
+    private string BioText => string.IsNullOrWhiteSpace(Profile?.Bio) ? Localizer["No bio written yet."] : Profile.Bio;
 
     public readonly string Id = Guid.NewGuid().ToString();
 
@@ -362,31 +368,7 @@
         if (elapsed.TotalSeconds <= 0)
             return string.Empty;
 
-        return $"{FormatElapsed(elapsed)} ago";
-    }
-
-    private static string FormatElapsed(TimeSpan elapsed)
-    {
-        if (elapsed.TotalHours >= 24)
-        {
-            var days = Math.Floor(elapsed.TotalDays);
-            return days == 1 ? "1 day" : $"{days} days";
-        }
-
-        if (elapsed.TotalMinutes >= 60)
-        {
-            var hours = Math.Floor(elapsed.TotalHours);
-            return hours == 1 ? "1 hour" : $"{hours} hours";
-        }
-
-        if (elapsed.TotalSeconds >= 60)
-        {
-            var minutes = Math.Floor(elapsed.TotalMinutes);
-            return minutes == 1 ? "1 minute" : $"{minutes} minutes";
-        }
-
-        var seconds = Math.Floor(elapsed.TotalSeconds);
-        return seconds == 1 ? "1 second" : $"{seconds} seconds";
+        return Localizer["Last online {0} ago", elapsed.Humanize(maxUnit: TimeUnit.Day)];
     }
 
     private static string GetProfileColor(string color, string fallback)
