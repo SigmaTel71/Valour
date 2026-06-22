@@ -1,22 +1,25 @@
 @implements IDisposable
 @inject ValourClient Client
+@inject IStringLocalizer<EditFriendsComponent> Localizer
+@inject IStringLocalizer<ValourApp> CommonLocalizer
 
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
 <div class="settings-page">
 
     @* ===== Add Friend ===== *@
     <div class="editor-section">
         <h3 class="editor-section-title">
             <i class="bi bi-person-plus"></i>
-            Add Friend
+            @Localizer["Add Friend"]
         </h3>
 
         <div class="form-group">
             <div class="input-group add-friend-row">
                 <input class="v-input" @bind-value="@_name" placeholder="username#tag" @onkeydown="OnKeyDown" />
-                <VButton Variant="primary" OnClick="@OnClickSubmit">Add</VButton>
+                <VButton Variant="primary" OnClick="@OnClickSubmit">@Localizer["Add"]</VButton>
             </div>
-            <p class="helper-text">@_nameSpan</p>
-            <ResultLabel Result="@_friendBoxResult" />
+            <p class="helper-text">@Localizer[_nameSpan]</p>
+            <ResultLabel Result="@_friendBoxResult" ParentComponentLocalizer="Localizer"/>
         </div>
     </div>
 
@@ -24,12 +27,12 @@
     <div class="editor-section">
         <h3 class="editor-section-title">
             <i class="bi bi-person-down"></i>
-            Added You
+            @Localizer["Added You"]
         </h3>
 
         @if (!Client.FriendService.IncomingRequests.Any())
         {
-            <p class="helper-text">No incoming friend requests.</p>
+            <p class="helper-text">@Localizer["No incoming friend requests."]</p>
         }
         else
         {
@@ -39,27 +42,27 @@
                     <div class="request-row" @key="@addedMe.Id">
                         <UserInfoComponent User="@addedMe" ShowBadges="false" />
 
-                        <div class="action-row" role="group" aria-label="Friend Accept or Deny">
-                            <VButton Variant="primary" Size="sm" OnClick="@(async () => await OnAcceptRequest(addedMe))">Accept</VButton>
-                            <VButton Variant="secondary" Size="sm" OnClick="@(async () => await OnDeclineRequest(addedMe))">Decline</VButton>
+                        <div class="action-row" role="group" aria-label="@Localizer["Friend Accept or Deny"]">
+                            <VButton Variant="primary" Size="sm" OnClick="@(async () => await OnAcceptRequest(addedMe))">@CommonLocalizer["Accept"]</VButton>
+                            <VButton Variant="secondary" Size="sm" OnClick="@(async () => await OnDeclineRequest(addedMe))">@CommonLocalizer["Decline"]</VButton>
                         </div>
                     </div>
                 }
             </div>
         }
-        <ResultLabel Result="@_addedYouResult" />
+        <ResultLabel Result="@_addedYouResult" ParentComponentLocalizer="Localizer"/>
     </div>
 
     @* ===== Outgoing Requests ===== *@
     <div class="editor-section">
         <h3 class="editor-section-title">
             <i class="bi bi-person-up"></i>
-            You Added
+            @Localizer["You Added"]
         </h3>
 
         @if (!Client.FriendService.OutgoingRequests.Any())
         {
-            <p class="helper-text">No outgoing friend requests.</p>
+            <p class="helper-text">@Localizer["No outgoing friend requests."]</p>
         }
         else
         {
@@ -69,8 +72,8 @@
                     <div class="request-row" @key="@added.Id">
                         <UserInfoComponent User="@added" ShowBadges="false" />
 
-                        <div class="action-row" role="group" aria-label="Cancel Request">
-                            <VButton Variant="secondary" Size="sm" OnClick="@(async () => await OnCancelRequest(added))">Cancel</VButton>
+                        <div class="action-row" role="group" aria-label="@Localizer["Cancel Request"]">
+                            <VButton Variant="secondary" Size="sm" OnClick="@(async () => await OnCancelRequest(added))">@CommonLocalizer["Cancel"]</VButton>
                         </div>
                     </div>
                 }
@@ -118,7 +121,7 @@
         // Require a name
         if (string.IsNullOrWhiteSpace(_name))
         {
-            _friendBoxResult = new TaskResult(false, "Please input a username.");
+            _friendBoxResult = new TaskResult(false, Localizer["Please input a username."]);
             return;
         }
 
@@ -126,7 +129,7 @@
         var hashIndex = _name.IndexOf('#');
         if (hashIndex <= 0 || hashIndex >= _name.Length - 1)
         {
-            _friendBoxResult = new TaskResult(false, "Invalid format. Use username#tag (e.g. SpikeViper#a1b2).");
+            _friendBoxResult = new TaskResult(false, Localizer["Invalid format. Use username#tag (e.g. SpikeViper#a1b2)."]);
             return;
         }
 
