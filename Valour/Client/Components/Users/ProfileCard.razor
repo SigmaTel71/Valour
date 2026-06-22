@@ -3,7 +3,11 @@
 @inject FriendService FriendService
 @inject ChannelService ChannelService
 @inject ContextMenuService ContextMenuService
+@inject IStringLocalizer<ProfileCard> Localizer
+@inject IStringLocalizer<ValourApp> CommonLocalizer
+@using Humanizer
 
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
 <div id="@Id" class="card-wrapper" style="@CardStyle">
     @if (HasGlow)
     {
@@ -32,8 +36,8 @@
                 <section class="hero-section">
                     <div class="hero-topline">
                         <div class="avatar-frame">
-                            <img class="pfp" alt="@_displayName's profile picture" src="@_pfpUrl" @onerror="OnPfpError"/>
-                            <span class="presence-dot @_statusClass" role="img" aria-label="@_presenceName" title="@_presenceName"></span>
+                            <img class="pfp" alt="@Localizer["{0}'s profile picture", _displayName]" src="@_pfpUrl" @onerror="OnPfpError"/>
+                            <span class="presence-dot @_statusClass" role="img" aria-label="@CommonLocalizer[_presenceName]" title="@CommonLocalizer[_presenceName]"></span>
                         </div>
 
                         @if (ShowActions)
@@ -41,29 +45,29 @@
                             <div class="action-section">
                                 <button type="button" class="v-btn primary small action-button message-button" @onclick="OnClickMessage">
                                     <i class="bi bi-chat-left-text" aria-hidden="true"></i>
-                                    <span>Message</span>
+                                    <span>@Localizer["Message"]</span>
                                 </button>
 
                                 @if (_isFriend)
                                 {
-                                    <button type="button" class="v-btn small action-button icon-button friend-button" title="Remove friend" aria-label="Remove friend" disabled="@_friendBusy" @onclick="OnClickRemoveFriend">
+                                    <button type="button" class="v-btn small action-button icon-button friend-button" title="@Localizer["Remove friend"]" aria-label="@Localizer["Remove friend"]" disabled="@_friendBusy" @onclick="OnClickRemoveFriend">
                                         <i class="bi bi-person-check" aria-hidden="true"></i>
                                     </button>
                                 }
                                 else if (_isFriendRequested)
                                 {
-                                    <button type="button" class="v-btn small action-button icon-button friend-button" title="Cancel friend request" aria-label="Cancel friend request" disabled="@_friendBusy" @onclick="OnClickRemoveFriend">
+                                    <button type="button" class="v-btn small action-button icon-button friend-button" title="@Localizer["Cancel friend request"]" aria-label="@Localizer["Cancel friend request"]" disabled="@_friendBusy" @onclick="OnClickRemoveFriend">
                                         <i class="bi bi-person-dash" aria-hidden="true"></i>
                                     </button>
                                 }
                                 else
                                 {
-                                    <button type="button" class="v-btn small action-button icon-button friend-button" title="Add friend" aria-label="Add friend" disabled="@_friendBusy" @onclick="OnClickAddFriend">
+                                    <button type="button" class="v-btn small action-button icon-button friend-button" title="@Localizer["Add friend"]" aria-label="@Localizer["Add friend"]" disabled="@_friendBusy" @onclick="OnClickAddFriend">
                                         <i class="bi bi-person-plus" aria-hidden="true"></i>
                                     </button>
                                 }
 
-                                <button type="button" class="v-btn small action-button icon-button more-button" title="More" aria-label="More actions" @onclick="OnClickMore">
+                                <button type="button" class="v-btn small action-button icon-button more-button" title="@CommonLocalizer["More"]" aria-label="@Localizer["More actions"]" @onclick="OnClickMore">
                                     <i class="bi bi-three-dots" aria-hidden="true"></i>
                                 </button>
                             </div>
@@ -77,7 +81,7 @@
                             @if (!string.IsNullOrWhiteSpace(User?.PriorName))
                             {
                                 <span class="separator" aria-hidden="true">&middot;</span>
-                                <span>formerly @User.PriorName</span>
+                                <span>@Localizer["Formerly {0}", User.PriorName]</span>
                             }
                         </p>
 
@@ -122,7 +126,7 @@
                     @if (HasBio)
                     {
                         <section class="bio-panel">
-                            <p class="panel-label">About</p>
+                            <p class="panel-label">@Localizer["About"]</p>
                             <div class="body-text bio-markdown"><RichText Content="@Profile.Bio" /></div>
                         </section>
                     }
@@ -130,7 +134,7 @@
                     @if (_roles.Count > 0)
                     {
                         <section class="roles-panel">
-                            <p class="panel-label">In @_planetName</p>
+                            <p class="panel-label">@Localizer["In {0}", _planetName]</p>
                             <div class="role-list">
                                 @foreach (var role in _roles)
                                 {
@@ -148,11 +152,11 @@
                         <p class="meta-line">
                             @if (!string.IsNullOrEmpty(_joinedText))
                             {
-                                <span class="meta-item"><span class="meta-key">joined</span> <span class="meta-value">@_joinedText</span></span>
+                                <span class="meta-item"><span class="meta-key">@Localizer["joined"]</span> <span class="meta-value">@_joinedText</span></span>
                             }
                             @if (!string.IsNullOrEmpty(_lastSeenText))
                             {
-                                <span class="meta-item"><span class="meta-key">last online</span> <span class="meta-value">@_lastSeenText</span></span>
+                                <span class="meta-item"><span class="meta-key">@Localizer["last online"]</span> <span class="meta-value">@_lastSeenText</span></span>
                             }
                         </p>
                     }
@@ -249,6 +253,8 @@
     private bool HasBio => !string.IsNullOrWhiteSpace(Profile?.Bio);
     private bool ShowActions => User is not null && Client.Me is not null && User.Id != Client.Me.Id;
     private string HeadlineText => Profile?.Headline?.Trim() ?? string.Empty;
+    private string StatusText => string.IsNullOrWhiteSpace(_status) ? Localizer["No status set."] : _status;
+    private string BioText => string.IsNullOrWhiteSpace(Profile?.Bio) ? Localizer["No bio written yet."] : Profile.Bio;
 
     public readonly string Id = Guid.NewGuid().ToString();
 
@@ -297,7 +303,7 @@
         _status = User.Status;
         _statusClass = string.IsNullOrWhiteSpace(User.UserState?.CssClassName) ? "offline" : User.UserState.CssClassName;
         _lastSeenText = BuildLastSeenText();
-        _joinedText = User.TimeJoined == default ? string.Empty : User.TimeJoined.ToString("MMM yyyy", CultureInfo.InvariantCulture);
+        _joinedText = User.TimeJoined == default ? string.Empty : User.TimeJoined.ToString("MMM yyyy", CultureInfo.CurrentCulture);
         _pfpUrl = Member?.GetAvatar() ?? User.GetAvatar() ?? ISharedUser.DefaultAvatar;
         _skySeed = User.Id.ToString(CultureInfo.InvariantCulture);
 
@@ -362,31 +368,7 @@
         if (elapsed.TotalSeconds <= 0)
             return string.Empty;
 
-        return $"{FormatElapsed(elapsed)} ago";
-    }
-
-    private static string FormatElapsed(TimeSpan elapsed)
-    {
-        if (elapsed.TotalHours >= 24)
-        {
-            var days = Math.Floor(elapsed.TotalDays);
-            return days == 1 ? "1 day" : $"{days} days";
-        }
-
-        if (elapsed.TotalMinutes >= 60)
-        {
-            var hours = Math.Floor(elapsed.TotalHours);
-            return hours == 1 ? "1 hour" : $"{hours} hours";
-        }
-
-        if (elapsed.TotalSeconds >= 60)
-        {
-            var minutes = Math.Floor(elapsed.TotalMinutes);
-            return minutes == 1 ? "1 minute" : $"{minutes} minutes";
-        }
-
-        var seconds = Math.Floor(elapsed.TotalSeconds);
-        return seconds == 1 ? "1 second" : $"{seconds} seconds";
+        return Localizer["Last online {0} ago", elapsed.Humanize(maxUnit: TimeUnit.Day)];
     }
 
     private static string GetProfileColor(string color, string fallback)
