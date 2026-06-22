@@ -1,7 +1,11 @@
 @inject ValourClient Client
 @inject FriendService FriendService
 @inject ChannelService ChannelService
+@inject IStringLocalizer<ProfileCard> Localizer
+@inject IStringLocalizer<ValourApp> CommonLocalizer
+@using Humanizer
 
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
 <div id="@Id" class="card-wrapper" style="@CardStyle">
     <div class="card-glow"></div>
     <div
@@ -21,7 +25,7 @@
                     <div class="hero-topline">
                         <div class="presence-pill @_statusClass">
                             <span class="presence-dot"></span>
-                            <span>@_presenceName</span>
+                            <span>@CommonLocalizer[_presenceName]</span>
                         </div>
 
                         @if (!string.IsNullOrWhiteSpace(_lastSeenText))
@@ -36,13 +40,13 @@
                     <div class="identity-section">
                         <div class="identity-main">
                             <div class="avatar-frame">
-                                <img class="pfp" alt="@_displayName's profile picture" src="@_pfpUrl" @onerror="OnPfpError"/>
+                                <img class="pfp" alt="@Localizer["{0}'s profile picture", _displayName]" src="@_pfpUrl" @onerror="OnPfpError"/>
                             </div>
 
                             <div class="identity-copy">
                                 <div class="identity-row">
                                     <div class="name-stack">
-                                        <p class="eyebrow">Profile</p>
+                                        <p class="eyebrow">@Localizer["Profile"]</p>
                                         <h2 class="display-name">@_displayName</h2>
                                         <p class="name-and-tag">@_nameAndTag</p>
                                     </div>
@@ -55,21 +59,21 @@
                                         {
                                             <div class="badge-chip stargazer">
                                                 <img alt="Stargazer badge" src="@StarBadge.GetDataUri(User.Id, User.GetStarColor1(), User.GetStarColor2())"/>
-                                                <span>Stargazer</span>
+                                                <span>@Localizer["Stargazer"]</span>
                                             </div>
                                         }
                                         @if (User.Bot && PlatformBadgeCatalog.IsVisible(User, PlatformBadge.Bot))
                                         {
                                             <div class="badge-chip bot">
                                                 <i class="bi bi-cpu-fill"></i>
-                                                <span>Bot</span>
+                                                <span>@Localizer["Bot"]</span>
                                             </div>
                                         }
                                         @if (User.ValourStaff && PlatformBadgeCatalog.IsVisible(User, PlatformBadge.Staff))
                                         {
                                             <div class="badge-chip staff">
                                                 <i class="bi bi-patch-check-fill"></i>
-                                                <span>Staff</span>
+                                                <span>@Localizer["Staff"]</span>
                                             </div>
                                         }
                                     </div>
@@ -79,7 +83,7 @@
                                 {
                                     <p class="meta-line">
                                         <i class="bi bi-arrow-repeat"></i>
-                                        <span>Formerly @User.PriorName</span>
+                                        <span>@Localizer["Formerly {0}", User.PriorName]</span>
                                     </p>
                                 }
                             </div>
@@ -100,28 +104,28 @@
                     <section class="action-section">
                         <button class="v-btn large action-button message-button" @onclick="OnClickMessage">
                             <i class="bi bi-envelope-fill"></i>
-                            <span>Message</span>
+                            <span>@Localizer["Message"]</span>
                         </button>
 
                         @if (_isFriend)
                         {
                             <button class="v-btn large action-button friend-button" @onclick="OnClickRemoveFriend">
                                 <i class="bi bi-person-heart"></i>
-                                <span>Remove Friend</span>
+                                <span>@Localizer["Remove Friend"]</span>
                             </button>
                         }
                         else if (_isFriendRequested)
                         {
                             <button class="v-btn large action-button friend-button" @onclick="OnClickRemoveFriend">
                                 <i class="bi bi-person-heart"></i>
-                                <span>Cancel Request</span>
+                                <span>@Localizer["Cancel Request"]</span>
                             </button>
                         }
                         else
                         {
                             <button class="v-btn large action-button friend-button" @onclick="OnClickAddFriend">
                                 <i class="bi bi-person-heart"></i>
-                                <span>Add Friend</span>
+                                <span>@Localizer["Add Friend"]</span>
                             </button>
                         }
                     </section>
@@ -129,12 +133,12 @@
 
                 <section class="details-section">
                     <div class="feature-panel status-panel">
-                        <p class="panel-label">Status</p>
+                        <p class="panel-label">@Localizer["Status"]</p>
                         <p class="status-text">@StatusText</p>
                     </div>
 
                     <div class="feature-panel bio-panel">
-                        <p class="panel-label">Bio</p>
+                        <p class="panel-label">@Localizer["Bio"]</p>
                         <div class="bio-scroll">
                             <div class="body-text bio-markdown"><RichText Content="@BioText" /></div>
                         </div>
@@ -217,9 +221,9 @@
          User.ValourStaff && PlatformBadgeCatalog.IsVisible(User, PlatformBadge.Staff));
     private bool HasHeadline => !string.IsNullOrWhiteSpace(Profile?.Headline);
     private bool ShowActions => User is not null && Client.Me is not null && User.Id != Client.Me.Id;
-    private string StatusText => string.IsNullOrWhiteSpace(_status) ? "No status set." : _status;
+    private string StatusText => string.IsNullOrWhiteSpace(_status) ? Localizer["No status set."] : _status;
     private string HeadlineText => Profile?.Headline?.Trim() ?? string.Empty;
-    private string BioText => string.IsNullOrWhiteSpace(Profile?.Bio) ? "No bio written yet." : Profile.Bio;
+    private string BioText => string.IsNullOrWhiteSpace(Profile?.Bio) ? Localizer["No bio written yet."] : Profile.Bio;
 
     public readonly string Id = Guid.NewGuid().ToString();
 
@@ -273,31 +277,7 @@
         if (elapsed.TotalSeconds <= 0)
             return string.Empty;
 
-        return $"Last online {FormatElapsed(elapsed)} ago";
-    }
-
-    private static string FormatElapsed(TimeSpan elapsed)
-    {
-        if (elapsed.TotalHours >= 24)
-        {
-            var days = Math.Floor(elapsed.TotalDays);
-            return days == 1 ? "1 day" : $"{days} days";
-        }
-
-        if (elapsed.TotalMinutes >= 60)
-        {
-            var hours = Math.Floor(elapsed.TotalHours);
-            return hours == 1 ? "1 hour" : $"{hours} hours";
-        }
-
-        if (elapsed.TotalSeconds >= 60)
-        {
-            var minutes = Math.Floor(elapsed.TotalMinutes);
-            return minutes == 1 ? "1 minute" : $"{minutes} minutes";
-        }
-
-        var seconds = Math.Floor(elapsed.TotalSeconds);
-        return seconds == 1 ? "1 second" : $"{seconds} seconds";
+        return Localizer["Last online {0} ago", elapsed.Humanize(maxUnit: TimeUnit.Day)];
     }
 
     private static string GetProfileColor(string color, string fallback)
