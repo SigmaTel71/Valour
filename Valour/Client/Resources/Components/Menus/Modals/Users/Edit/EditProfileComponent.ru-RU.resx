@@ -1,0 +1,267 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="A little bit about me..." xml:space="preserve">
+    <value>Чуточку о себе...</value>
+  </data>
+  <data name="A short blurb" xml:space="preserve">
+    <value>Короткая заметка</value>
+  </data>
+  <data name="Animate Gradient" xml:space="preserve">
+    <value>Анимировать градиент</value>
+  </data>
+  <data name="Animate the gradient border." xml:space="preserve">
+    <value>Анимировать градиент в контуре.</value>
+  </data>
+  <data name="Appearance" xml:space="preserve">
+    <value>Внешний вид</value>
+  </data>
+  <data name="Avatar" xml:space="preserve">
+    <value>Аватар</value>
+  </data>
+  <data name="Background Image" xml:space="preserve">
+    <value>Фоновое изображение</value>
+  </data>
+  <data name="Bio" xml:space="preserve">
+    <value>О себе</value>
+  </data>
+  <data name="Border color" xml:space="preserve">
+    <value>Цвет контура</value>
+  </data>
+  <data name="Choose a status..." xml:space="preserve">
+    <value>Выберите статус...</value>
+  </data>
+  <data name="Error loading profile." xml:space="preserve">
+    <value>Не удалось загрузить профиль.</value>
+  </data>
+  <data name="Glow color" xml:space="preserve">
+    <value>Цвет свечения</value>
+  </data>
+  <data name="Gradient Borders" xml:space="preserve">
+    <value>Градиентные контуры</value>
+  </data>
+  <data name="Gradient End" xml:space="preserve">
+    <value>Конец градиента</value>
+  </data>
+  <data name="Gradient Start" xml:space="preserve">
+    <value>Начало градиента</value>
+  </data>
+  <data name="Headline" xml:space="preserve">
+    <value>Титул</value>
+    <comment>Context-wise it's more of a "title", like how you feel yourself.</comment>
+  </data>
+  <data name="PNG, JPG, GIF, or WEBP. Square images look best." xml:space="preserve">
+    <value>PNG, JPG, GIF или WEBP. Квадратные изображения выглядят лучше всего.</value>
+  </data>
+  <data name="Primary color" xml:space="preserve">
+    <value>Основной цвет</value>
+  </data>
+  <data name="Profile Details" xml:space="preserve">
+    <value>Настройки профиля</value>
+    <comment>'Profile Settings' context-wise sounds better for Russian, because «Подробности профиля» sounds rather odd. Feel free to suggest other options.</comment>
+  </data>
+  <data name="Reset to Default" xml:space="preserve">
+    <value>Сбросить на стандартные</value>
+  </data>
+  <data name="Save Star Colors" xml:space="preserve">
+    <value>Сохранить цвета Звезды</value>
+  </data>
+  <data name="Secondary color" xml:space="preserve">
+    <value>Вторичный цвет</value>
+  </data>
+  <data name="Stargazer Badge" xml:space="preserve">
+    <value>Значок Астронома</value>
+  </data>
+  <data name="Status Code" xml:space="preserve">
+    <value>Индикатор статуса</value>
+    <comment>Code is a technical term rather than person's mood indicator</comment>
+  </data>
+  <data name="Status Message" xml:space="preserve">
+    <value>Статусное сообщение</value>
+  </data>
+  <data name="Text color" xml:space="preserve">
+    <value>Цвет текста</value>
+  </data>
+  <data name="Try again later?" xml:space="preserve">
+    <value>Повторите попытку позднее?</value>
+  </data>
+  <data name="Upgrade to Stargazer Pro to customize your star colors." xml:space="preserve">
+    <value>Повысьте уровень подписки до Stargazer Pro, чтобы настраивать цвета вашей Звезды.</value>
+  </data>
+  <data name="Upload Image" xml:space="preserve">
+    <value>Загрузить изображение</value>
+  </data>
+  <data name="Use three colors in a gradient as the border." xml:space="preserve">
+    <value>Используйте три цвета в градиенте в качестве контура.</value>
+  </data>
+  <data name="You need a Stargazer Plus subscription to use this feature." xml:space="preserve">
+    <value>Вам нужна подписка Stargazer Plus, чтобы изменить эту настройку.</value>
+  </data>
+  <data name="Your Stargazer badge" xml:space="preserve">
+    <value>Ваш значок Астронома</value>
+  </data>
+  <data name="Tertiary color" xml:space="preserve">
+    <value>Третичный цвет</value>
+  </data>
+  <data name="Custom Background Image" xml:space="preserve">
+    <value>Фоновое изображение в профиле</value>
+  </data>
+  <data name="Choose a custom (safe for work) 300x400 image as your background!" xml:space="preserve">
+    <value>Используйте своё (безопасное для просмотра на работе) изображение размером 300x400 в качестве фона!</value>
+  </data>
+  <data name="Upload Background" xml:space="preserve">
+    <value>Загрузить фон</value>
+  </data>
+  <data name="PNG, JPG, or GIF. Up to 10mb." xml:space="preserve">
+    <value>PNG, JPG или GIF размером до 10 МБ.</value>
+  </data>
+  <data name="Account" xml:space="preserve">
+    <value>Аккаунт</value>
+  </data>
+  <data name="Tag" xml:space="preserve">
+    <value>Тег</value>
+  </data>
+  <data name="You need Stargazer to change your tag." xml:space="preserve">
+    <value>Вам нужна подписка Stargazer, чтобы изменить свой тег.</value>
+  </data>
+  <data name="Change Username" xml:space="preserve">
+    <value>Изменить имя пользователя</value>
+  </data>
+  <data name="Preview" xml:space="preserve">
+    <value>Предпросмотр</value>
+  </data>
+  <data name="Delete Account" xml:space="preserve">
+    <value>Удалить аккаунт</value>
+  </data>
+  <data name="Tag must be 4 characters long." xml:space="preserve">
+    <value>Тег должен состоять из четырёх символов.</value>
+  </data>
+  <data name="Tag must be alphanumeric." xml:space="preserve">
+    <value>Тег должен быть буквенно-числовым.</value>
+  </data>
+  <data name="Max profile image size is 20mb." xml:space="preserve">
+    <value>Изображение профиля должно быть не более 20 МБ.</value>
+  </data>
+  <data name="Could not load file as an image." xml:space="preserve">
+    <value>Не удалось загрузить файл как изображение.</value>
+  </data>
+  <data name="Max background image size is 10mb." xml:space="preserve">
+    <value>Изображение фона должно быть не более 10 МБ.</value>
+  </data>
+</root>
