@@ -1,14 +1,17 @@
 ﻿@inject ValourClient Client
 @inherits Modal<ChangeUsernameModal.Params>
+@inject IStringLocalizer<ChangeUsernameModal> Localizer
+@inject IStringLocalizer<ValourApp> CommonLocalizer
 
-<BasicModalLayout Title="Change Username" Icon="person-fill" ContentStyles="padding: 1em">
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
+<BasicModalLayout Title="@Localizer["Change Username"]" Icon="person-fill" ContentStyles="padding: 1em">
     <MainArea>
         @if (_canChangeUsername)
         {
             <div class="form-group">
-                <label class="m-2">Password</label>
+                <label class="m-2">@Localizer["Password"]</label>
                 <input id="password-input" type="password" autocomplete="current-password" class="form-control" @bind-value="@_password"/>
-                <label class="m-2">New Username</label>
+                <label class="m-2">@Localizer["New Username"]</label>
                 <input id="new-username-input" type="text" autocomplete="off" class="form-control" @bind-value="@_newUsername"/>
             </div>
         }
@@ -21,11 +24,11 @@
     </MainArea>
     <ButtonArea>
         <div class="basic-modal-buttons">
-            <button @onclick="@OnCancel" class="v-btn">Cancel</button>
+            <button @onclick="@OnCancel" class="v-btn">@CommonLocalizer["Cancel"]</button>
             
             @if (_canChangeUsername)
             {
-                <button @onclick="@OnConfirm" class="v-btn danger">Confirm</button>
+                <button @onclick="@OnConfirm" class="v-btn danger">@CommonLocalizer["Confirm"]</button>
             }
         </div>
     </ButtonArea>
@@ -52,9 +55,9 @@
         var toastData = new ProgressToastData<TaskResult>()
         {
             ProgressTask = Client.UpdateMyUsernameAsync(_newUsername, _password),
-            Title = "Changing Username",
-            Message = "Updating...",
-            SuccessMessage = "Username updated!",
+            Title = Localizer["Changing Username"],
+            Message = Localizer["Updating..."],
+            SuccessMessage = Localizer["Username updated!"],
         };
         
         var result = await ToastContainer.Instance.WaitToastWithTaskResult(toastData);
@@ -95,7 +98,7 @@
             if (daysSinceLastChange < 7)
             {
                 var daysLeft = 7 - daysSinceLastChange;
-                _changeUsernameMessage = $"You can change your username again in {daysLeft.ToString("F0")} {(daysLeft > 1 ? "days" : "day")}.";
+                _changeUsernameMessage = Localizer["You can change your username again in {0} {1}.", daysLeft.ToString("F0"), (daysLeft > 1 ? "days" : "day")];
             }
             else
             {
