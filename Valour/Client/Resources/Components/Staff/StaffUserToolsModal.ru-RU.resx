@@ -1,0 +1,250 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="A reset email goes to the account's address and every session is signed out." xml:space="preserve">
+    <value>Будет отправлено письмо на e-mail пользователя. Все сессии будут закрыты.</value>
+  </data>
+  <data name="A reset email goes to the account's address." xml:space="preserve">
+    <value>Будет отправлено письмо на e-mail пользователя.</value>
+  </data>
+  <data name="Account recovery" xml:space="preserve">
+    <value>Восстановление учётной записи</value>
+  </data>
+  <data name="Also sign out all sessions (suspected compromise)" xml:space="preserve">
+    <value>Также закрыть все сессии (подозрение на компрометацию)</value>
+  </data>
+  <data name="Assigns a neutral auto-generated name. The old name is stored as the prior name and hidden from other users." xml:space="preserve">
+    <value>Устанавливает нейтральное автоматически сгенерированное имя. Старое записывается как ранее использованное и скрывается от других пользователей.</value>
+  </data>
+  <data name="Cancel pending 2FA removal" xml:space="preserve">
+    <value>Отменить запланированное удаление 2ФА</value>
+  </data>
+  <data name="Cancel pending 2FA removal for {0}?" xml:space="preserve">
+    <value>Отменить запланированное удаление 2ФА для {0}?</value>
+  </data>
+  <data name="Cancel removal" xml:space="preserve">
+    <value>Отменить удаление</value>
+  </data>
+  <data name="Cancelling 2FA Removal" xml:space="preserve">
+    <value>Отмена удаления 2ФА</value>
+  </data>
+  <data name="Cancels the scheduled removal if one is pending." xml:space="preserve">
+    <value>Отменяет запланированное удаление двухфакторной аутентификации, если оно в очереди.</value>
+  </data>
+  <data name="Hide" xml:space="preserve">
+    <value>Скрыть</value>
+  </data>
+  <data name="Hide prior name" xml:space="preserve">
+    <value>Скрыть прошлое имя</value>
+  </data>
+  <data name="Hide prior name of {0}?" xml:space="preserve">
+    <value>Скрыть прошлое имя пользователя {0}?</value>
+  </data>
+  <data name="Identity" xml:space="preserve">
+    <value>Информация о пользователе</value>
+  </data>
+  <data name="Owned bots" xml:space="preserve">
+    <value>Владение ботами</value>
+  </data>
+  <data name="Password resets are emailed to the account's own address — staff never see or choose passwords. 2FA removal executes after a 48-hour delay; the account is emailed immediately and can cancel it." xml:space="preserve">
+    <value>Пользователь самостоятельно сбрасывает пароль, перейдя по ссылке из письма на электронную почту — администрация никогда не видит и не устанавливает пароли самостоятельно. Удаление второго фактора аутентификации происходит с задержкой в 48 часов, пользователь моментально получает уведомление и может отменить его.</value>
+  </data>
+  <data name="Pending removal cancelled" xml:space="preserve">
+    <value>Запланированное удаление отменено</value>
+  </data>
+  <data name="Removal scheduled; account notified" xml:space="preserve">
+    <value>Удаление запланировано; пользователь оповещён</value>
+  </data>
+  <data name="Reset email sent" xml:space="preserve">
+    <value>Письмо для сброса пароля отправлено</value>
+  </data>
+  <data name="Reset username" xml:space="preserve">
+    <value>Сбросить имя пользователя</value>
+  </data>
+  <data name="Reset username for {0}?" xml:space="preserve">
+    <value>Сбросить имя пользователя {0}?</value>
+  </data>
+  <data name="Resetting a username assigns a neutral placeholder and hides the old name automatically." xml:space="preserve">
+    <value>Сброс имени пользователя назначает нейтральное имя и автоматически скрывает старое.</value>
+  </data>
+  <data name="Resetting Username" xml:space="preserve">
+    <value>Сброс имени пользователя</value>
+  </data>
+  <data name="Schedule 2FA removal" xml:space="preserve">
+    <value>Запланировать удаление 2ФА</value>
+  </data>
+  <data name="Schedule 2FA removal for {0}?" xml:space="preserve">
+    <value>Запланировать удаление 2ФА для {0}?</value>
+  </data>
+  <data name="Schedule removal" xml:space="preserve">
+    <value>Запланировать удаление</value>
+  </data>
+  <data name="Scheduling 2FA Removal" xml:space="preserve">
+    <value>Добавление в очередь на удаление 2ФА</value>
+  </data>
+  <data name="Send" xml:space="preserve">
+    <value>Отправить</value>
+  </data>
+  <data name="Send password reset email" xml:space="preserve">
+    <value>Сброс пароля</value>
+  </data>
+  <data name="Send password reset to {0}?" xml:space="preserve">
+    <value>Сбросить пароль пользователю {0}?</value>
+  </data>
+  <data name="Sending Reset Email" xml:space="preserve">
+    <value>Отправка письма</value>
+    <comment>You can't make this shorter.</comment>
+  </data>
+  <data name="Staff Tools: {0}" xml:space="preserve">
+    <value>Средства администратора: {0}</value>
+  </data>
+  <data name="The user's previous username becomes visible to other users again." xml:space="preserve">
+    <value>Прошлое имя пользователя станет снова видимым другим пользователям.</value>
+  </data>
+  <data name="The user's previous username stops being shown to other users." xml:space="preserve">
+    <value>Прошлое имя пользователя перестанет показываться другим пользователям.</value>
+  </data>
+  <data name="This is a common account-takeover target. The removal waits 48 hours, the account is emailed immediately, and the owner can cancel it. Verify the requester's identity before confirming." xml:space="preserve">
+    <value>Это самый распространённый способ захватить учётную запись. Удаление произойдёт через 48 часов, владелец аккаунта незамедлительно получает уведомление на электронную почту и может отменить его. Подтвердите личность запрашивающего перед тем, как продолжить.</value>
+  </data>
+  <data name="This user owns no bots." xml:space="preserve">
+    <value>У этого пользователя нет ботов.</value>
+  </data>
+  <data name="Unhide" xml:space="preserve">
+    <value>Отобразить</value>
+  </data>
+  <data name="Unhide prior name" xml:space="preserve">
+    <value>Отобразить прошлое имя</value>
+  </data>
+  <data name="Unhide prior name of {0}?" xml:space="preserve">
+    <value>Отобразить прошлое имя пользователя {0}?</value>
+  </data>
+  <data name="Updated" xml:space="preserve">
+    <value>Обновлено</value>
+  </data>
+  <data name="Updating Prior Name Visibility" xml:space="preserve">
+    <value>Обновление отображения прошлого имени</value>
+  </data>
+  <data name="Username reset" xml:space="preserve">
+    <value>Имя пользователя сброшено</value>
+  </data>
+  <data name="View owned bots" xml:space="preserve">
+    <value>Просмотреть список</value>
+  </data>
+</root>
