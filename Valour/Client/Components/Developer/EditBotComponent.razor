@@ -1,11 +1,15 @@
 @inherits Modal<EditBotComponent.ModalParams>
 @inject ValourClient Client
 @inject IJSRuntime JsRuntime
+@inject IStringLocalizer<EditBotComponent> Localizer
+@inject IStringLocalizer<CreateBotComponent> CBCLocalizer
+@inject IStringLocalizer<ValourApp> CommonLocalizer
 
-<BasicModalLayout Title="Edit Bot" Icon="robot" MaxWidth="500px">
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
+<BasicModalLayout Title="@Localizer["Edit Bot"]" Icon="robot" MaxWidth="500px">
     <MainArea>
         <div class="bot-header">
-            <img alt="Bot Avatar" src="@GetBotAvatar()" class="bot-avatar" />
+            <img alt="@Localizer["Bot Avatar"]" src="@GetBotAvatar()" class="bot-avatar" />
             <div class="bot-header-info">
                 <h4 class="bot-header-name">@Data.Bot.Name</h4>
                 <p class="bot-header-tag">#@Data.Bot.Tag</p>
@@ -14,10 +18,10 @@
         </div>
 
         <div class="form-group">
-            <label>Status</label>
+            <label>@Localizer["Status"]</label>
             <div class="input-group">
-                <input class="form-control" @bind="_status" placeholder="Set a status for your bot..." maxlength="128" />
-                <button class="v-btn" @onclick="OnUpdateStatus">Update</button>
+                <input class="form-control" @bind="_status" placeholder="@Localizer["Set a status for your bot..."]" maxlength="128" />
+                <button class="v-btn" @onclick="OnUpdateStatus">@CommonLocalizer["Update"]</button>
             </div>
             <ResultLabel Result="@_statusResult" />
         </div>
@@ -27,15 +31,15 @@
             <div class="token-section">
                 <div class="token-warning">
                     <i class="bi bi-exclamation-triangle-fill"></i>
-                    Save this token now! It will not be shown again.
+                    @Localizer["Save this token now! It will not be shown again."]
                 </div>
                 <div class="form-group">
-                    <label>New Bot Token</label>
+                    <label>@Localizer["New Bot Token"]</label>
                     <div class="input-group">
                         <input class="form-control token-input" value="@_newToken" readonly />
                         <button class="v-btn" @onclick="OnCopyToken">
                             <i class="bi bi-clipboard"></i>
-                            Copy
+                            @CommonLocalizer["Copy"]
                         </button>
                     </div>
                 </div>
@@ -44,35 +48,35 @@
         else
         {
             <div class="form-group">
-                <label>Bot Token</label>
+                <label>@CBCLocalizer["Bot Token"]</label>
                 <button class="v-btn warning" @onclick="OnRegenerateToken" disabled="@_regenerating">
                     <i class="bi bi-arrow-clockwise"></i>
                     @if (_regenerating)
                     {
-                        <span>Regenerating...</span>
+                        <span>@Localizer["Regenerating..."]</span>
                     }
                     else
                     {
-                        <span>Regenerate Token</span>
+                        <span>@Localizer["Regenerate Token"]</span>
                     }
                 </button>
-                <span class="helper-text">This will invalidate the old token immediately.</span>
+                <span class="helper-text">@Localizer["This will invalidate the old token immediately."]</span>
                 <ResultLabel Result="@_tokenResult" />
             </div>
         }
 
         <div class="danger-zone">
-            <h5>Danger Zone</h5>
-            <p>Deleting your bot is permanent and cannot be undone.</p>
+            <h5>@Localizer["Danger Zone"]</h5>
+            <p>@Localizer["Deleting your bot is permanent and cannot be undone."]</p>
             <button class="v-btn danger" @onclick="OnDeleteBot">
                 <i class="bi bi-trash"></i>
-                Delete Bot
+                @Localizer["Delete Bot"]
             </button>
         </div>
     </MainArea>
     <ButtonArea>
         <div class="basic-modal-buttons">
-            <button @onclick="@OnClose" class="v-btn">Close</button>
+            <button @onclick="@OnClose" class="v-btn">@CommonLocalizer["Close"]</button>
         </div>
     </ButtonArea>
 </BasicModalLayout>
@@ -106,7 +110,7 @@
         {
             Data.Bot = result.Data;
             Data.OnBotUpdated?.Invoke(result.Data);
-            _statusResult = new TaskResult(true, "Status updated successfully!");
+            _statusResult = new TaskResult(true, Localizer["Status updated successfully!"]);
         }
         else
         {
@@ -119,10 +123,10 @@
     private void OnRegenerateToken()
     {
         var confirmData = new ConfirmModalComponent.ModalParams(
-            "Regenerate Token?",
-            "This will invalidate your current bot token immediately. Any applications using the old token will stop working.",
-            "Regenerate",
-            "Cancel",
+            Localizer["Regenerate Token?"],
+            Localizer["This will invalidate your current bot token immediately. Any applications using the old token will stop working."],
+            Localizer["Regenerate"],
+            CommonLocalizer["Cancel"],
             async () => await DoRegenerateToken(),
             () => Task.CompletedTask
         );
@@ -145,7 +149,7 @@
             _showNewToken = true;
             Data.Bot = result.Data;
             Data.OnBotUpdated?.Invoke(result.Data);
-            _tokenResult = new TaskResult(true, "Token regenerated!");
+            _tokenResult = new TaskResult(true, Localizer["Token regenerated!"]);
         }
         else
         {
@@ -158,16 +162,16 @@
     private async Task OnCopyToken()
     {
         await JsRuntime.InvokeVoidAsync("clipboardCopy.copyText", _newToken);
-        ToastContainer.Instance.AddToast(new ToastData("Copied!", "Bot token copied to clipboard", ToastProgressState.Success));
+        ToastContainer.Instance.AddToast(new ToastData(CBCLocalizer["Copied!"], CBCLocalizer["Bot token copied to clipboard"], ToastProgressState.Success));
     }
 
     private void OnDeleteBot()
     {
         var confirmData = new ConfirmModalComponent.ModalParams(
-            $"Delete {Data.Bot.Name}?",
-            "This action cannot be undone. The bot account will be permanently deleted.",
-            "Delete Bot",
-            "Cancel",
+            Localizer["Delete {0}?", Data.Bot.Name],
+            Localizer["This action cannot be undone. The bot account will be permanently deleted."],
+            Localizer["Delete Bot"],
+            CommonLocalizer["Cancel"],
             async () => await DoDeleteBot(),
             () => Task.CompletedTask
         );
@@ -182,13 +186,13 @@
         if (result.Success)
         {
             Data.OnBotDeleted?.Invoke(Data.Bot.Id);
-            ToastContainer.Instance.AddToast(new ToastData("Deleted", "Bot has been deleted successfully", ToastProgressState.Success));
+            ToastContainer.Instance.AddToast(new ToastData(Localizer["Deleted"], Localizer["Bot has been deleted successfully"], ToastProgressState.Success));
             await ModalRoot.CloseTopModal();
             Close();
         }
         else
         {
-            ToastContainer.Instance.AddToast(new ToastData("Error", result.Message, ToastProgressState.Failure));
+            ToastContainer.Instance.AddToast(new ToastData(CommonLocalizer["Error"], result.Message, ToastProgressState.Failure));
         }
     }
 

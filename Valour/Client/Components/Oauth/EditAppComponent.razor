@@ -1,16 +1,21 @@
 @inherits Modal<EditAppComponent.ModalParams>
 @using System.Net.Http.Headers
+@using Humanizer
 @inject IJSRuntime JsRuntime
 @inject ValourClient Client
 @inject OauthService OauthService
+@inject IStringLocalizer<EditOAuthComponent> EOALocalizer
+@inject IStringLocalizer<EditAppComponent> Localizer
+@inject IStringLocalizer<ValourApp> CommonLocalizer
 
-<BasicModalLayout Title="Edit OAuth App" Icon="gear-fill" MaxWidth="500px">
+<BasicModalLayout Title="@Localizer["Edit OAuth App"]" Icon="gear-fill" MaxWidth="500px">
     <MainArea>
         <div class="app-header">
             <img alt="App Icon" src="@Data.App.ImageUrl" onclick="document.getElementById('upload-core').click()" class="app-icon" />
             <div class="app-info">
                 <h4 class="app-name">@Data.App.Name</h4>
-                <p class="app-stats">Used @Data.App.Uses time@(Data.App.Uses == 1 ? "" : "s") • ID: @Data.App.Id</p>
+                @* FIXME: may be possible w/ Humanizer v4 *@
+                <p class="app-stats">@EOALocalizer["Used {0}", (Localizer["time"].ToString()).ToQuantity(Data.App.Uses)] • ID: @Data.App.Id</p>
             </div>
         </div>
 
@@ -19,29 +24,29 @@
         </div>
 
         <div class="form-group">
-            <label>Redirect URL</label>
+            <label>@Localizer["Redirect URL"]</label>
             <div class="input-group">
                 <input class="form-control" @bind="_redirect" placeholder="Your redirect URL..." />
-                <button class="v-btn" @onclick="OnClickRedirectUpdate">Update</button>
+                <button class="v-btn" @onclick="OnClickRedirectUpdate">@CommonLocalizer["Update"]</button>
             </div>
             <ResultLabel Result="@_redirectResult" />
         </div>
 
         <div class="form-group">
-            <label>App Secret</label>
+            <label>@Localizer["App Secret"]</label>
             <div class="input-group">
                 <input class="form-control" value="@Data.App.Secret" readonly />
-                <button class="v-btn" @onclick="@OnCopySecret">Copy</button>
+                <button class="v-btn" @onclick="@OnCopySecret">@CommonLocalizer["Copy"]</button>
             </div>
-            <span class="helper-text">Keep this secret secure. It's used to authenticate your app.</span>
+            <span class="helper-text">@Localizer["Keep this secret secure. It's used to authenticate your app."]</span>
         </div>
 
         <ResultLabel Result="@_iconResult" />
     </MainArea>
     <ButtonArea>
         <div class="basic-modal-buttons">
-            <button @onclick="@OnCancel" class="v-btn">Cancel</button>
-            <button @onclick="@OnClickDelete" class="v-btn danger">Delete App</button>
+            <button @onclick="@OnCancel" class="v-btn">@CommonLocalizer["Cancel"]</button>
+            <button @onclick="@OnClickDelete" class="v-btn danger">@Localizer["Delete App"]</button>
         </div>
     </ButtonArea>
 </BasicModalLayout>
@@ -77,10 +82,10 @@
         var result = await ToastContainer.Instance.WaitToastWithTaskResult(new ProgressToastData<TaskResult<OauthApp>>()
         {
             ProgressTask = Data.App.UpdateAsync(),
-            Title = "Updating App",
-            Message = "Updating redirect URL...",
-            SuccessMessage = "Redirect URL updated successfully!",
-            FailureMessage = "Failed to update redirect URL"
+            Title = Localizer["Updating App"],
+            Message = Localizer["Updating redirect URL..."],
+            SuccessMessage = Localizer["Redirect URL updated successfully!"],
+            FailureMessage = Localizer["Failed to update redirect URL"]
         });
 
         _redirectResult = result;
@@ -89,10 +94,10 @@
 
     private void OnClickDelete(){
         var data = new ConfirmModalComponent.ModalParams(
-            $"Delete {Data.App.Name}?",
-            "This cannot be undone!",
-            "Confirm",
-            "Cancel",
+            Localizer["Delete {0}?", Data.App.Name],
+            Localizer["This cannot be undone!"],
+            CommonLocalizer["Confirm"],
+            CommonLocalizer["Cancel"],
             async () =>
             {
                 var res = await Data.App.DeleteAsync();
@@ -131,14 +136,14 @@
 
         if (file == null)
         {
-            _iconResult = new TaskResult(false, "Could not load file as an image.");
+            _iconResult = new TaskResult(false, Localizer["Could not load file as an image."]);
             StateHasChanged();
             return;
         }
 
         if (file.Size > 10240000)
         {
-            _iconResult = new TaskResult(false, "Max app icon size is 10mb.");
+            _iconResult = new TaskResult(false, Localizer["Max app icon size is 10mb."]);
             StateHasChanged();
             return;
         }
@@ -158,7 +163,7 @@
         if (result.Success)
         {
             Data.App.ImageUrl = result.Data;
-            _iconResult = new TaskResult(true, "Successfully changed app icon.");
+            _iconResult = new TaskResult(true, Localizer["Successfully changed app icon."]);
         }
         else
         {
@@ -170,7 +175,7 @@
 
     public async Task OnCopySecret(){
         await JsRuntime.InvokeVoidAsync("clipboardCopy.copyText", Data.App.Secret);
-        ToastContainer.Instance.AddToast(new ToastData("Copied!", "App secret copied to clipboard", ToastProgressState.Success));
+        ToastContainer.Instance.AddToast(new ToastData(Localizer["Copied!"], Localizer["App secret copied to clipboard"], ToastProgressState.Success));
     }
 
     private void OnCancel() => Close();

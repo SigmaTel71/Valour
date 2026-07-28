@@ -1,32 +1,35 @@
 @inject ValourClient Client
 @inject OauthService OauthService
+@inject IStringLocalizer<EditOAuthComponent> Localizer
+@using Humanizer
 
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
 <div class="oauth-management-container">
     <div class="editor-section">
         <h3 class="editor-section-title">
             <i class="bi bi-code-slash"></i>
-            OAuth Applications
+            @Localizer["OAuth Applications"]
         </h3>
-        <p class="subtitle">Manage your OAuth applications and API access</p>
+        <p class="subtitle">@Localizer["Manage your OAuth applications and API access"]</p>
 
         <div class="oauth-actions">
-            <VButton Variant="primary" Icon="plus-circle" OnClick="@OnCreateApp">Create New App</VButton>
+            <VButton Variant="primary" Icon="plus-circle" OnClick="@OnCreateApp">@Localizer["Create New App"]</VButton>
         </div>
 
         @if (_apps is null)
         {
             <div class="loading-state">
                 <i class="bi bi-arrow-clockwise"></i>
-                <p>Loading your applications...</p>
+                <p>@Localizer["Loading your applications..."]</p>
             </div>
         }
         else if (_apps.Count == 0)
         {
             <div class="empty-state">
                 <i class="bi bi-code-square"></i>
-                <h4>No OAuth Applications</h4>
-                <p>You haven't created any OAuth applications yet. Create your first app to get started with the Valour API.</p>
-                <VButton Variant="primary" OnClick="@OnCreateApp">Create Your First App</VButton>
+                <h4>@Localizer["No OAuth Applications"]</h4>
+                <p>@Localizer["You haven't created any OAuth applications yet. Create your first app to get started with the Valour API."]</p>
+                <VButton Variant="primary" OnClick="@OnCreateApp">@Localizer["Create Your First App"]</VButton>
             </div>
         }
         else
@@ -40,7 +43,8 @@
                         </div>
                         <div class="app-info">
                             <h4 class="app-name">@app.Name</h4>
-                            <p class="app-uses">Used @app.Uses time@(app.Uses == 1 ? "" : "s")</p>
+                            @* FIXME: may be possible w/ Humanizer v4 *@
+                            <p class="app-uses">@Localizer["Used {0}", (Localizer["time"].ToString()).ToQuantity(app.Uses)]</p>
                             <p class="app-id">ID: @app.Id</p>
                         </div>
                         <div class="app-actions">
@@ -55,24 +59,24 @@
     <div class="editor-section">
         <h3 class="editor-section-title">
             <i class="bi bi-info-circle"></i>
-            About OAuth
+            @Localizer["About OAuth"]
         </h3>
-        <p class="subtitle">Learn how to use OAuth with Valour</p>
+        <p class="subtitle">@Localizer["Learn how to use OAuth with Valour"]</p>
 
         <div class="oauth-info">
             <div class="info-item">
-                <h4>What is OAuth?</h4>
-                <p>OAuth allows third-party applications to access your Valour account with your explicit permission. This is useful for bots, integrations, and custom applications.</p>
+                <h4>@Localizer["What is OAuth?"]</h4>
+                <p>@Localizer["OAuth allows third-party applications to access your Valour account with your explicit permission. This is useful for bots, integrations, and custom applications."]</p>
             </div>
             
             <div class="info-item">
-                <h4>How it works</h4>
-                <p>When you create an OAuth app, you get a Client ID and Secret. Other applications can use these to request access to your account through a secure authorization flow.</p>
+                <h4>@Localizer["How it works"]</h4>
+                <p>@Localizer["When you create an OAuth app, you get a Client ID and Secret. Other applications can use these to request access to your account through a secure authorization flow."]</p>
             </div>
             
             <div class="info-item">
-                <h4>Security</h4>
-                <p>Your OAuth apps are secure and can be revoked at any time. You can see how many times each app has been used and manage their permissions.</p>
+                <h4>@Localizer["Security"]</h4>
+                <p>@Localizer["Your OAuth apps are secure and can be revoked at any time. You can see how many times each app has been used and manage their permissions."]</p>
             </div>
         </div>
     </div>
