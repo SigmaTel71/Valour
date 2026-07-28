@@ -1,19 +1,22 @@
 @inject ValourClient Client
+@inject IStringLocalizer<BotManagementComponent> Localizer
+
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
 <div class="settings-page">
 <div class="editor-section">
     <h3 class="editor-section-title">
         <i class="bi bi-robot"></i>
-        Bot Accounts
+        @Localizer["Bot Accounts"]
     </h3>
 
     <div class="settings-toolbar">
         <button class="v-btn primary" @onclick="OnCreateBot" disabled="@(_bots is not null && _bots.Count >= 10)">
             <i class="bi bi-plus-circle"></i>
-            Create New Bot
+            @Localizer["Create New Bot"]
         </button>
         @if (_bots is not null && _bots.Count >= 10)
         {
-            <span class="limit-warning">Maximum of 10 bots reached</span>
+            <span class="limit-warning">@Localizer["Maximum of 10 bots reached"]</span>
         }
     </div>
 
@@ -21,16 +24,15 @@
     {
         <div class="settings-empty" role="status">
             <i class="bi bi-arrow-clockwise"></i>
-            <p>Loading your bots...</p>
+            <p>@Localizer["Loading your bots..."]</p>
         </div>
     }
     else if (_bots.Count == 0)
     {
         <div class="settings-empty">
             <i class="bi bi-robot"></i>
-            <h4>No Bot Accounts</h4>
-            <p>You haven't created any bot accounts yet. Create your first bot to start building integrations with Valour.</p>
-
+            <h4>@Localizer["No Bot Accounts"]</h4>
+            <p>@Localizer["You haven't created any bot accounts yet. Create your first bot to start building integrations with Valour."]</p>
         </div>
     }
     else
@@ -59,7 +61,7 @@
 <div class="editor-section">
     <h3 class="editor-section-title">
         <i class="bi bi-info-circle"></i>
-        About Bots
+        @Localizer["About Bots"]
     </h3>
 
     <p class="helper-text">Bots are automated accounts that can join planets, send messages, and respond to commands through the Valour SDK. Keep each bot's token private. Regenerate it if someone else gains access.</p>

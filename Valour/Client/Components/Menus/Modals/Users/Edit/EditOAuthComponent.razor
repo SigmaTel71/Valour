@@ -1,31 +1,33 @@
 @inject ValourClient Client
 @inject OauthService OauthService
+@inject IStringLocalizer<EditOAuthComponent> Localizer
+@using Humanizer
 
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
 <div class="settings-page">
     <div class="editor-section">
         <h3 class="editor-section-title">
             <i class="bi bi-code-slash"></i>
-            OAuth Applications
+            @Localizer["OAuth Applications"]
         </h3>
 
         <div class="settings-toolbar">
-            <VButton Variant="primary" Icon="plus-circle" OnClick="@OnCreateApp">Create New App</VButton>
+            <VButton Variant="primary" Icon="plus-circle" OnClick="@OnCreateApp">@Localizer["Create New App"]</VButton>
         </div>
 
         @if (_apps is null)
         {
             <div class="settings-empty" role="status">
                 <i class="bi bi-arrow-clockwise"></i>
-                <p>Loading your applications...</p>
+                <p>@Localizer["Loading your applications..."]</p>
             </div>
         }
         else if (_apps.Count == 0)
         {
             <div class="settings-empty">
                 <i class="bi bi-code-square"></i>
-                <h4>No OAuth Applications</h4>
-                <p>You haven't created any OAuth applications yet. Create your first app to get started with the Valour API.</p>
-
+                <h4>@Localizer["No OAuth Applications"]</h4>
+                <p>@Localizer["You haven't created any OAuth applications yet. Create your first app to get started with the Valour API."]</p>
             </div>
         }
         else
@@ -39,7 +41,8 @@
                         </div>
                         <div class="settings-row-copy">
                             <h4 class="settings-row-title">@app.Name</h4>
-                            <p class="settings-row-description">Used @app.Uses time@(app.Uses == 1 ? "" : "s")</p>
+                            @* FIXME: may be possible w/ Humanizer v4 *@
+                            <p class="settings-row-description">@Localizer["Used {0}", (Localizer["time"].ToString()).ToQuantity(app.Uses)]</p>
                             <p class="settings-row-description">ID: @app.Id</p>
                         </div>
                         <div class="settings-row-action">
@@ -54,7 +57,7 @@
     <div class="editor-section">
         <h3 class="editor-section-title">
             <i class="bi bi-info-circle"></i>
-            About OAuth
+            @Localizer["About OAuth"]
         </h3>
 
         <p class="helper-text">OAuth applications request permission to use an account. Configure your app's redirect URLs and scopes, and keep its client secret private.</p>

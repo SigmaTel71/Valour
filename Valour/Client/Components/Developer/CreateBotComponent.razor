@@ -1,23 +1,26 @@
 @inherits Modal<CreateBotComponent.ModalParams>
 @inject ValourClient Client
 @inject IJSRuntime JsRuntime
+@inject IStringLocalizer<CreateBotComponent> Localizer
+@inject IStringLocalizer<ValourApp> CommonLocalizer
 
 @if (Client.Me is null)
 {
-    <h2>Sign in!</h2>
+    <h2>@Localizer["Sign in!"]</h2>
     return;
 }
 
-<BasicModalLayout Title="Create Bot" Icon="robot" MaxWidth="500px">
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
+<BasicModalLayout Title="@Localizer["Create Bot"]" Icon="robot" MaxWidth="500px">
     <MainArea>
         @if (!_created)
         {
-            <p class="subtitle">Create a new bot account to automate tasks and build integrations.</p>
+            <p class="subtitle">@Localizer["Create a new bot account to automate tasks and build integrations."]</p>
 
             <div class="form-group">
-                <label>Bot Name</label>
-                <input class="form-control" @bind-value="@_name" placeholder="Enter bot name..." />
-                <span class="helper-text">Choose a unique name for your bot (2-32 characters)</span>
+                <label>@Localizer["Bot Name"]</label>
+                <input class="form-control" @bind-value="@_name" placeholder="@Localizer["Enter bot name..."]" />
+                <span class="helper-text">@Localizer["Choose a unique name for your bot (2-32 characters)"]</span>
             </div>
 
             <ResultLabel Result="@_result" />
@@ -28,23 +31,23 @@
                 <div class="success-icon">
                     <i class="bi bi-check-circle-fill"></i>
                 </div>
-                <h4>Bot Created Successfully!</h4>
+                <h4>@Localizer["Bot Created Successfully!"]</h4>
                 <p class="warning-text">
                     <i class="bi bi-exclamation-triangle-fill"></i>
-                    Save your token now! This is the only time it will be shown.
+                    @Localizer["Save your token now! This is the only time it will be shown."]
                 </p>
             </div>
 
             <div class="form-group">
-                <label>Bot Token</label>
+                <label>@Localizer["Bot Token"]</label>
                 <div class="token-display">
                     <input class="form-control token-input" value="@_token" readonly />
                     <button class="v-btn" @onclick="OnCopyToken">
                         <i class="bi bi-clipboard"></i>
-                        Copy
+                        @CommonLocalizer["Copy"]
                     </button>
                 </div>
-                <span class="helper-text">Use this token with the Valour SDK to authenticate your bot.</span>
+                <span class="helper-text">@Localizer["Use this token with the Valour SDK to authenticate your bot."]</span>
             </div>
         }
     </MainArea>
@@ -52,21 +55,21 @@
         <div class="basic-modal-buttons">
             @if (!_created)
             {
-                <button @onclick="@OnCancel" class="v-btn">Cancel</button>
+                <button @onclick="@OnCancel" class="v-btn">@CommonLocalizer["Cancel"]</button>
                 <button @onclick="@OnClickSubmit" class="v-btn primary" disabled="@_loading">
                     @if (_loading)
                     {
-                        <span>Creating...</span>
+                        <span>@Localizer["Creating..."]</span>
                     }
                     else
                     {
-                        <span>Create Bot</span>
+                        <span>@Localizer["Create Bot"]</span>
                     }
                 </button>
             }
             else
             {
-                <button @onclick="@OnDone" class="v-btn primary">Done</button>
+                <button @onclick="@OnDone" class="v-btn primary">@CommonLocalizer["Done"]</button>
             }
         </div>
     </ButtonArea>
@@ -89,14 +92,14 @@
     {
         if (string.IsNullOrWhiteSpace(_name))
         {
-            _result = new TaskResult(false, "Please enter a bot name.");
+            _result = new TaskResult(false, Localizer["Please enter a bot name."]);
             StateHasChanged();
             return;
         }
 
         if (_name.Length < 2 || _name.Length > 32)
         {
-            _result = new TaskResult(false, "Bot name must be between 2 and 32 characters.");
+            _result = new TaskResult(false, Localizer["Bot name must be between 2 and 32 characters."]);
             StateHasChanged();
             return;
         }
@@ -127,7 +130,7 @@
     private async Task OnCopyToken()
     {
         await JsRuntime.InvokeVoidAsync("clipboardCopy.copyText", _token);
-        ToastContainer.Instance.AddToast(new ToastData("Copied!", "Bot token copied to clipboard", ToastProgressState.Success));
+        ToastContainer.Instance.AddToast(new ToastData(Localizer["Copied!"], Localizer["Bot token copied to clipboard"], ToastProgressState.Success));
     }
 
     private void OnCancel() => Close();
