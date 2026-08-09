@@ -301,7 +301,8 @@
     margin-left: 4px;
 }
 
-.message.minimal:hover > .left-info > .time-container > .time {
+.message.minimal:hover > .left-info > .time-container > .time,
+.message.minimal.force-time > .left-info > .time-container > .time {
     display: block;
 }
 
