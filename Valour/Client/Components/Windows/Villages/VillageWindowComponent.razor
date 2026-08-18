@@ -23,7 +23,7 @@ else if (_error is not null)
 }
 else
 {
-    <div class="village-window @(_activeVoiceChannel is not null ? "has-call" : string.Empty) @(_buildMode ? "build-mode-active" : string.Empty)">
+    <div class="village-window @(_activeVoiceChannel is not null ? "has-call" : string.Empty) @(_buildMode ? "build-mode-active" : string.Empty) @(_adminMode ? "admin-mode-active" : string.Empty)">
         <canvas id="@_canvasId" class="village-canvas"></canvas>
 
         <div class="village-overlay village-world-header">
@@ -47,6 +47,14 @@ else
                             title="@(_buildMode ? "Close build mode" : "Furnish and paint")"
                             aria-label="@(_buildMode ? "Close build mode" : "Open build mode")">
                         <i class="bi bi-hammer"></i>
+                    </button>
+                }
+                @if (_scene?.CanManageVillage == true)
+                {
+                    <button class="village-icon-button @(_adminMode ? "active" : string.Empty)"
+                            @onclick="ToggleAdminModeAsync"
+                            title="Village administration" aria-label="Open village administration">
+                        <i class="bi bi-shield-lock-fill"></i>
                     </button>
                 }
                 <div class="village-zoom-control" role="group" aria-label="Map zoom">
@@ -115,7 +123,7 @@ else
             </aside>
         }
 
-        @if (!_buildMode && (_selectedBuilding is not null || _selectedPlot is not null))
+        @if (!_buildMode && !_adminMode && (_selectedBuilding is not null || _selectedPlot is not null))
         {
             <aside class="village-overlay village-inspector">
                 <div class="overlay-card village-building-card">
@@ -348,6 +356,65 @@ else
             </aside>
         }
 
+        @if (_adminMode)
+        {
+            <aside class="village-admin-panel" aria-label="Village administration">
+                <div class="build-panel-header">
+                    <div><span class="eyebrow">Village admin</span><strong>@(_currentMap?.Name ?? "Map")</strong></div>
+                    <button class="village-icon-button compact" @onclick="ToggleAdminModeAsync" title="Close admin panel"><i class="bi bi-x-lg"></i></button>
+                </div>
+                <div class="admin-panel-body">
+                    <section class="admin-section">
+                        <div class="admin-section-heading">
+                            <div><strong>Parcels</strong><small>Editable land regions</small></div>
+                            <button class="admin-primary @(_adminDrawing ? "active" : string.Empty)" @onclick="BeginParcelDrawAsync">
+                                <i class="bi bi-bounding-box-circles"></i> @(_adminDrawing ? "Drag on map…" : "Draw parcel")
+                            </button>
+                        </div>
+                        <div class="admin-parcel-list">
+                            @foreach (var plot in _currentMap?.Plots ?? [])
+                            {
+                                <button class="admin-parcel-row @(_adminSelectedPlotId == plot.Id ? "active" : string.Empty)" @onclick="() => SelectAdminPlotAsync(plot)">
+                                    <span>@plot.Name</span><small>@plot.Width×@plot.Height at @plot.X,@plot.Y</small>
+                                </button>
+                            }
+                            @if ((_currentMap?.Plots.Count ?? 0) == 0)
+                            {
+                                <div class="admin-empty">No parcels yet. Draw one directly on the map.</div>
+                            }
+                        </div>
+                    </section>
+                    @if (AdminSelectedPlot is not null)
+                    {
+                        <section class="admin-section admin-properties">
+                            <label><span>Name</span><input maxlength="48" @bind="_adminPlotName" /></label>
+                            <div class="admin-geometry-grid">
+                                <label><span>X</span><input type="number" min="0" @bind="_adminPlotX" /></label>
+                                <label><span>Y</span><input type="number" min="0" @bind="_adminPlotY" /></label>
+                                <label><span>Width</span><input type="number" min="1" @bind="_adminPlotWidth" /></label>
+                                <label><span>Height</span><input type="number" min="1" @bind="_adminPlotHeight" /></label>
+                            </div>
+                            <label><span>Who can edit</span>
+                                <select @bind="_adminPlotEditMode">
+                                    <option value="@VillageEditMode.Owner">Owner</option>
+                                    <option value="@VillageEditMode.Everyone">Everyone</option>
+                                    <option value="@VillageEditMode.Managers">Managers only</option>
+                                </select>
+                            </label>
+                            <div class="admin-actions">
+                                <button class="admin-primary" disabled="@_adminSaving" @onclick="SaveAdminPlotAsync">Save changes</button>
+                                <button class="admin-danger" disabled="@_adminSaving" @onclick="ConfirmDeleteAdminPlot">Delete</button>
+                            </div>
+                        </section>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(_adminStatus))
+                    {
+                        <div class="admin-status @(_adminStatusError ? "error" : string.Empty)">@_adminStatus</div>
+                    }
+                </div>
+            </aside>
+        }
+
         @if (_buildMode)
         {
             <aside class="village-build-panel" aria-label="Village build mode">
@@ -457,6 +524,27 @@ else
                             {
                                 <div class="build-empty">No manual brushes match that search.</div>
                             }
+
+                            <div class="build-catalog-section-title">
+                                <span>Exact tiles</span>
+                                <small>Single tile</small>
+                            </div>
+                            @foreach (var tile in GetVisibleBuildTiles())
+                            {
+                                <button class="build-catalog-item @(_selectedBuildKey == tile.Key ? "active" : string.Empty)"
+                                        title="@tile.Name exact tile"
+                                        @onclick="() => SelectBuildTileAsync(tile)">
+                                    <span class="build-item-preview">
+                                        <span class="build-item-sprite" style="@GetBuildPreviewStyle(tile)"></span>
+                                    </span>
+                                    <span class="build-item-name">@tile.Name</span>
+                                    <span class="build-item-size manual">1×1</span>
+                                </button>
+                            }
+                            @if (!GetVisibleBuildTiles().Any())
+                            {
+                                <div class="build-empty">No exact tiles match that search.</div>
+                            }
                         }
                         else
                         {
@@ -533,8 +621,12 @@ else
             </div>
         }
 
-        <div class="village-movement-hint @(_buildMode ? "building" : string.Empty)">
-            @if (_buildMode)
+        <div class="village-movement-hint @((_buildMode || _adminMode) ? "building" : string.Empty)">
+            @if (_adminMode)
+            {
+                <i class="bi bi-bounding-box-circles"></i><span>Parcel admin mode · movement is paused while editing</span>
+            }
+            else if (_buildMode)
             {
                 <i class="bi bi-grid-3x3-gap-fill"></i><span>Editable tiles glow · choose Done to walk normally</span>
             }
@@ -597,6 +689,20 @@ else
     private string _selectedBuildKey = string.Empty;
     private string _buildStatus = string.Empty;
     private DateTime _ignoreObjectRefreshUntil;
+    private bool _adminMode;
+    private bool _adminDrawing;
+    private bool _adminSaving;
+    private long? _adminSelectedPlotId;
+    private string _adminPlotName = string.Empty;
+    private int _adminPlotX;
+    private int _adminPlotY;
+    private int _adminPlotWidth = 1;
+    private int _adminPlotHeight = 1;
+    private VillageEditMode _adminPlotEditMode = VillageEditMode.Owner;
+    private string _adminStatus = string.Empty;
+    private bool _adminStatusError;
+    private VillagePocPlot? AdminSelectedPlot =>
+        _currentMap?.Plots.FirstOrDefault(x => x.Id == _adminSelectedPlotId);
 
     protected override async Task OnInitializedAsync()
     {
@@ -1640,16 +1746,167 @@ else
     private VillagePocBrushItem? SelectedBuildBrush =>
         _scene?.BuildBrushes.FirstOrDefault(x => x.Key == _selectedBuildKey);
 
+    private VillagePocCatalogItem? SelectedBuildTile =>
+        _scene?.BuildCatalog.FirstOrDefault(x =>
+            x.Key == _selectedBuildKey &&
+            string.Equals(x.Kind, "Tile", StringComparison.OrdinalIgnoreCase) &&
+            x.Width == 1 && x.Height == 1);
+
+    private VillagePocBrushItem? SelectedBuildRuntimeBrush =>
+        SelectedBuildBrush ?? (SelectedBuildTile is { } tile
+            ? new VillagePocBrushItem
+            {
+                Key = tile.Key,
+                Name = tile.Name,
+                Size = 1,
+                PreviewDefinitionKey = tile.Key,
+                X = tile.X,
+                Y = tile.Y,
+                Width = 1,
+                Height = 1,
+                Cells = [new VillagePocBrushCell { DefinitionKey = tile.Key }],
+            }
+            : null);
+
     private VillagePocCatalogItem? SelectedBuildPreviewItem =>
         _buildTool == "Paint"
-            ? _scene?.BuildCatalog.FirstOrDefault(x =>
+            ? SelectedBuildTile ?? _scene?.BuildCatalog.FirstOrDefault(x =>
                 x.Key == (SelectedBuildTerrain?.PreviewDefinitionKey ?? SelectedBuildBrush?.PreviewDefinitionKey))
             : SelectedBuildItem;
+
+    private async Task ToggleAdminModeAsync()
+    {
+        if (_scene?.CanManageVillage != true) return;
+        _adminMode = !_adminMode;
+        _adminDrawing = false;
+        _adminStatus = string.Empty;
+        if (_adminMode && _buildMode)
+        {
+            _buildMode = false;
+            await SyncBuildModeAsync();
+        }
+        if (_runtime is not null)
+            await _runtime.InvokeVoidAsync("setAdminMode", _adminMode);
+        await ReRender();
+    }
+
+    private async Task BeginParcelDrawAsync()
+    {
+        _adminDrawing = !_adminDrawing;
+        _adminStatus = _adminDrawing ? "Drag across the map to define parcel bounds." : string.Empty;
+        if (_runtime is not null)
+            await _runtime.InvokeVoidAsync("setAdminDrawing", _adminDrawing);
+        await ReRender();
+    }
+
+    [JSInvokable]
+    public async Task OnAdminParcelDrawn(int x, int y, int width, int height)
+    {
+        if (!_adminMode || Data is null || _currentMap is null) return;
+        _adminDrawing = false;
+        _adminSaving = true;
+        _adminStatusError = false;
+        _adminStatus = "Creating parcel…";
+        await ReRender();
+        var result = await VillageService.CreatePlotAsync(Data, _currentMap.Id, new VillagePlotCreateRequest
+        {
+            Name = $"Parcel {_currentMap.Plots.Count + 1}",
+            X = x, Y = y, Width = width, Height = height,
+            EditMode = VillageEditMode.Owner,
+        });
+        _adminSaving = false;
+        if (!result.Success || result.Data is null)
+        {
+            _adminStatusError = true;
+            _adminStatus = result.Message ?? "Could not create parcel.";
+            await ReRender();
+            return;
+        }
+        await RefreshSceneAsync(null, result.Data.Id);
+        var created = _currentMap?.Plots.FirstOrDefault(p => p.Id == result.Data.Id);
+        if (created is not null) await SelectAdminPlotAsync(created);
+        _adminStatus = "Parcel created.";
+        await ReRender();
+    }
+
+    private async Task SelectAdminPlotAsync(VillagePocPlot plot)
+    {
+        _adminSelectedPlotId = plot.Id;
+        _adminPlotName = plot.Name;
+        _adminPlotX = plot.X;
+        _adminPlotY = plot.Y;
+        _adminPlotWidth = plot.Width;
+        _adminPlotHeight = plot.Height;
+        _adminPlotEditMode = plot.EditMode;
+        if (_runtime is not null)
+            await _runtime.InvokeVoidAsync("selectAdminPlot", plot.Id.ToString());
+        await ReRender();
+    }
+
+    private async Task SaveAdminPlotAsync()
+    {
+        if (Data is null || AdminSelectedPlot is null || _adminSaving) return;
+        _adminSaving = true;
+        var result = await VillageService.UpdatePlotGeometryAsync(Data, AdminSelectedPlot.Id, new VillagePlotUpdateRequest
+        {
+            Name = _adminPlotName,
+            X = _adminPlotX, Y = _adminPlotY,
+            Width = _adminPlotWidth, Height = _adminPlotHeight,
+            EditMode = _adminPlotEditMode,
+        });
+        _adminSaving = false;
+        _adminStatusError = !result.Success;
+        _adminStatus = result.Success ? "Parcel updated." : result.Message ?? "Could not update parcel.";
+        if (result.Success)
+        {
+            var id = _adminSelectedPlotId;
+            await RefreshSceneAsync(null, id);
+            var updated = _currentMap?.Plots.FirstOrDefault(p => p.Id == id);
+            if (updated is not null) await SelectAdminPlotAsync(updated);
+        }
+        await ReRender();
+    }
+
+    private async Task DeleteAdminPlotAsync()
+    {
+        if (Data is null || AdminSelectedPlot is null || _adminSaving) return;
+        _adminSaving = true;
+        var result = await VillageService.DeletePlotAsync(Data, AdminSelectedPlot.Id);
+        _adminSaving = false;
+        _adminStatusError = !result.Success;
+        _adminStatus = result.Success ? "Parcel deleted." : result.Message ?? "Could not delete parcel.";
+        if (result.Success)
+        {
+            _adminSelectedPlotId = null;
+            await RefreshSceneAsync(null, null);
+        }
+        await ReRender();
+    }
+
+    private void ConfirmDeleteAdminPlot()
+    {
+        if (AdminSelectedPlot is not { } plot || _adminSaving) return;
+        ModalRoot.Instance?.OpenModal<ConfirmModalComponent>(new ConfirmModalComponent.ModalParams(
+            $"Delete {plot.Name}?",
+            "The parcel boundary will be removed. Buildings inside it will remain, but will no longer belong to this parcel.",
+            "Delete parcel",
+            "Cancel",
+            DeleteAdminPlotAsync,
+            () => Task.CompletedTask));
+    }
 
     private async Task ToggleBuildModeAsync()
     {
         if (!_buildMode && !CanBuildCurrentMap)
             return;
+
+        if (!_buildMode && _adminMode)
+        {
+            _adminMode = false;
+            _adminDrawing = false;
+            if (_runtime is not null)
+                await _runtime.InvokeVoidAsync("setAdminMode", false);
+        }
 
         _buildMode = !_buildMode;
         _buildStatus = _buildMode
@@ -1670,9 +1927,12 @@ else
 
         if (tool == "Paint" &&
             !((_scene?.BuildTerrains.Any(x => x.Key == _selectedBuildKey) ?? false) ||
-              (_scene?.BuildBrushes.Any(x => x.Key == _selectedBuildKey) ?? false)))
+              (_scene?.BuildBrushes.Any(x => x.Key == _selectedBuildKey) ?? false) ||
+              GetBuildTiles().Any(x => x.Key == _selectedBuildKey)))
         {
-            _selectedBuildKey = _scene?.BuildTerrains.FirstOrDefault()?.Key ?? string.Empty;
+            _selectedBuildKey = _scene?.BuildTerrains.FirstOrDefault()?.Key
+                ?? GetBuildTiles().FirstOrDefault()?.Key
+                ?? string.Empty;
         }
         else if (tool == "Furnish" &&
                  !GetBuildItemsForTool(tool).Any(x => x.Key == _selectedBuildKey))
@@ -1708,6 +1968,14 @@ else
         await ReRender();
     }
 
+    private async Task SelectBuildTileAsync(VillagePocCatalogItem tile)
+    {
+        _selectedBuildKey = tile.Key;
+        _buildStatus = $"{tile.Name} selected — paints that exact tile.";
+        await SyncBuildModeAsync();
+        await ReRender();
+    }
+
     private Task SetBuildCategory(string category)
     {
         _buildCategory = category;
@@ -1739,6 +2007,25 @@ else
     private IEnumerable<VillagePocTerrainItem> GetVisibleBuildTerrains()
     {
         var items = _scene?.BuildTerrains.AsEnumerable() ?? [];
+        if (!string.IsNullOrWhiteSpace(_buildSearch))
+        {
+            var search = _buildSearch.Trim();
+            items = items.Where(x =>
+                x.Name.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                x.Key.Contains(search, StringComparison.OrdinalIgnoreCase));
+        }
+
+        return items.OrderBy(x => x.Name);
+    }
+
+    private IEnumerable<VillagePocCatalogItem> GetBuildTiles() =>
+        (_scene?.BuildCatalog ?? []).Where(x =>
+            string.Equals(x.Kind, "Tile", StringComparison.OrdinalIgnoreCase) &&
+            x.Width == 1 && x.Height == 1);
+
+    private IEnumerable<VillagePocCatalogItem> GetVisibleBuildTiles()
+    {
+        var items = GetBuildTiles();
         if (!string.IsNullOrWhiteSpace(_buildSearch))
         {
             var search = _buildSearch.Trim();
@@ -1837,7 +2124,7 @@ else
             tool = _buildTool,
             definition = SelectedBuildPreviewItem,
             selectionKey = _selectedBuildKey,
-            brush = SelectedBuildBrush,
+            brush = SelectedBuildRuntimeBrush,
         });
     }
 
@@ -1884,7 +2171,8 @@ else
 
         var terrain = _scene?.BuildTerrains.FirstOrDefault(x => x.Key == selectionKey);
         var brush = _scene?.BuildBrushes.FirstOrDefault(x => x.Key == selectionKey);
-        if (terrain is null && brush is null)
+        var tile = GetBuildTiles().FirstOrDefault(x => x.Key == selectionKey);
+        if (terrain is null && brush is null && tile is null)
             return;
 
         await SubmitBuildRequestAsync(
@@ -1894,11 +2182,14 @@ else
                 Action = VillageBuildAction.Paint,
                 TerrainKey = terrain?.Key,
                 BrushKey = brush?.Key,
+                DefinitionKey = tile?.Key,
                 Cells = cells,
                 X = cells[0].X,
                 Y = cells[0].Y,
             },
-            brush is not null
+            tile is not null
+                ? $"{tile.Name} painted across {cells.Count} tile{(cells.Count == 1 ? string.Empty : "s")} exactly."
+                : brush is not null
                 ? $"{brush.Name} stamped {cells.Count} time{(cells.Count == 1 ? string.Empty : "s")} as an exact manual pattern."
                 : $"{terrain!.Name} painted across {cells.Count} tile{(cells.Count == 1 ? string.Empty : "s")} with connected edges.");
     }

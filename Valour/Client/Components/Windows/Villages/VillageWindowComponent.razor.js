@@ -90,6 +90,13 @@ export function init(canvasId, dotNetRef, scene, isMobile) {
             lastSubmitAt: 0,
             submitting: false,
         },
+        admin: {
+            enabled: false,
+            drawing: false,
+            pointerId: null,
+            start: null,
+            current: null,
+        },
         // Whether to draw the resting joystick affordance. The stick itself
         // works from any touch; the ghost exists so touch players can SEE that
         // it exists. Any real touch also flips this on, which covers touch
@@ -140,6 +147,34 @@ export function init(canvasId, dotNetRef, scene, isMobile) {
                 state.build.hoverY = null;
             }
             canvas.classList.toggle("build-mode", state.build.enabled);
+            draw(state);
+        },
+        setAdminMode(enabled) {
+            state.admin.enabled = enabled === true;
+            state.admin.drawing = false;
+            state.admin.pointerId = null;
+            state.admin.start = null;
+            state.admin.current = null;
+            state.keys.clear();
+            state.touch.direction = null;
+            state.lastDirectionKey = null;
+            state.moveAccumulatorMs = 0;
+            canvas.classList.toggle("admin-mode", state.admin.enabled);
+            canvas.classList.remove("admin-drawing");
+            draw(state);
+        },
+        setAdminDrawing(enabled) {
+            state.admin.drawing = state.admin.enabled && enabled === true;
+            state.admin.pointerId = null;
+            state.admin.start = null;
+            state.admin.current = null;
+            canvas.classList.toggle("admin-drawing", state.admin.drawing);
+            draw(state);
+        },
+        selectAdminPlot(plotId) {
+            state.selectedBuildingId = null;
+            state.selectedPlotId = plotId == null ? null :
+                getCurrentMap(state)?.plots?.find(x => String(x.id) === String(plotId))?.id ?? null;
             draw(state);
         },
         applyBuildResult(result) {
@@ -360,7 +395,7 @@ export function init(canvasId, dotNetRef, scene, isMobile) {
 
     state.onKeyDown = (event) => {
         const normalizedKey = normalizeMovementKey(event.key);
-        if (!normalizedKey || !acceptsInput(state, event)) {
+        if (!normalizedKey || state.admin.enabled || !acceptsInput(state, event)) {
             return;
         }
 
@@ -409,6 +444,10 @@ export function init(canvasId, dotNetRef, scene, isMobile) {
         const tileX = Math.floor(worldX / px);
         const tileY = Math.floor(worldY / px);
 
+        if (state.admin.enabled) {
+            return;
+        }
+
         if (state.build.enabled) {
             if (state.build.tool !== "Paint") {
                 await submitBuildSelection(state, map, tileX, tileY);
@@ -434,6 +473,19 @@ export function init(canvasId, dotNetRef, scene, isMobile) {
     // than living in a fixed corner, so it works in either hand and never
     // covers something the player was trying to look at.
     state.onPointerDown = (event) => {
+        if (state.admin.enabled) {
+            if (!state.admin.drawing || state.admin.pointerId !== null) return;
+            const map = getCurrentMap(state);
+            if (!map) return;
+            const tile = pointerTile(state, event, map);
+            state.admin.pointerId = event.pointerId;
+            state.admin.start = tile;
+            state.admin.current = tile;
+            try { canvas.setPointerCapture?.(event.pointerId); } catch { }
+            draw(state);
+            return;
+        }
+
         if (state.build.enabled) {
             if (state.build.submitting || state.build.pointerId !== null) {
                 return;
@@ -519,6 +571,16 @@ export function init(canvasId, dotNetRef, scene, isMobile) {
     };
 
     state.onPointerMove = (event) => {
+        if (state.admin.enabled) {
+            if (state.admin.drawing && event.pointerId === state.admin.pointerId) {
+                const map = getCurrentMap(state);
+                if (map) state.admin.current = pointerTile(state, event, map);
+                event.preventDefault();
+                draw(state);
+            }
+            return;
+        }
+
         if (state.build.enabled) {
             updateBuildHover(state, event);
             if (state.build.tool === "Paint" &&
@@ -600,6 +662,28 @@ export function init(canvasId, dotNetRef, scene, isMobile) {
     };
 
     state.onPointerUp = (event) => {
+        if (state.admin.enabled) {
+            if (event.pointerId === state.admin.pointerId) {
+                const start = state.admin.start;
+                const end = state.admin.current ?? start;
+                state.admin.pointerId = null;
+                state.admin.start = null;
+                state.admin.current = null;
+                state.admin.drawing = false;
+                canvas.classList.remove("admin-drawing");
+                try { canvas.releasePointerCapture?.(event.pointerId); } catch { }
+                if (event.type !== "pointercancel" && start && end) {
+                    const x = Math.min(start.x, end.x);
+                    const y = Math.min(start.y, end.y);
+                    void invokeDotNet(state, "OnAdminParcelDrawn", x, y,
+                        Math.abs(end.x - start.x) + 1,
+                        Math.abs(end.y - start.y) + 1);
+                }
+                draw(state);
+            }
+            return;
+        }
+
         if (state.build.enabled) {
             if (event.pointerId === state.build.pointerId) {
                 const stroke = state.build.stroke;
@@ -669,6 +753,11 @@ export function init(canvasId, dotNetRef, scene, isMobile) {
         state.build.pointerId = null;
         state.build.lastDragTile = null;
         state.build.stroke = null;
+        state.admin.pointerId = null;
+        state.admin.start = null;
+        state.admin.current = null;
+        state.admin.drawing = false;
+        canvas.classList.remove("admin-drawing");
     };
 
     state.onWheel = (event) => {
@@ -1019,7 +1108,7 @@ function updatePlayer(state, deltaMs) {
         return;
     }
 
-    if (state.keys.size === 0 && !state.touch.direction) {
+    if (state.admin.enabled || (state.keys.size === 0 && !state.touch.direction)) {
         state.moveAccumulatorMs = 0;
         return;
     }
@@ -1154,6 +1243,7 @@ function draw(state) {
     drawPlots(ctx, map.plots, state.selectedPlotId, state, px);
     drawPortalHints(ctx, map, state, px);
     drawWorldSorted(ctx, map, state, px);
+    drawAdminOverlay(ctx, map, state, px);
     drawBuildOverlay(ctx, map, state, px);
     drawBubbles(ctx, state, px);
     drawTouchStick(ctx, state);
@@ -1452,6 +1542,39 @@ function drawPlots(ctx, plots, selectedPlotId, state, px) {
         ctx.strokeRect(x + 1, y + 1, width - 2, height - 2);
         ctx.setLineDash([]);
     }
+}
+
+function pointerTile(state, event, map) {
+    const rect = state.canvas.getBoundingClientRect();
+    const px = tilePixelSize(state);
+    return {
+        x: clamp(Math.floor((event.clientX - rect.left + state.renderCameraX) / px), 0, map.width - 1),
+        y: clamp(Math.floor((event.clientY - rect.top + state.renderCameraY) / px), 0, map.height - 1),
+    };
+}
+
+function drawAdminOverlay(ctx, map, state, px) {
+    if (!state.admin.enabled || !state.admin.start || !state.admin.current) return;
+    const x = Math.min(state.admin.start.x, state.admin.current.x);
+    const y = Math.min(state.admin.start.y, state.admin.current.y);
+    const width = Math.abs(state.admin.current.x - state.admin.start.x) + 1;
+    const height = Math.abs(state.admin.current.y - state.admin.start.y) + 1;
+    const screenX = x * px - state.renderCameraX;
+    const screenY = y * px - state.renderCameraY;
+    ctx.save();
+    ctx.fillStyle = "rgba(0, 250, 255, 0.16)";
+    ctx.strokeStyle = "#00faff";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([7, 4]);
+    ctx.fillRect(screenX, screenY, width * px, height * px);
+    ctx.strokeRect(screenX + 1, screenY + 1, width * px - 2, height * px - 2);
+    ctx.setLineDash([]);
+    ctx.fillStyle = "rgba(3, 11, 16, 0.88)";
+    ctx.fillRect(screenX + 5, screenY + 5, 58, 22);
+    ctx.fillStyle = "#fff";
+    ctx.font = "700 12px sans-serif";
+    ctx.fillText(`${width} × ${height}`, screenX + 11, screenY + 20);
+    ctx.restore();
 }
 
 async function submitBuildSelection(state, map, tileX, tileY) {

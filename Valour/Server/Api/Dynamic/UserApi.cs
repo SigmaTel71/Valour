@@ -806,6 +806,23 @@ public class UserApi
         return Results.Json(prefs.ToModel());
     }
 
+    [ValourRoute(HttpVerbs.Post, "api/users/me/badges/visibility")]
+    [UserRequired]
+    public static async Task<IResult> SetBadgeVisibilityAsync(
+        [FromBody] SetUserBadgeVisibilityRequest request,
+        UserService userService)
+    {
+        if (request is null)
+            return ValourResult.BadRequest("Include a badge visibility request.");
+
+        var userId = await userService.GetCurrentUserIdAsync();
+        var result = await userService.SetBadgeVisibilityAsync(
+            userId, request.Badge, request.Visible);
+        return result.Success && result.Data is not null
+            ? Results.Json(result.Data)
+            : ValourResult.BadRequest(result.Message);
+    }
+
     [ValourRoute(HttpVerbs.Get, "api/users/me/planet-list-layout")]
     [UserRequired(UserPermissionsEnum.Membership)]
     public static async Task<IResult> GetPlanetListLayoutAsync(UserService userService, ValourDb db)

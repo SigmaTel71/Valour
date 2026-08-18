@@ -791,6 +791,32 @@ public class UserService
         _currentUser = await GetAsync(token.UserId);
         return _currentUser;
     }
+
+    /// <summary>
+    /// Updates one platform badge's public visibility by flipping its durable
+    /// catalog bit in the user's hidden-badge mask.
+    /// </summary>
+    public async Task<TaskResult<User>> SetBadgeVisibilityAsync(
+        long userId, PlatformBadge badge, bool visible)
+    {
+        var user = await _db.Users.FindAsync(userId);
+        if (user is null)
+            return TaskResult<User>.FromFailure("User not found.");
+
+        if (!PlatformBadgeCatalog.Definitions.ContainsKey(badge))
+            return TaskResult<User>.FromFailure("That badge is not configurable.");
+
+        if (!PlatformBadgeCatalog.IsEarned(user, badge))
+            return TaskResult<User>.FromFailure("You do not have that badge.");
+
+        user.HiddenBadgeFlags = BadgeVisibility.SetVisible(
+            user.HiddenBadgeFlags, (long)badge, visible);
+        await _db.SaveChangesAsync();
+
+        var model = user.ToModel();
+        await _coreHub.NotifyUserChange(model);
+        return TaskResult<User>.FromData(model);
+    }
     
     /// <summary>
     /// Returns the user id for the current context

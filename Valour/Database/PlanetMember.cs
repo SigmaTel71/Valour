@@ -54,6 +54,7 @@ public class PlanetMember : ISharedPlanetMember
     /// The last time this member connected to planet realtime.
     /// </summary>
     public DateTime TimeLastConnected { get; set; }
+    public long HiddenBadgeFlags { get; set; }
     
     public PlanetRoleMembership RoleMembership { get; set; }
 
@@ -95,6 +96,10 @@ public class PlanetMember : ISharedPlanetMember
 
             e.Property(x => x.TimeLastConnected)
                 .HasColumnName("time_last_connected");
+
+            e.Property(x => x.HiddenBadgeFlags)
+                .HasColumnName("hidden_badge_flags")
+                .HasDefaultValue(0L);
 
             e.ComplexProperty<PlanetRoleMembership>(x => x.RoleMembership, b =>
             {

@@ -280,6 +280,7 @@ public class VillageWorldService
                     IsOwnedByLocalMember = plot.OwnerMemberId == member.Id,
                     CanEdit = canManageVillage || plot.EditMode == VillageEditMode.Everyone ||
                         (plot.EditMode == VillageEditMode.Owner && plot.OwnerMemberId == member.Id),
+                    EditMode = plot.EditMode,
                     ForSale = plot.ForSale,
                     Price = plot.Price,
                     X = plot.X,
@@ -492,9 +493,27 @@ public class VillageWorldService
                     return await PaintManualBrushAsync(map, actorMemberId, canManageVillage, brush, cells);
                 }
 
+                var definitionKey = request.DefinitionKey?.Trim() ?? string.Empty;
+                if (definitionKey.Length > 0)
+                {
+                    if (!_collisionService.TryGetDefinition(map.TilesetKey, definitionKey, out var exactDefinition) ||
+                        !string.Equals(exactDefinition.Kind, "Tile", StringComparison.OrdinalIgnoreCase) ||
+                        exactDefinition.Width != 1 || exactDefinition.Height != 1)
+                    {
+                        return TaskResult<VillageBuildResult>.FromFailure(
+                            "That exact tile is not available on this map.");
+                    }
+
+                    var exactBrush = new VillageCollisionService.BrushDefinition(
+                        exactDefinition.Key,
+                        exactDefinition.Name,
+                        1,
+                        [new VillageCollisionService.BrushCellDefinition(exactDefinition.Key, 1, 1)]);
+                    return await PaintManualBrushAsync(
+                        map, actorMemberId, canManageVillage, exactBrush, cells);
+                }
+
                 var terrainKey = request.TerrainKey?.Trim() ?? string.Empty;
-                if (terrainKey.Length == 0 && !string.IsNullOrWhiteSpace(request.DefinitionKey))
-                    terrainKey = _collisionService.GetTerrainKey(map.TilesetKey, request.DefinitionKey.Trim());
 
                 return await PaintTerrainAsync(
                     map,
@@ -1443,10 +1462,123 @@ public class VillageWorldService
             plot.Name = name;
         }
 
+        if (request.X is not null || request.Y is not null || request.Width is not null ||
+            request.Height is not null || request.EditMode is not null)
+        {
+            if (!canManageVillage)
+                return new TaskResult(false, "Only a village manager can change parcel geometry.");
+            if (request.EditMode is { } editMode && !Enum.IsDefined(editMode))
+                return new TaskResult(false, "Choose a valid parcel edit mode.");
+
+            var x = request.X ?? plot.X;
+            var y = request.Y ?? plot.Y;
+            var width = request.Width ?? plot.Width;
+            var height = request.Height ?? plot.Height;
+            var geometryError = await ValidatePlotGeometryAsync(
+                planetId, plot.MapId, x, y, width, height, plot.Id);
+            if (geometryError is not null)
+                return new TaskResult(false, geometryError);
+
+            plot.X = x;
+            plot.Y = y;
+            plot.Width = width;
+            plot.Height = height;
+            if (request.EditMode is not null)
+                plot.EditMode = request.EditMode.Value;
+        }
+
         await _db.SaveChangesAsync();
         _hubService.NotifyPlanetItemChange(planetId, plot.ToModel());
         return TaskResult.SuccessResult;
     }
+
+    public async Task<TaskResult<VillagePocPlot>> CreatePlotAsync(
+        long planetId, long mapId, VillagePlotCreateRequest request)
+    {
+        var map = await _db.VillageMaps.FirstOrDefaultAsync(x => x.Id == mapId && x.PlanetId == planetId);
+        if (map is null)
+            return TaskResult<VillagePocPlot>.FromFailure("Village map not found.");
+
+        var name = request.Name?.Trim() ?? string.Empty;
+        if (name.Length == 0 || name.Length > ISharedVillagePlot.MaxNameLength)
+            return TaskResult<VillagePocPlot>.FromFailure(
+                $"Parcel names must be between 1 and {ISharedVillagePlot.MaxNameLength} characters.");
+        if (!Enum.IsDefined(request.EditMode))
+            return TaskResult<VillagePocPlot>.FromFailure("Choose a valid parcel edit mode.");
+        var geometryError = await ValidatePlotGeometryAsync(
+            planetId, mapId, request.X, request.Y, request.Width, request.Height);
+        if (geometryError is not null)
+            return TaskResult<VillagePocPlot>.FromFailure(geometryError);
+
+        var plot = new Valour.Database.VillagePlot
+        {
+            Id = IdManager.Generate(),
+            PlanetId = planetId,
+            MapId = mapId,
+            Name = name,
+            X = request.X,
+            Y = request.Y,
+            Width = request.Width,
+            Height = request.Height,
+            EditMode = request.EditMode,
+            ForSale = false,
+            Price = 0,
+        };
+        _db.VillagePlots.Add(plot);
+        await _db.SaveChangesAsync();
+        _hubService.NotifyPlanetItemChange(planetId, plot.ToModel());
+        return TaskResult<VillagePocPlot>.FromData(ToAdminPlot(plot));
+    }
+
+    public async Task<TaskResult> DeletePlotAsync(long planetId, long plotId)
+    {
+        var plot = await _db.VillagePlots.FirstOrDefaultAsync(x => x.Id == plotId && x.PlanetId == planetId);
+        if (plot is null)
+            return new TaskResult(false, "Parcel not found.");
+
+        var buildings = await _db.VillageBuildings
+            .Where(x => x.PlanetId == planetId && x.PlotId == plotId).ToListAsync();
+        foreach (var building in buildings)
+            building.PlotId = null;
+        _db.VillagePlots.Remove(plot);
+        await _db.SaveChangesAsync();
+        foreach (var building in buildings)
+            _hubService.NotifyPlanetItemChange(planetId, building.ToModel());
+        _hubService.NotifyPlanetItemDelete(plot.ToModel());
+        return TaskResult.SuccessResult;
+    }
+
+    private async Task<string?> ValidatePlotGeometryAsync(
+        long planetId, long mapId, int x, int y, int width, int height, long? exceptPlotId = null)
+    {
+        if (width < 1 || height < 1)
+            return "A parcel must be at least one tile wide and high.";
+        var map = await _db.VillageMaps.AsNoTracking()
+            .FirstOrDefaultAsync(m => m.Id == mapId && m.PlanetId == planetId);
+        if (map is null)
+            return "Village map not found.";
+        if (x < 0 || y < 0 || (long)x + width > map.Width || (long)y + height > map.Height)
+            return "Keep the parcel inside the map.";
+        var overlaps = await _db.VillagePlots.AnyAsync(p =>
+            p.PlanetId == planetId && p.MapId == mapId && p.Id != exceptPlotId &&
+            x < p.X + p.Width && x + width > p.X &&
+            y < p.Y + p.Height && y + height > p.Y);
+        return overlaps ? "Parcels cannot overlap." : null;
+    }
+
+    private static VillagePocPlot ToAdminPlot(Valour.Database.VillagePlot plot) => new()
+    {
+        Id = plot.Id,
+        Name = plot.Name,
+        X = plot.X,
+        Y = plot.Y,
+        Width = plot.Width,
+        Height = plot.Height,
+        CanEdit = true,
+        EditMode = plot.EditMode,
+        BorderColor = "#5d8f4c",
+        FillColor = "#00000000",
+    };
 
     /// <summary>
     /// Creates an immediately useful social world rather than an empty editor

@@ -568,7 +568,7 @@ public class NotificationService
     /// Replaces all mention tags («@m-123», «@u-123», «@r-123», «@c-123») in message
     /// content with readable names so notifications don't show raw tags or bare '@'.
     /// </summary>
-    private async Task<string> ReplaceMentionTagsAsync(string? content)
+    internal async Task<string> ReplaceMentionTagsAsync(string? content)
     {
         if (string.IsNullOrEmpty(content) || !content.Contains('«'))
             return content ?? string.Empty;

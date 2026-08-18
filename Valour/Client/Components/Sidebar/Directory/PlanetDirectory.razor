@@ -77,13 +77,13 @@
                 {
                     <WikiDirectorySection Planet="@Planet"/>
                 }
-                @if (Planet.EnableThreads)
-                {
-                    <ThreadsDirectorySection Planet="@Planet"/>
-                }
                 @if (Planet.EnableVillage)
                 {
                     <VillageDirectorySection Planet="@Planet"/>
+                }
+                @if (Planet.EnableThreads)
+                {
+                    <ThreadsDirectorySection Planet="@Planet"/>
                 }
 
                 @foreach (var root in RootChannels)

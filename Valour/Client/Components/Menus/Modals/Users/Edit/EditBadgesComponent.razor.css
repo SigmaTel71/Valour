@@ -1,0 +1,138 @@
+.badge-settings-page {
+    max-width: 640px;
+}
+
+.editor-section {
+    padding: .5rem 0 1.75rem;
+}
+
+.editor-section-title {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin-bottom: .5rem;
+    color: var(--font-alt-color);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--letter-spacing-normal);
+    text-transform: uppercase;
+}
+
+.editor-section-title i {
+    color: var(--font-color);
+    font-size: var(--font-size-sm);
+}
+
+.section-description {
+    max-width: 560px;
+    margin: 0 0 1.25rem;
+    color: var(--font-alt-color);
+    font-size: var(--font-size-sm);
+    line-height: 1.5;
+}
+
+.badge-preview,
+.badge-toggle-item,
+.badge-empty-state {
+    border: 1px solid var(--slight-tint);
+    border-radius: var(--radius-md);
+    background: var(--main-3);
+}
+
+.badge-preview {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 62px;
+    margin-bottom: 1rem;
+    padding: .75rem 1rem;
+}
+
+.badge-preview > div:first-child {
+    display: flex;
+    flex-direction: column;
+}
+
+.preview-label {
+    color: var(--font-alt-color);
+    font-size: var(--font-size-xs);
+}
+
+.badge-toggle-list {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+}
+
+.badge-toggle-item {
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: .75rem;
+    padding: .75rem 1rem;
+}
+
+.badge-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    color: var(--font-color);
+    background: var(--main-1);
+}
+
+.badge-icon.stargazer i {
+    color: transparent;
+    background: linear-gradient(135deg, var(--badge-star-start), var(--badge-star-end));
+    background-clip: text;
+    -webkit-background-clip: text;
+}
+
+.badge-icon.milestone-1k { color: #ffe58a; }
+.badge-icon.milestone-10k { color: #a8d9ff; }
+.badge-icon.bot { color: #80d8ff; }
+.badge-icon.staff { color: #ff8db5; }
+
+.badge-copy {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+}
+
+.badge-title {
+    color: var(--font-color);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+}
+
+.badge-description,
+.badge-empty-state,
+.save-status {
+    color: var(--font-alt-color);
+    font-size: var(--font-size-xs);
+}
+
+.badge-empty-state {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: 1rem;
+}
+
+.save-status {
+    margin: .75rem 0 0;
+}
+
+.save-status.error {
+    color: var(--color-danger);
+}
+
+@media (max-width: 540px) {
+    .badge-toggle-item {
+        grid-template-columns: 34px minmax(0, 1fr) auto;
+        padding: .75rem;
+    }
+}

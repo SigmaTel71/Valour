@@ -87,6 +87,35 @@ public class VillageApi
         return result.Success ? Results.Json(true) : ValourResult.BadRequest(result.Message);
     }
 
+    [ValourRoute(HttpVerbs.Post, "api/planets/{id}/village/maps/{mapId}/plots")]
+    [UserRequired(UserPermissionsEnum.Membership)]
+    public static async Task<IResult> CreatePlotRouteAsync(
+        long id, long mapId, [FromBody] VillagePlotCreateRequest request,
+        PlanetMemberService memberService, VillageWorldService worldService)
+    {
+        var member = await memberService.GetCurrentAsync(id);
+        if (member is null) return ValourResult.NotPlanetMember();
+        var canManage = await memberService.HasPermissionAsync(member, PlanetPermissions.ManageVillage);
+        if (!canManage) return ValourResult.Forbid("Manage Village permission is required.");
+        var result = await worldService.CreatePlotAsync(id, mapId, request);
+        return result.Success && result.Data is not null
+            ? Results.Json(result.Data)
+            : ValourResult.BadRequest(result.Message);
+    }
+
+    [ValourRoute(HttpVerbs.Delete, "api/planets/{id}/village/plots/{plotId}")]
+    [UserRequired(UserPermissionsEnum.Membership)]
+    public static async Task<IResult> DeletePlotRouteAsync(
+        long id, long plotId, PlanetMemberService memberService, VillageWorldService worldService)
+    {
+        var member = await memberService.GetCurrentAsync(id);
+        if (member is null) return ValourResult.NotPlanetMember();
+        var canManage = await memberService.HasPermissionAsync(member, PlanetPermissions.ManageVillage);
+        if (!canManage) return ValourResult.Forbid("Manage Village permission is required.");
+        var result = await worldService.DeletePlotAsync(id, plotId);
+        return result.Success ? Results.NoContent() : ValourResult.BadRequest(result.Message);
+    }
+
     [ValourRoute(HttpVerbs.Post, "api/planets/{id}/village/buildings/{buildingId}/room")]
     [UserRequired(UserPermissionsEnum.Membership)]
     public static async Task<IResult> AcquireBuildingRoomRouteAsync(

@@ -22,6 +22,7 @@
     public BrowserUtils DomWindow { get; set; }
 
     private RenderFragment ProfileContent => @<EditProfileComponent />;
+    private RenderFragment BadgesContent => @<EditBadgesComponent />;
     private RenderFragment PlanetIdentityContent => @<EditPlanetIdentityComponent />;
     private RenderFragment FriendsContent => @<EditFriendsComponent />;
     private RenderFragment SafetyContent => @<EditSafetyComponent />;
@@ -80,6 +81,13 @@
                         Icon = "person-fill",
                         Description = "Edit your profile, avatar, and appearance",
                         Content = ProfileContent
+                    },
+                    new MainMenu.MenuItem()
+                    {
+                        Name = "Badges",
+                        Icon = "patch-check-fill",
+                        Description = "Choose which badges appear on your profile",
+                        Content = BadgesContent
                     },
                     new MainMenu.MenuItem()
                     {

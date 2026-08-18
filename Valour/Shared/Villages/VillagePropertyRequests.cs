@@ -1,3 +1,5 @@
+using Valour.Shared.Models;
+
 namespace Valour.Shared.Villages;
 
 /// <summary>
@@ -17,6 +19,21 @@ public class VillageBuildingUpdateRequest
 public class VillagePlotUpdateRequest
 {
     public string? Name { get; set; }
+    public int? X { get; set; }
+    public int? Y { get; set; }
+    public int? Width { get; set; }
+    public int? Height { get; set; }
+    public VillageEditMode? EditMode { get; set; }
+}
+
+public class VillagePlotCreateRequest
+{
+    public string Name { get; set; } = string.Empty;
+    public int X { get; set; }
+    public int Y { get; set; }
+    public int Width { get; set; }
+    public int Height { get; set; }
+    public VillageEditMode EditMode { get; set; } = VillageEditMode.Owner;
 }
 
 public class VillageSaleListingRequest

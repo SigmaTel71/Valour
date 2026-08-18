@@ -110,6 +110,7 @@ public class VillagePocPlot
     public string? OwnerName { get; set; }
     public bool IsOwnedByLocalMember { get; set; }
     public bool CanEdit { get; set; }
+    public Valour.Shared.Models.VillageEditMode EditMode { get; set; }
     public bool ForSale { get; set; }
     public decimal Price { get; set; }
     public int X { get; set; }

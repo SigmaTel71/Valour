@@ -80,12 +80,19 @@ period (~60s) onto a background worker. The message hot path only increments
 Redis counters; candidate resolution, ranking, and delivery all happen off the
 hot path (same pattern as role-mention push batching).
 
-Two notification flavors from the same bucket data:
+Each evaluation resolves the newest message still present in the activity
+window and uses it as the notification context. The sender's planet nickname
+and avatar are preferred (with webhook overrides and user identity as
+fallbacks), and mention tags are converted to readable names. The result is:
 
-- **Conversation start** — the channel was quiet (no activity for ≥30 min) and
-  just crossed the threshold: *"💬 #dev is picking up"*.
-- **Ongoing activity** — the channel stays active past a user's cooldown:
-  *"14 messages from 4 people in #dev"*.
+- **Title** — *"Alex in Valour Central (+3 others)"*.
+- **Body** — a whitespace-normalized preview of Alex's message, capped at 180
+  characters; attachment-only messages get an attachment summary.
+
+This keeps the notification useful without turning activity alerts into a
+message-by-message feed. Conversation-start state is still tracked for
+activity telemetry, but it no longer produces a generic "channel is active"
+payload.
 
 Inbox entries **coalesce**: one unread activity notification per channel,
 updated in place as the burst grows. Never a stack of entries per channel.

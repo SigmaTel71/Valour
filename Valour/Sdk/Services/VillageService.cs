@@ -111,6 +111,19 @@ public class VillageService : ServiceBase
             $"api/planets/{planet.Id}/village/plots/{plotId}",
             new VillagePlotUpdateRequest { Name = name })).WithoutData();
 
+    public Task<TaskResult<VillagePocPlot>> CreatePlotAsync(
+        Planet planet, long mapId, VillagePlotCreateRequest request) =>
+        planet.Node.PostAsyncWithResponse<VillagePocPlot>(
+            $"api/planets/{planet.Id}/village/maps/{mapId}/plots", request);
+
+    public async Task<TaskResult> UpdatePlotGeometryAsync(
+        Planet planet, long plotId, VillagePlotUpdateRequest request) =>
+        (await planet.Node.PutAsyncWithResponse<bool>(
+            $"api/planets/{planet.Id}/village/plots/{plotId}", request)).WithoutData();
+
+    public Task<TaskResult> DeletePlotAsync(Planet planet, long plotId) =>
+        planet.Node.DeleteAsync($"api/planets/{planet.Id}/village/plots/{plotId}");
+
     public Task<TaskResult<VillageBuildResult>> EditMapAsync(
         Planet planet,
         long mapId,
