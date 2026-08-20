@@ -176,9 +176,9 @@ public class Planet : ISharedPlanet
     public string Vanity { get; set; }
 
     /// <summary>
-    /// True when the planet's vanity name also works as a permanent invite
-    /// link (/i/{vanity}). Only takes effect while Public and Vanity are both
-    /// set - see PlanetService.UpdateAsync and ResolveVanityInviteAsync.
+    /// True when the planet's vanity name also works as a permanent invite link (/i/{vanity}).
+    /// Only takes effect while Public and Vanity are both set.
+    /// See <cref>PlanetService.UpdateAsync</cref> and <cref>ResolveVanityInviteAsync</cref>.
     /// </summary>
     public bool VanityInviteEnabled { get; set; }
 
