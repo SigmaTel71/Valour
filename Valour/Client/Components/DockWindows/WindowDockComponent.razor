@@ -3,6 +3,7 @@
 @inject IAppStorage LocalStorage
 @inject IJSRuntime JsRuntime
 @using Valour.Client.Pages
+@using Valour.Client.Components.Windows.Villages
 
 <div class="window-dock @(IsResizingSplit ? "resizing-split" : "")" @ref="@_ref">
     @foreach (var tab in Tabs)
@@ -100,6 +101,9 @@
             }
         }
 
+        if (loaded)
+            await RemoveDuplicateRestoredVillagesAsync();
+
         if (!loaded)
         {
             await Reset();
@@ -131,6 +135,32 @@
         {
             _deepLinkHandler = HandleDeepLinkAsync;
             DeepLinkBridge.SetHandler(_deepLinkHandler);
+        }
+    }
+
+    private async Task RemoveDuplicateRestoredVillagesAsync()
+    {
+        var layoutTabs = new List<WindowTab>();
+        Layout?.GetTabs(layoutTabs);
+        var villageTabs = layoutTabs
+            .Concat(_floaters)
+            .Where(x => x.Content is VillageWindowComponent.Content)
+            .ToList();
+
+        if (villageTabs.Count < 2)
+            return;
+
+        var keeper = villageTabs.Contains(WindowService.FocusedTab)
+            ? WindowService.FocusedTab
+            : villageTabs[0];
+
+        foreach (var duplicate in villageTabs.Where(x => x != keeper))
+        {
+            if (_floaters.Remove(duplicate))
+                continue;
+
+            if (duplicate.Layout is not null)
+                await duplicate.Layout.RemoveTab(duplicate, false);
         }
     }
 

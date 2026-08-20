@@ -9,6 +9,11 @@ namespace Valour.Server.Api.Dynamic;
 
 public class VillageApi
 {
+    private const string DisabledMessage = "The village is disabled for this planet.";
+
+    private static async Task<bool> IsEnabledAsync(long planetId, PlanetService planetService) =>
+        (await planetService.GetAsync(planetId))?.EnableVillage == true;
+
     [ValourRoute(HttpVerbs.Get, "api/planets/{id}/village/poc")]
     [UserRequired(UserPermissionsEnum.Membership)]
     public static async Task<IResult> GetProofOfConceptRouteAsync(
@@ -24,6 +29,8 @@ public class VillageApi
         var planet = await planetService.GetAsync(id);
         if (planet is null)
             return ValourResult.NotFound("Planet not found");
+        if (!planet.EnableVillage)
+            return ValourResult.Forbid(DisabledMessage);
 
         var channels = await planetService.GetAllChannelsAsync(id);
         var canManage = await memberService.HasPermissionAsync(member, PlanetPermissions.ManageVillage);
@@ -38,11 +45,14 @@ public class VillageApi
         long mapId,
         [FromBody] VillageBuildRequest request,
         PlanetMemberService memberService,
+        PlanetService planetService,
         VillageWorldService worldService)
     {
         var member = await memberService.GetCurrentAsync(id);
         if (member is null)
             return ValourResult.NotPlanetMember();
+        if (!await IsEnabledAsync(id, planetService))
+            return ValourResult.Forbid(DisabledMessage);
 
         var canManage = await memberService.HasPermissionAsync(member, PlanetPermissions.ManageVillage);
         var result = await worldService.EditMapAsync(id, mapId, member.Id, canManage, request);
@@ -58,11 +68,14 @@ public class VillageApi
         long buildingId,
         [FromBody] VillageBuildingUpdateRequest request,
         PlanetMemberService memberService,
+        PlanetService planetService,
         VillageWorldService worldService)
     {
         var member = await memberService.GetCurrentAsync(id);
         if (member is null)
             return ValourResult.NotPlanetMember();
+        if (!await IsEnabledAsync(id, planetService))
+            return ValourResult.Forbid(DisabledMessage);
 
         var canManage = await memberService.HasPermissionAsync(member, PlanetPermissions.ManageVillage);
         var result = await worldService.UpdateBuildingAsync(buildingId, id, member.Id, canManage, request);
@@ -76,11 +89,14 @@ public class VillageApi
         long plotId,
         [FromBody] VillagePlotUpdateRequest request,
         PlanetMemberService memberService,
+        PlanetService planetService,
         VillageWorldService worldService)
     {
         var member = await memberService.GetCurrentAsync(id);
         if (member is null)
             return ValourResult.NotPlanetMember();
+        if (!await IsEnabledAsync(id, planetService))
+            return ValourResult.Forbid(DisabledMessage);
 
         var canManage = await memberService.HasPermissionAsync(member, PlanetPermissions.ManageVillage);
         var result = await worldService.UpdatePlotAsync(plotId, id, member.Id, canManage, request);
@@ -91,10 +107,11 @@ public class VillageApi
     [UserRequired(UserPermissionsEnum.Membership)]
     public static async Task<IResult> CreatePlotRouteAsync(
         long id, long mapId, [FromBody] VillagePlotCreateRequest request,
-        PlanetMemberService memberService, VillageWorldService worldService)
+        PlanetMemberService memberService, PlanetService planetService, VillageWorldService worldService)
     {
         var member = await memberService.GetCurrentAsync(id);
         if (member is null) return ValourResult.NotPlanetMember();
+        if (!await IsEnabledAsync(id, planetService)) return ValourResult.Forbid(DisabledMessage);
         var canManage = await memberService.HasPermissionAsync(member, PlanetPermissions.ManageVillage);
         if (!canManage) return ValourResult.Forbid("Manage Village permission is required.");
         var result = await worldService.CreatePlotAsync(id, mapId, request);
@@ -106,10 +123,12 @@ public class VillageApi
     [ValourRoute(HttpVerbs.Delete, "api/planets/{id}/village/plots/{plotId}")]
     [UserRequired(UserPermissionsEnum.Membership)]
     public static async Task<IResult> DeletePlotRouteAsync(
-        long id, long plotId, PlanetMemberService memberService, VillageWorldService worldService)
+        long id, long plotId, PlanetMemberService memberService, PlanetService planetService,
+        VillageWorldService worldService)
     {
         var member = await memberService.GetCurrentAsync(id);
         if (member is null) return ValourResult.NotPlanetMember();
+        if (!await IsEnabledAsync(id, planetService)) return ValourResult.Forbid(DisabledMessage);
         var canManage = await memberService.HasPermissionAsync(member, PlanetPermissions.ManageVillage);
         if (!canManage) return ValourResult.Forbid("Manage Village permission is required.");
         var result = await worldService.DeletePlotAsync(id, plotId);
@@ -122,12 +141,15 @@ public class VillageApi
         long id,
         long buildingId,
         PlanetMemberService memberService,
+        PlanetService planetService,
         VillagePresenceService presenceService,
         VillageRoomService roomService)
     {
         var member = await memberService.GetCurrentAsync(id);
         if (member is null)
             return ValourResult.NotPlanetMember();
+        if (!await IsEnabledAsync(id, planetService))
+            return ValourResult.Forbid(DisabledMessage);
 
         if (!presenceService.GetBuildingOccupants(id, buildingId).Any(x => x.UserId == member.UserId))
             return ValourResult.BadRequest("Enter this village area before opening its temporary room.");
@@ -144,11 +166,14 @@ public class VillageApi
         long id,
         long buildingId,
         PlanetMemberService memberService,
+        PlanetService planetService,
         VillageRoomService roomService)
     {
         var member = await memberService.GetCurrentAsync(id);
         if (member is null)
             return ValourResult.NotPlanetMember();
+        if (!await IsEnabledAsync(id, planetService))
+            return ValourResult.Forbid(DisabledMessage);
 
         await roomService.ReleaseAsync(id, buildingId, member.UserId);
         return Results.Json(true);

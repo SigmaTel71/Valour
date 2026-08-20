@@ -42,6 +42,7 @@ public class VillageWorldApiLiveTests : IAsyncLifetime
                 {
                     Name = $"Village E2E {Guid.NewGuid().ToString()[..8]}",
                     Description = "Village world test planet",
+                    EnableVillage = true,
                 }.CreateAsync();
 
                 Assert.True(create.Success, create.Message);
@@ -65,6 +66,46 @@ public class VillageWorldApiLiveTests : IAsyncLifetime
     private Task<VillagePocScene?> LoadSceneAsync() =>
         _fixture.Client.VillageService.FetchProofOfConceptSceneAsync(_planet.Id)
             .ContinueWith(t => t.Result.Success ? t.Result.Data : null);
+
+    [Fact]
+    public async Task DisabledVillage_RejectsScenePresenceAndEdits()
+    {
+        var scene = await LoadSceneAsync();
+        Assert.NotNull(scene);
+        var outdoor = scene!.Maps.Single(x => x.Id == scene.StartingMapId);
+        var spawn = outdoor.SpawnTile!;
+
+        _planet.EnableVillage = false;
+        var disabled = await _planet.UpdateAsync();
+        Assert.True(disabled.Success, disabled.Message);
+
+        try
+        {
+            var fetch = await _fixture.Client.VillageService.FetchProofOfConceptSceneAsync(_planet.Id);
+            Assert.False(fetch.Success);
+
+            var join = await _fixture.Client.VillageService.JoinMapAsync(
+                _planet, outdoor.Id, spawn.X, spawn.Y);
+            Assert.False(join.Success);
+
+            var edit = await _fixture.Client.VillageService.EditMapAsync(
+                _planet,
+                outdoor.Id,
+                new VillageBuildRequest
+                {
+                    Action = VillageBuildAction.Erase,
+                    X = spawn.X,
+                    Y = spawn.Y,
+                });
+            Assert.False(edit.Success);
+        }
+        finally
+        {
+            _planet.EnableVillage = true;
+            var restored = await _planet.UpdateAsync();
+            Assert.True(restored.Success, restored.Message);
+        }
+    }
 
     [Fact]
     public async Task FirstOpen_SeedsAWalkableWorld()

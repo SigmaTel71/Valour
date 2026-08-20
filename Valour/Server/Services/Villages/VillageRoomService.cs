@@ -169,6 +169,15 @@ public sealed class VillageRoomService
             await DeleteChannelAsync(room.PlanetId, room.ChannelId);
     }
 
+    /// <summary>
+    /// Immediately retires every temporary room for a village that was disabled.
+    /// </summary>
+    public async Task ClosePlanetRoomsAsync(long planetId)
+    {
+        foreach (var key in _rooms.Keys.Where(x => x.PlanetId == planetId))
+            await CloseBuildingRoomAsync(key.PlanetId, key.BuildingId);
+    }
+
     private async Task DeleteIfStillEmptyAfterGraceAsync(RoomKey key, long generation)
     {
         await Task.Delay(EmptyRoomGracePeriod);

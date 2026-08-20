@@ -33,6 +33,25 @@
     touch-action: none;
 }
 
+.village-canvas:focus-visible,
+.village-icon-button:focus-visible,
+.village-zoom-button:focus-visible,
+.village-zoom-level:focus-visible,
+.place-list-item:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.village-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
 .village-window.build-mode-active .village-canvas,
 .village-window.admin-mode-active .village-canvas {
     right: var(--village-build-sidebar-width);
@@ -144,6 +163,60 @@
     box-shadow: 0 0 0 4px var(--color-success-soft);
 }
 
+.hud-chip.offline {
+    color: var(--color-danger);
+}
+
+.hud-chip.offline .live-dot {
+    background: var(--color-danger);
+    box-shadow: 0 0 0 4px var(--color-danger-soft);
+}
+
+.village-connection-banner {
+    position: absolute;
+    z-index: 8;
+    top: 74px;
+    left: 50%;
+    display: flex;
+    max-width: min(520px, calc(100% - 32px));
+    align-items: center;
+    gap: 9px;
+    padding: 9px 10px 9px 12px;
+    border: 1px solid var(--color-danger-border);
+    border-radius: var(--radius-lg);
+    color: var(--font-color);
+    background: color-mix(in srgb, var(--modal-dark) 92%, var(--color-danger) 8%);
+    box-shadow: 0 14px 40px rgba(8, 12, 10, 0.3);
+    font-size: 0.8rem;
+    transform: translateX(-50%);
+}
+
+.village-connection-banner > span {
+    min-width: 0;
+    flex: 1;
+}
+
+.village-connection-banner button {
+    display: inline-flex;
+    min-height: 32px;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 9px;
+    border: 1px solid var(--medium-tint);
+    border-radius: var(--radius-md);
+    color: var(--font-color);
+    background: var(--slight-tint);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.72rem;
+    font-weight: 750;
+}
+
+.village-connection-banner button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
 .village-quick-controls {
     top: 16px;
     right: 16px;
@@ -161,6 +234,108 @@
     padding: 6px;
     border-radius: 16px;
     pointer-events: auto;
+}
+
+.village-places-panel {
+    position: absolute;
+    z-index: 6;
+    top: 72px;
+    right: 16px;
+    display: flex;
+    width: min(320px, calc(100% - 32px));
+    max-height: min(520px, calc(100% - 94px));
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--medium-tint);
+    border-radius: var(--radius-xl);
+    color: var(--font-color);
+    background: var(--modal-dark);
+    box-shadow: 0 18px 50px rgba(9, 14, 11, 0.32);
+    backdrop-filter: blur(18px) saturate(1.25);
+}
+
+.places-panel-header {
+    display: flex;
+    min-height: 56px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 10px 9px 15px;
+    border-bottom: 1px solid var(--slight-tint);
+}
+
+.places-panel-header > div,
+.place-list-item > span {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.places-panel-list {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+    gap: 5px;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.place-list-item {
+    display: flex;
+    width: 100%;
+    min-height: 52px;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-lg);
+    color: var(--font-color);
+    background: transparent;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+}
+
+.place-list-item:hover,
+.place-list-item.active {
+    border-color: var(--medium-tint);
+    background: var(--slight-tint);
+}
+
+.place-list-item.active {
+    border-color: var(--color-primary-border);
+    background: var(--color-primary-soft);
+}
+
+.place-list-item > i {
+    width: 28px;
+    flex: 0 0 auto;
+    color: var(--color-primary);
+    font-size: 1rem;
+    text-align: center;
+}
+
+.place-list-item strong,
+.place-list-item small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.place-list-item strong {
+    font-size: 0.82rem;
+}
+
+.place-list-item small,
+.places-panel-empty {
+    color: var(--font-color-mid);
+    font-size: 0.7rem;
+}
+
+.places-panel-empty {
+    padding: 24px 12px;
+    text-align: center;
 }
 
 .village-icon-button,
@@ -1193,6 +1368,16 @@
 }
 
 @media (max-width: 900px) {
+    .village-connection-banner {
+        top: 62px;
+    }
+
+    .village-places-panel {
+        top: 62px;
+        right: 10px;
+        max-height: min(430px, calc(100% - 74px));
+    }
+
     .village-world-header {
         top: 10px;
         left: 10px;
@@ -1368,6 +1553,13 @@
 }
 
 @media (max-width: 520px) {
+    .village-connection-banner {
+        right: 8px;
+        left: 8px;
+        max-width: none;
+        transform: none;
+    }
+
     .overlay-inline-group .hud-chip:first-child {
         max-width: 48vw;
         overflow: hidden;

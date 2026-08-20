@@ -46,6 +46,12 @@ public class VillageService : ServiceBase
     /// </summary>
     public HybridEvent MapRejoined;
 
+    /// <summary>
+    /// Fired when reconnect authentication succeeded but restoring village map
+    /// presence did not. The world can stay rendered while the UI offers a retry.
+    /// </summary>
+    public HybridEvent<string> MapRejoinFailed;
+
     public VillageService(ValourClient client)
     {
         _client = client;
@@ -312,6 +318,7 @@ public class VillageService : ServiceBase
             if (snapshot is null)
             {
                 LogError("Could not restore village map presence after reconnect.");
+                MapRejoinFailed?.Invoke("Could not restore village presence after reconnecting.");
                 return;
             }
 
@@ -321,6 +328,7 @@ public class VillageService : ServiceBase
         catch (Exception ex)
         {
             LogError("Failed to restore village presence after reconnect.", ex);
+            MapRejoinFailed?.Invoke("The village connection could not be restored.");
         }
         finally
         {

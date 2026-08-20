@@ -17,6 +17,11 @@ namespace Valour.Server.Api.Dynamic;
 /// </summary>
 public class VillageMarketApi
 {
+    private const string DisabledMessage = "The village is disabled for this planet.";
+
+    private static async Task<bool> IsEnabledAsync(long planetId, PlanetService planetService) =>
+        (await planetService.GetAsync(planetId))?.EnableVillage == true;
+
     [ValourRoute(HttpVerbs.Put, "api/planets/{planetId}/village/plots/{plotId}/listing")]
     [UserRequired(UserPermissionsEnum.Membership)]
     public static async Task<IResult> SetPlotListingAsync(
@@ -24,11 +29,14 @@ public class VillageMarketApi
         long plotId,
         [FromBody] VillageSaleListingRequest request,
         PlanetMemberService memberService,
+        PlanetService planetService,
         VillageMarketService marketService)
     {
         var member = await memberService.GetCurrentAsync(planetId);
         if (member is null)
             return ValourResult.NotPlanetMember();
+        if (!await IsEnabledAsync(planetId, planetService))
+            return ValourResult.Forbid(DisabledMessage);
 
         var canManage = await memberService.HasPermissionAsync(member, PlanetPermissions.ManageVillage);
         var result = await marketService.SetPlotForSaleAsync(
@@ -43,11 +51,14 @@ public class VillageMarketApi
         long buildingId,
         [FromBody] VillageSaleListingRequest request,
         PlanetMemberService memberService,
+        PlanetService planetService,
         VillageMarketService marketService)
     {
         var member = await memberService.GetCurrentAsync(planetId);
         if (member is null)
             return ValourResult.NotPlanetMember();
+        if (!await IsEnabledAsync(planetId, planetService))
+            return ValourResult.Forbid(DisabledMessage);
 
         var canManage = await memberService.HasPermissionAsync(member, PlanetPermissions.ManageVillage);
         var result = await marketService.SetBuildingForSaleAsync(
@@ -61,11 +72,14 @@ public class VillageMarketApi
         long planetId,
         long plotId,
         PlanetMemberService memberService,
+        PlanetService planetService,
         VillageMarketService marketService)
     {
         var member = await memberService.GetCurrentAsync(planetId);
         if (member is null)
             return ValourResult.NotPlanetMember();
+        if (!await IsEnabledAsync(planetId, planetService))
+            return ValourResult.Forbid(DisabledMessage);
 
         var result = await marketService.PurchasePlotAsync(plotId, planetId, member.Id, member.UserId);
         return result.Success ? Results.Ok() : ValourResult.BadRequest(result.Message);
@@ -77,11 +91,14 @@ public class VillageMarketApi
         long planetId,
         long buildingId,
         PlanetMemberService memberService,
+        PlanetService planetService,
         VillageMarketService marketService)
     {
         var member = await memberService.GetCurrentAsync(planetId);
         if (member is null)
             return ValourResult.NotPlanetMember();
+        if (!await IsEnabledAsync(planetId, planetService))
+            return ValourResult.Forbid(DisabledMessage);
 
         var result = await marketService.PurchaseBuildingAsync(buildingId, planetId, member.Id, member.UserId);
         return result.Success ? Results.Ok() : ValourResult.BadRequest(result.Message);

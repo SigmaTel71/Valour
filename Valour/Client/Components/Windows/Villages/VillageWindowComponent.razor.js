@@ -177,6 +177,14 @@ export function init(canvasId, dotNetRef, scene, isMobile) {
                 getCurrentMap(state)?.plots?.find(x => String(x.id) === String(plotId))?.id ?? null;
             draw(state);
         },
+        setSelection(buildingId, plotId) {
+            const map = getCurrentMap(state);
+            state.selectedBuildingId = buildingId == null ? null :
+                map?.buildings?.find(x => String(x.id) === String(buildingId))?.id ?? null;
+            state.selectedPlotId = plotId == null ? null :
+                map?.plots?.find(x => String(x.id) === String(plotId))?.id ?? null;
+            draw(state);
+        },
         applyBuildResult(result) {
             restoreOptimisticTerrain(state);
             const map = getCurrentMap(state);

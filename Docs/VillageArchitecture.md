@@ -35,6 +35,18 @@ integration. The canvas runtime owns the render loop, camera, input, collision a
 interpolation. The boundary matters: per-frame work must never round-trip through
 Blazor's render tree.
 
+The client owns at most one Village window at a time. Opening a village for another
+planet replaces the existing tab's content, which also prevents two components from
+competing for the SDK's single current-map presence session. Restored/mobile window
+navigation follows the same content identity rule.
+
+`Planet.EnableVillage` is an authoritative feature boundary, not only a navigation
+toggle. Scene, market, build, property and temporary-room HTTP routes and the join/
+move hub methods all reject disabled villages. Disabling an active village updates
+the hosted planet cache before broadcasting, removes its live presences, retires
+temporary rooms, and causes open clients to tear down their runtime. Re-enabling it
+allows the same window to load again from the model update.
+
 ## Persistent world
 
 Five planet-scoped entities, each following the standard `ISharedPlanetModel` /
@@ -94,6 +106,10 @@ Points that are easy to get wrong:
   node authentication is restored. Presence records carry their owning connection
   id internally: a late disconnect callback from the old socket cannot remove or
   move the newly restored presence.
+- **A failed rejoin is visible and recoverable.** The rendered map may remain as
+  local context, but nearby chat, temporary room acquisition and voice remain off
+  until a retry successfully restores presence. This avoids presenting spatial
+  communication controls whose server-side occupancy prerequisite is missing.
 - **Facing is carried but not yet rendered**, so directional art can arrive without
   a protocol change.
 
@@ -225,7 +241,7 @@ Every purchase passes through the platform's confirmation modal with the price
 spelled out - a mis-tap in the world must not spend currency. Property changes
 broadcast through the standard planet model sync, and an open village window
 subscribes to the building and plot stores: any member's purchase, listing, or
-edit refreshes every open scene within half a second (debounced, selection
+edit refreshes each open client's scene within half a second (debounced, selection
 preserved), so the world never shows a stale deed.
 
 The HUD is styled with the platform's design tokens (`--modal-dark`, the tint
@@ -286,8 +302,13 @@ clients from choosing impossible edge art. A response carries every created or
 updated decoration plus removed ids, allowing the initiating client to patch all
 affected cells without a second GET. Furniture remains a normal non-negative-Z
 object and therefore participates in depth sorting and derived collision. The
-ordinary planet model event still notifies other open village windows, which
-coalesce a scene refresh.
+ordinary planet model event still notifies open village clients, which coalesce a
+scene refresh.
+
+Canvas movement remains keyboard-operable and exposes its instructions to assistive
+technology. A semantic Places panel lists the current map's buildings and parcels,
+so inspection, ownership, market and channel actions do not depend on mouse/touch
+hit-testing against pixels.
 
 The paint catalog also has a separate **Manual brushes** section sourced from the
 tileset's authored `brushes` array. These multi-cell patterns are expanded and
@@ -537,10 +558,6 @@ is open so the world never collapses under stacked panels.
   or columns, so connected-component and guillotine segmentation both fail — sprite
   bounds cannot be derived automatically. Continue with the existing grid picker and
   curated named definitions for art a map actually uses.
-- **Map editor round-trip.** The editor can export a map but not load one, and its
-  tile/sprite format does not yet bridge to the runtime scene format. Exports
-  already carry the terrain grid alongside the resolved tiles so loading can
-  restore ruleset painting, not just pixels.
 - **Character appearance.** Characters are member avatars drawn as tokens. Layered
   sprite composition, and the directionality `VillageFacing` already carries, are
   open.

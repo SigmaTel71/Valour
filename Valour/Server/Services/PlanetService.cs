@@ -762,6 +762,10 @@ public class PlanetService
             return new TaskResult<Planet>(false, "Error updating planet.");
         }
 
+        // Planet reads on the hosting node come from HostedPlanet, not directly
+        // from the database. Keep that authoritative cache in step with the
+        // persisted model before broadcasting the update to clients.
+        _hostedPlanetService.GetCached(planet.Id)?.Update(planet);
         _coreHub.NotifyPlanetChange(planet);
         
         return new TaskResult<Planet>(true, "Planet updated successfully.", planet);

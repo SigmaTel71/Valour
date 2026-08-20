@@ -16,15 +16,42 @@
 }
 else if (_error is not null)
 {
-    <div class="village-empty-state">
+    <div class="village-empty-state" role="alert">
         <i class="bi bi-exclamation-triangle-fill"></i>
         <span>@_error</span>
+        @if (Data?.EnableVillage == true)
+        {
+            <button class="v-btn" disabled="@_loading" @onclick="RetryLoadAsync">
+                <i class="bi bi-arrow-clockwise"></i> Retry
+            </button>
+        }
     </div>
 }
 else
 {
     <div class="village-window @(_activeVoiceChannel is not null ? "has-call" : string.Empty) @(_buildMode ? "build-mode-active" : string.Empty) @(_adminMode ? "admin-mode-active" : string.Empty)">
-        <canvas id="@_canvasId" class="village-canvas"></canvas>
+        <canvas id="@_canvasId"
+                class="village-canvas"
+                tabindex="0"
+                role="application"
+                aria-label="Interactive village map"
+                aria-describedby="@_canvasInstructionsId"
+                aria-keyshortcuts="W A S D ArrowUp ArrowDown ArrowLeft ArrowRight"></canvas>
+        <span id="@_canvasInstructionsId" class="village-sr-only">
+            Use W A S D or the arrow keys to move. Use the Places button to inspect buildings and parcels without the pointer.
+        </span>
+
+        @if (!_presenceConnected)
+        {
+            <div class="village-connection-banner" role="status" aria-live="polite">
+                <i class="bi bi-wifi-off"></i>
+                <span>@(_presenceConnecting ? "Connecting to village presence…" : _presenceError ?? "Village presence is offline.")</span>
+                <button disabled="@_presenceConnecting" @onclick="RetryPresenceAsync">
+                    <i class="bi bi-arrow-clockwise"></i>
+                    <span>@(_presenceConnecting ? "Connecting…" : "Retry")</span>
+                </button>
+            </div>
+        }
 
         <div class="village-overlay village-world-header">
             <div class="overlay-card village-brand-card">
@@ -34,12 +61,23 @@ else
             </div>
             <div class="overlay-inline-group">
                 <span class="hud-chip"><i class="bi bi-geo-alt-fill"></i> @(_currentMap?.Name ?? "Unknown Map")</span>
-                <span class="hud-chip live"><span class="live-dot"></span> @(VillageService.Presences.Count + 1) here</span>
+                <span class="hud-chip @(_presenceConnected ? "live" : "offline")">
+                    <span class="live-dot"></span>
+                    @(_presenceConnected ? $"{VillageService.Presences.Count + 1} here" : "Presence offline")
+                </span>
             </div>
         </div>
 
         <div class="village-overlay village-quick-controls">
             <div class="quick-control-bar">
+                <button class="village-icon-button @(_placesPanelOpen ? "active" : string.Empty)"
+                        @onclick="TogglePlacesPanel"
+                        title="Browse places"
+                        aria-label="Browse village places"
+                        aria-expanded="@_placesPanelOpen"
+                        aria-controls="@_placesPanelId">
+                    <i class="bi bi-list-ul"></i>
+                </button>
                 @if (CanBuildCurrentMap)
                 {
                     <button class="village-icon-button @(_buildMode ? "active" : string.Empty)"
@@ -97,6 +135,45 @@ else
                 </label>
             </div>
         </div>
+
+        @if (_placesPanelOpen && !_buildMode && !_adminMode)
+        {
+            <aside id="@_placesPanelId" class="village-places-panel" aria-label="Places on this map">
+                <div class="places-panel-header">
+                    <div>
+                        <span class="eyebrow">Places</span>
+                        <strong>@(_currentMap?.Name ?? "Map")</strong>
+                    </div>
+                    <button class="village-icon-button compact" @onclick="TogglePlacesPanel" title="Close places" aria-label="Close places">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div class="places-panel-list">
+                    @foreach (var building in _currentMap?.Buildings ?? [])
+                    {
+                        <button class="place-list-item @(_selectedBuilding?.Id == building.Id ? "active" : string.Empty)"
+                                aria-pressed="@(_selectedBuilding?.Id == building.Id)"
+                                @onclick="() => SelectBuildingFromPlacesAsync(building)">
+                            <i class="bi bi-building-fill"></i>
+                            <span><strong>@building.Name</strong><small>@(building.Hint ?? "Building")</small></span>
+                        </button>
+                    }
+                    @foreach (var plot in _currentMap?.Plots ?? [])
+                    {
+                        <button class="place-list-item @(_selectedPlot?.Id == plot.Id ? "active" : string.Empty)"
+                                aria-pressed="@(_selectedPlot?.Id == plot.Id)"
+                                @onclick="() => SelectPlotFromPlacesAsync(plot)">
+                            <i class="bi bi-bounding-box"></i>
+                            <span><strong>@plot.Name</strong><small>Land parcel · @plot.Width × @plot.Height tiles</small></span>
+                        </button>
+                    }
+                    @if ((_currentMap?.Buildings.Count ?? 0) == 0 && (_currentMap?.Plots.Count ?? 0) == 0)
+                    {
+                        <div class="places-panel-empty">There are no named places on this map yet.</div>
+                    }
+                </div>
+            </aside>
+        }
 
         @if (_activeVoiceChannel is not null)
         {
@@ -588,7 +665,7 @@ else
             </aside>
         }
 
-        @if (!_buildMode && _activeChatChannel is not null)
+        @if (!_buildMode && _presenceConnected && _activeChatChannel is not null)
         {
             <div class="village-overlay village-chat-composer">
                 <div class="composer-context">
@@ -644,7 +721,10 @@ else
 }
 
 @code {
+    private const string VillageDisabledMessage = "The village is disabled for this planet.";
     private readonly string _canvasId = $"village-canvas-{Guid.NewGuid():N}";
+    private readonly string _canvasInstructionsId = $"village-instructions-{Guid.NewGuid():N}";
+    private readonly string _placesPanelId = $"village-places-{Guid.NewGuid():N}";
     private IJSObjectReference? _module;
     private IJSObjectReference? _runtime;
     private DotNetObjectReference<VillageWindowComponent>? _selfRef;
@@ -655,7 +735,14 @@ else
     private bool _loading = true;
     private bool _initializing;
     private bool _disposed;
+    private bool _villageEventsHooked;
     private string? _error;
+    private bool _presenceConnected;
+    private bool _presenceConnecting;
+    private string? _presenceError;
+    private int? _playerX;
+    private int? _playerY;
+    private bool _placesPanelOpen;
     private bool _proximityVoice;
     private bool _autoJoinVoice;
     private int _zoomPercent = 100;
@@ -710,9 +797,6 @@ else
         SelectionsChanged?.Invoke();
         CallSession.StateChanged += OnCallSessionStateChanged;
 
-        _loading = true;
-        _error = null;
-
         if (Data is null)
         {
             _error = "Village demo could not resolve the target planet.";
@@ -721,28 +805,75 @@ else
             return;
         }
 
-        var result = await VillageService.FetchProofOfConceptSceneAsync(Data.Id);
-        if (!result.Success || result.Data is null)
+        Data.Updated += OnPlanetUpdated;
+        await LoadVillageAsync();
+        await ReRender();
+    }
+
+    private async Task LoadVillageAsync()
+    {
+        if (Data is null || _disposed)
+            return;
+
+        _loading = true;
+        _error = null;
+        _presenceConnected = false;
+        _presenceError = null;
+
+        if (!Data.EnableVillage)
         {
-            _error = result.Message ?? "Village demo failed to load.";
+            _error = VillageDisabledMessage;
             _loading = false;
-            await ReRender();
             return;
         }
 
-        _scene = result.Data;
-        _currentMap = _scene.Maps.FirstOrDefault(x => x.Id == _scene.StartingMapId);
-        _selectedBuildKey = _scene.BuildCatalog
-            .FirstOrDefault(x => string.Equals(x.Kind, "Sprite", StringComparison.OrdinalIgnoreCase))?.Key
-            ?? _scene.BuildCatalog.FirstOrDefault()?.Key
-            ?? string.Empty;
+        try
+        {
+            var result = await VillageService.FetchProofOfConceptSceneAsync(Data.Id);
+            if (!result.Success || result.Data is null)
+            {
+                _error = result.Message ?? "The village failed to load.";
+                return;
+            }
 
-        // A restored window can reach this point before the planet's channel
-        // list has loaded, and the manage panel's channel picker needs it.
-        if (Data.Channels.Count == 0)
-            await Data.FetchChannelsAsync();
+            _scene = result.Data;
+            _currentMap = _scene.Maps.FirstOrDefault(x => x.Id == _scene.StartingMapId);
+            if (_currentMap is null)
+            {
+                _error = "The village has no outdoor map to open.";
+                _scene = null;
+                return;
+            }
 
-        _loading = false;
+            _playerX = _currentMap.SpawnTile?.X ?? 0;
+            _playerY = _currentMap.SpawnTile?.Y ?? 0;
+            _selectedBuildKey = _scene.BuildCatalog
+                .FirstOrDefault(x => string.Equals(x.Kind, "Sprite", StringComparison.OrdinalIgnoreCase))?.Key
+                ?? _scene.BuildCatalog.FirstOrDefault()?.Key
+                ?? string.Empty;
+
+            // A restored window can reach this point before the planet's channel
+            // list has loaded, and the manage panel's channel picker needs it.
+            if (Data.Channels.Count == 0)
+                await Data.FetchChannelsAsync();
+        }
+        catch (Exception)
+        {
+            _error = "The village could not be reached. Check your connection and try again.";
+            _scene = null;
+            _currentMap = null;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task RetryLoadAsync()
+    {
+        await ShutdownRuntimeAsync();
+        UnhookVillageEvents();
+        await LoadVillageAsync();
         await ReRender();
     }
 
@@ -756,8 +887,9 @@ else
         _initializing = true;
         try
         {
+            _selfRef?.Dispose();
             _selfRef = DotNetObjectReference.Create(this);
-            _module = await JsRuntime.InvokeAsync<IJSObjectReference>(
+            _module ??= await JsRuntime.InvokeAsync<IJSObjectReference>(
                 "import",
                 "./_content/Valour.Client/Components/Windows/Villages/VillageWindowComponent.razor.js");
 
@@ -772,20 +904,53 @@ else
                 return;
             }
 
-            VillageService.PresenceChanged += OnPresenceChanged;
-            VillageService.MapRejoined += OnVillageMapRejoined;
-            MessageService.MessageReceived += OnMessageReceived;
-            Data.VillageBuildings.Changed += OnVillageBuildingChanged;
-            Data.VillagePlots.Changed += OnVillagePlotChanged;
-            Data.VillageObjects.Changed += OnVillageObjectChanged;
-            await JoinCurrentMapAsync();
-            await OnBuildingContextChangedAsync();
-            await PushVoicePeersAsync();
+            HookVillageEvents();
+            if (await JoinCurrentMapAsync())
+            {
+                await OnBuildingContextChangedAsync();
+                await PushVoicePeersAsync();
+            }
+
+            await ReRender();
         }
         finally
         {
             _initializing = false;
         }
+    }
+
+    private void HookVillageEvents()
+    {
+        if (_villageEventsHooked || Data is null)
+            return;
+
+        VillageService.PresenceChanged += OnPresenceChanged;
+        VillageService.MapRejoined += OnVillageMapRejoined;
+        VillageService.MapRejoinFailed += OnVillageMapRejoinFailed;
+        MessageService.MessageReceived += OnMessageReceived;
+        Data.VillageBuildings.Changed += OnVillageBuildingChanged;
+        Data.VillagePlots.Changed += OnVillagePlotChanged;
+        Data.VillageObjects.Changed += OnVillageObjectChanged;
+        _villageEventsHooked = true;
+    }
+
+    private void UnhookVillageEvents()
+    {
+        if (!_villageEventsHooked)
+            return;
+
+        VillageService.PresenceChanged -= OnPresenceChanged;
+        VillageService.MapRejoined -= OnVillageMapRejoined;
+        VillageService.MapRejoinFailed -= OnVillageMapRejoinFailed;
+        MessageService.MessageReceived -= OnMessageReceived;
+        if (Data is not null)
+        {
+            Data.VillageBuildings.Changed -= OnVillageBuildingChanged;
+            Data.VillagePlots.Changed -= OnVillagePlotChanged;
+            Data.VillageObjects.Changed -= OnVillageObjectChanged;
+        }
+
+        _villageEventsHooked = false;
     }
 
     // Snowflake ids exceed JavaScript's 2^53 float precision, so the runtime
@@ -854,6 +1019,8 @@ else
 
         _currentMap = _scene.Maps.FirstOrDefault(x => x.Id == mapId) ?? _currentMap;
         _currentBuildingId = _currentMap?.ParentBuildingId;
+        _playerX = x;
+        _playerY = y;
 
         if (_buildMode && !CanBuildCurrentMap)
             _buildMode = false;
@@ -862,8 +1029,10 @@ else
         // The room endpoint only leases to members who are actually present in
         // the area. Join at the runtime's real destination before resolving the
         // area's temporary chat/call.
-        await JoinCurrentMapAsync(x, y);
-        await OnBuildingContextChangedAsync();
+        if (await JoinCurrentMapAsync(x, y))
+            await OnBuildingContextChangedAsync();
+        else
+            await ClearPresenceDependentContextAsync();
 
         // Stepping back outside clears the inspector; the building panel only makes
         // sense while its own interior is the active map.
@@ -890,19 +1059,119 @@ else
     /// there. Called on open and again whenever we walk through a door, since
     /// presence is scoped per map rather than per planet.
     /// </summary>
-    private async Task JoinCurrentMapAsync(int? x = null, int? y = null)
+    private async Task<bool> JoinCurrentMapAsync(int? x = null, int? y = null)
     {
         if (Data is null || _currentMap is null || _disposed)
-            return;
+            return false;
 
         var spawn = _currentMap.SpawnTile;
-        await VillageService.JoinMapAsync(
-            Data,
-            _currentMap.Id,
-            x ?? spawn?.X ?? 0,
-            y ?? spawn?.Y ?? 0,
-            _currentBuildingId);
-        await PushPresencesAsync();
+        var joinX = x ?? _playerX ?? spawn?.X ?? 0;
+        var joinY = y ?? _playerY ?? spawn?.Y ?? 0;
+        _presenceConnecting = true;
+        _presenceError = null;
+        await ReRender();
+
+        try
+        {
+            var result = await VillageService.JoinMapAsync(
+                Data,
+                _currentMap.Id,
+                joinX,
+                joinY,
+                _currentBuildingId);
+            _presenceConnected = result.Success;
+            _presenceError = result.Success
+                ? null
+                : result.Message ?? "Could not join village presence.";
+            if (!result.Success)
+                return false;
+
+            _playerX = joinX;
+            _playerY = joinY;
+            await PushPresencesAsync();
+            return true;
+        }
+        catch (Exception)
+        {
+            _presenceConnected = false;
+            _presenceError = "Village presence could not be reached.";
+            return false;
+        }
+        finally
+        {
+            _presenceConnecting = false;
+        }
+    }
+
+    private async Task RetryPresenceAsync()
+    {
+        if (_presenceConnecting || _disposed)
+            return;
+
+        if (await JoinCurrentMapAsync())
+        {
+            await OnBuildingContextChangedAsync();
+            await PushVoicePeersAsync();
+        }
+
+        await ReRender();
+    }
+
+    private void TogglePlacesPanel() => _placesPanelOpen = !_placesPanelOpen;
+
+    private async Task SelectBuildingFromPlacesAsync(VillagePocBuilding building)
+    {
+        _selectedBuilding = building;
+        _selectedPlot = null;
+        _editingProperty = false;
+        _listingPriceText = building.Price.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        if (_runtime is not null)
+            await _runtime.InvokeVoidAsync("setSelection", building.Id.ToString(), null);
+        await ReRender();
+    }
+
+    private async Task SelectPlotFromPlacesAsync(VillagePocPlot plot)
+    {
+        _selectedBuilding = null;
+        _selectedPlot = plot;
+        _editingProperty = false;
+        _listingPriceText = plot.Price.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        if (_runtime is not null)
+            await _runtime.InvokeVoidAsync("setSelection", null, plot.Id.ToString());
+        await ReRender();
+    }
+
+    private void OnPlanetUpdated(ModelUpdatedEvent<Planet> eventData)
+    {
+        if (_disposed || (eventData.Changes is not null && !eventData.Changes.On(x => x.EnableVillage)))
+            return;
+
+        _ = InvokeAsync(async () =>
+        {
+            if (Data?.EnableVillage == true)
+            {
+                if (_error == VillageDisabledMessage)
+                    await RetryLoadAsync();
+                return;
+            }
+
+            _error = VillageDisabledMessage;
+            _loading = false;
+            _presenceConnected = false;
+            _presenceConnecting = false;
+            _presenceError = null;
+            _placesPanelOpen = false;
+            _sceneRefreshCts?.Cancel();
+            UnhookVillageEvents();
+            await VillageService.LeaveMapAsync();
+            await ClearPresenceDependentContextAsync();
+            await ShutdownRuntimeAsync();
+            _scene = null;
+            _currentMap = null;
+            _selectedBuilding = null;
+            _selectedPlot = null;
+            await ReRender();
+        });
     }
 
     /// <summary>
@@ -1025,6 +1294,21 @@ else
         });
     }
 
+    private void OnVillageMapRejoinFailed(string message)
+    {
+        if (_disposed)
+            return;
+
+        _ = InvokeAsync(async () =>
+        {
+            _presenceConnected = false;
+            _presenceConnecting = false;
+            _presenceError = message;
+            await ClearPresenceDependentContextAsync();
+            await ReRender();
+        });
+    }
+
     /// <summary>
     /// A SignalR reconnect drops server-side presence and temporary-room
     /// occupancy. Presence has already been restored by VillageService; renew
@@ -1038,6 +1322,9 @@ else
 
         await InvokeAsync(async () =>
         {
+            _presenceConnected = true;
+            _presenceConnecting = false;
+            _presenceError = null;
             var previousVoiceBuildingId = _activeVoiceBuildingId;
             var previousVoiceChannelId = _activeVoiceChannel?.Id;
             var currentBuilding = _currentBuildingId is null
@@ -1116,6 +1403,8 @@ else
             return;
 
         var buildingId = ParseId(buildingIdRaw);
+        _playerX = x;
+        _playerY = y;
 
         // Await the hub send when changing spatial context so the server sees us
         // inside the area before its room lease request arrives over HTTP.
@@ -1140,8 +1429,24 @@ else
          building.Id == _currentBuildingId);
 
     private bool CanJoinVoiceFromHere(VillagePocBuilding building) =>
+        _presenceConnected &&
         CanHostVoice(building) &&
         (building.ChannelId is not null || building.Id == _currentBuildingId);
+
+    private async Task ClearPresenceDependentContextAsync()
+    {
+        _activeChatChannel = null;
+        _currentBuildingName = null;
+
+        if (_activeVoiceBuildingId is not null)
+            await LeaveVoiceAsync();
+
+        // The server expires map-scoped room leases on disconnect or when the
+        // planet is disabled. Forget the local handle without issuing another
+        // request through a connection that is already known to be unavailable.
+        _ephemeralRoom = null;
+        _ephemeralRoomBuildingId = null;
+    }
 
     /// <summary>
     /// Walking in or out of a building follows the voice room, but only once the
@@ -1150,6 +1455,13 @@ else
     /// </summary>
     private async Task OnBuildingContextChangedAsync()
     {
+        if (!_presenceConnected)
+        {
+            await ClearPresenceDependentContextAsync();
+            await ReRender();
+            return;
+        }
+
         var building = _currentBuildingId is null
             ? null
             : _scene?.Maps.SelectMany(x => x.Buildings).FirstOrDefault(x => x.Id == _currentBuildingId);
@@ -1725,7 +2037,11 @@ else
         if (previousMapWasArchived && _currentMap is not null)
         {
             _currentBuildingId = _currentMap.ParentBuildingId;
-            await JoinCurrentMapAsync(_currentMap.SpawnTile?.X, _currentMap.SpawnTile?.Y);
+            if (!await JoinCurrentMapAsync(_currentMap.SpawnTile?.X, _currentMap.SpawnTile?.Y))
+            {
+                await ClearPresenceDependentContextAsync();
+                return;
+            }
         }
 
         // Channel bindings and voice mode are scene data. Reconcile the live
@@ -2455,17 +2771,11 @@ else
     {
         _disposed = true;
 
-        VillageService.PresenceChanged -= OnPresenceChanged;
-        VillageService.MapRejoined -= OnVillageMapRejoined;
-        MessageService.MessageReceived -= OnMessageReceived;
+        UnhookVillageEvents();
         CallSession.StateChanged -= OnCallSessionStateChanged;
         _sceneRefreshCts?.Cancel();
         if (Data is not null)
-        {
-            Data.VillageBuildings.Changed -= OnVillageBuildingChanged;
-            Data.VillagePlots.Changed -= OnVillagePlotChanged;
-            Data.VillageObjects.Changed -= OnVillageObjectChanged;
-        }
+            Data.Updated -= OnPlanetUpdated;
 
         await VillageService.LeaveMapAsync();
 

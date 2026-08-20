@@ -24,12 +24,12 @@
             <button class="v-btn" @onclick="OpenVillageAsync" disabled="@(!_enableVillageValue)">
                 <i class="bi bi-house-heart"></i> Open Village
             </button>
-            <button class="v-btn secondary" @onclick="OpenMapEditorAsync" disabled="@(!_enableVillageValue || !_canManage)">
-                <i class="bi bi-map"></i> Edit Map
-            </button>
-            <p class="toggle-description">
-                Editing the map is controlled by the <b>Manage Village</b> role permission.
-            </p>
+            @if (_canManage)
+            {
+                <p class="toggle-description">
+                    Open the village and use its shield and hammer controls to manage parcels, furnish, and paint.
+                </p>
+            }
         </div>
     </div>
 </div>
@@ -67,10 +67,5 @@
     private async Task OpenVillageAsync()
     {
         await WindowService.OpenWindowAtFocused(VillageWindowComponent.GetDefaultContent(Planet));
-    }
-
-    private async Task OpenMapEditorAsync()
-    {
-        await WindowService.OpenWindowAtFocused(VillageMapEditorWindowComponent.GetDefaultContent());
     }
 }

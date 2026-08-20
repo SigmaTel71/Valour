@@ -239,6 +239,20 @@ public class VillagePresenceService
     }
 
     /// <summary>
+    /// Removes everyone from a planet's village when the feature is disabled.
+    /// The presence-left broadcasts make already-open clients converge
+    /// immediately rather than leaving ghost occupants until they reconnect.
+    /// </summary>
+    public async Task LeavePlanetAsync(long planetId)
+    {
+        if (!Presences.TryGetValue(planetId, out var planetPresences))
+            return;
+
+        foreach (var userId in planetPresences.Keys)
+            await LeaveAllAsync(planetId, userId);
+    }
+
+    /// <summary>
     /// Everyone currently standing inside the given building, used to decide
     /// who belongs in its voice room.
     /// </summary>

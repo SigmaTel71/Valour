@@ -323,6 +323,10 @@ public class CoreHub : Hub
         if (authToken is null)
             return null;
 
+        var hosted = await _hostedPlanetService.TryGetAsync(planetId);
+        if (hosted.HostedPlanet?.Planet.EnableVillage != true)
+            return null;
+
         var member = await _memberService.GetByUserAsync(authToken.UserId, planetId);
         if (member is null)
             return null;
@@ -382,6 +386,14 @@ public class CoreHub : Hub
         var authToken = await GetValidAuthTokenAsync();
         if (authToken is null)
             return;
+
+        var hosted = await _hostedPlanetService.TryGetAsync(planetId);
+        if (hosted.HostedPlanet?.Planet.EnableVillage != true)
+        {
+            await _villagePresenceService.LeaveAllAsync(planetId, authToken.UserId, Context.ConnectionId);
+            await _villageRoomService.ReleaseAllForUserAsync(authToken.UserId);
+            return;
+        }
 
         _villagePresenceService.Move(
             planetId,

@@ -1,5 +1,6 @@
 ﻿using Valour.Client.Components.Windows.CallWindows;
 using Valour.Client.Components.Windows.ChannelWindows;
+using Valour.Client.Components.Windows.Villages;
 using Valour.Client.Device;
 using Valour.Sdk.Models;
 using Valour.Shared.Utilities;
@@ -258,14 +259,34 @@ public static class WindowService
         if (content is null)
             return false;
 
-        var existingTab = GlobalTabs.FirstOrDefault(t =>
-            RepresentsSameContent(t.Content, content));
+        // Village presence is intentionally a single client session. Reuse the
+        // existing Village tab even when the requested planet differs; replacing
+        // its content disposes the old presence owner before the new one joins.
+        var existingTab = content is VillageWindowComponent.Content
+            ? GlobalTabs.FirstOrDefault(t => t.Content is VillageWindowComponent.Content)
+            : GlobalTabs.FirstOrDefault(t => RepresentsSameContent(t.Content, content));
 
-        if (existingTab?.Layout is null)
+        if (existingTab is null)
             return false;
 
-        await existingTab.Layout.SetFocusedTab(existingTab);
-        await existingTab.Layout.DockComponent.NotifyLayoutChanged();
+        if (content is VillageWindowComponent.Content requestedVillage &&
+            existingTab.Content is VillageWindowComponent.Content existingVillage &&
+            existingVillage.Data?.Id != requestedVillage.Data?.Id)
+        {
+            await existingTab.SetContent(content);
+        }
+
+        if (existingTab.Layout is not null)
+        {
+            await existingTab.Layout.SetFocusedTab(existingTab);
+            await existingTab.Layout.DockComponent.NotifyLayoutChanged();
+        }
+        else
+        {
+            await SetFocusedTab(existingTab);
+            existingTab.Component?.NotifyNeedsReRender();
+        }
+
         return true;
     }
 
@@ -285,6 +306,14 @@ public static class WindowService
             return existingCall.Data is not null &&
                    requestedCall.Data is not null &&
                    existingCall.Data.Id == requestedCall.Data.Id;
+        }
+
+        if (existing is VillageWindowComponent.Content existingVillage &&
+            requested is VillageWindowComponent.Content requestedVillage)
+        {
+            return existingVillage.Data is not null &&
+                   requestedVillage.Data is not null &&
+                   existingVillage.Data.Id == requestedVillage.Data.Id;
         }
 
         return ReferenceEquals(existing, requested);
