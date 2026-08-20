@@ -144,8 +144,7 @@ public interface ISharedPlanet : ISharedModel<long>
     /// <summary>
     /// True when the planet's vanity name also works as a permanent invite
     /// link (/i/{vanity}), letting a memorable name double as a share link
-    /// instead of a random invite code. Only takes effect while Public and
-    /// Vanity are both set.
+    /// instead of a random invite code. Only takes effect while Public and Vanity are both set.
     /// </summary>
     bool VanityInviteEnabled { get; set; }
 
