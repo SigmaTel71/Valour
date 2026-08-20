@@ -173,19 +173,27 @@ Buildings surface voice in one of three modes (`VillageVoiceMode`):
   restart replaced the channel, an active village call follows the replacement.
   Rebinding a building retires its old temporary room immediately.
 
+Outdoor maps use the same lease mechanism, keyed by map rather than building, so
+the commons and every other top-level map have a real spatial call/chat context.
+Map acquisition is allowed only for maps without a parent building; this prevents a
+caller from bypassing a linked interior by requesting its map id directly. The room
+DTO carries both `MapId` and an optional `BuildingId`, and each scope has a distinct
+lease key even if an exterior footprint and interior transition share context.
+
 These channels deliberately reuse the normal chat and call transports, but the
 directory filters their `◇ ` internal names: to a member they exist only as the
 meeting dock, nearby composer and speech bubbles inside the village. The acquire
-route also checks live building presence, and movement/context updates are awaited
-before acquisition, so knowing a building id does not grant remote access to its
-area room.
+route also checks matching live map/building presence, and movement/context updates
+are awaited before acquisition, so knowing an id does not grant remote access to
+its area room.
 
 ### Auto-join is opt-in
 
 Following someone between rooms is the point of the feature, but
 `GlobalCallSessionService` has no start-muted option, so auto-joining would open a
 microphone because a member wandered through a door. Auto-join is a per-session
-toggle; with it off, buildings offer an explicit join button.
+toggle; with it off, the current map or building offers an explicit join button and
+walking into a different voice space leaves the old call without opening a new mic.
 
 Two inherited constraints: the call layer handles one channel at a time, and
 `MinimumRealtimeKitParticipants = 2` means a lone member never connects to the SFU.
@@ -198,32 +206,41 @@ it.
 
 ## Nearby text
 
-The default planet chat is the outdoor commons conversation, so members can type
-without first opening a channel window and see the result immediately above their
-avatar. Inside a building, the composer follows that building's chat channel; voice
+The outdoor map room's associated chat is the commons conversation (with the
+planet's default chat as a fail-soft fallback), so members can type without first
+opening a channel window and see the result immediately above their avatar. Inside
+a building, the composer follows that building's chat channel; voice
 and video venues use their associated chat channel when one exists. Unlinked
 buildings acquire the associated chat from their `AutoRoom`, so private properties
 have the same nearby-text UX without creating permanent navigation. Incoming
 messages only become bubbles when the speaker is present on the same map and the
-message belongs to that spatial context. Bubbles are short-lived, capped and
-three-line-wrapped; the linked channel remains the durable scrollback.
+message belongs to that spatial context. Canvas bubbles use a plain-text projection
+of the same safe markdown pipeline as normal messages, retain a bounded four-bubble
+vertical stack per speaker, hold for seven seconds and then fade; each bubble remains
+three-line-wrapped, and the linked channel remains the durable scrollback.
 
 ### Positional voice
 
 Each remote participant's microphone is routed through its own
-`MediaStreamSource → PannerNode → GainNode`. The listener stays at the origin and
-sources are positioned relative to it, avoiding the need to keep listener
-orientation in sync with a top-down camera that never rotates.
+`MediaStreamSource → PannerNode → distance GainNode → output GainNode`. The listener
+stays at the origin and sources are positioned relative to it, avoiding the need to
+keep listener orientation in sync with a top-down camera that never rotates.
+
+Spatial sound is on by default. The HRTF panner handles direction only; a tested
+reverse-smoothstep curve keeps voices at full volume through two tiles, fades them
+to true silence at sixteen tiles and ramps position/gain changes to avoid clicks.
+The output gain preserves the participant volume set by the normal call UI.
 
 Two non-obvious requirements:
 
-- The `<audio>` element the call layer created is kept **alive but muted**. Browsers
-  stop delivering a remote WebRTC track not attached to a media element, so removing
-  it silences everyone.
+- The `<audio>` element the call layer created remains attached. No redundant hidden
+  element is created.
 - The canvas runtime resolves each call participant's real `<audio>` element from
   its peer id and adopts its live `MediaStream`. With spatial mode off the original
-  element is audible; with it on that element is muted and the panner graph is the
-  only audible route, preventing doubled audio.
+  element is audible; with it on that element is muted only after the Web Audio graph
+  confirms it can route the stream, preventing both doubled audio and silence on an
+  unsupported browser. Participants outside the current map are intentionally muted
+  while spatial sound is enabled rather than leaking full-volume audio across spaces.
 - Positions are applied **per frame from eased render positions**, not per network
   update, so panning follows what the player sees, and are ramped rather than set so
   stepping a tile does not click.
@@ -451,6 +468,16 @@ else keeps the float-under-finger behaviour. The ghost shows on the mobile
 user-agent sniff or any `maxTouchPoints`, and any real touch turns it on, which
 covers touch hardware both signals miss.
 
+Mobile members can switch the Village control style from the toolbar to an optional
+theme-aware **Valour Pocket** layout. The choice is a device preference and the
+floating stick remains the default. Handheld mode disables canvas drag-steering but
+keeps map taps: its D-pad feeds the same held-direction movement loop as the keyboard,
+`A` selects and enters an adjacent place, `B` clears the current surface or leaves an
+interior, `Start` opens Places, and `Select` focuses nearby chat. The composer and
+inspector lift above the controller. On narrow layouts an active call and its composer
+stack above the controller so walking remains available while talking; the controller
+yields entirely to build and admin surfaces instead of covering their editing controls.
+
 Two fingers pinch-zoom: the second finger converts the gesture from steering to
 a pinch (and marks the session so its release is never mistaken for an inspect
 tap), and the finger-distance ratio steers the same eased zoom target the wheel
@@ -528,8 +555,9 @@ is open so the world never collapses under stacked panels.
   per test method exhausts it. Tests that mutate the world restore it, because every
   test in the class reads the same planet.
 - `Valour/Tests/Js/*.test.mjs` — the runtime's texture cache, the positional audio
-  graph, and the terrain autotile resolver (side rule, bitmask ladder, fail-soft
-  fallbacks, deterministic variants), via `node --test`. See that folder's README.
+  graph, chat-bubble queue/timing, and the terrain autotile resolver (side rule,
+  bitmask ladder, fail-soft fallbacks, deterministic variants), via `node --test`.
+  See that folder's README.
 
 ## Not built yet
 

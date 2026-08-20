@@ -7,7 +7,8 @@ namespace Valour.Shared.Villages;
 public class VillageEphemeralRoom
 {
     public long PlanetId { get; set; }
-    public long BuildingId { get; set; }
+    public long MapId { get; set; }
+    public long? BuildingId { get; set; }
     public long ChannelId { get; set; }
     public long ChatChannelId { get; set; }
     public string Name { get; set; } = string.Empty;

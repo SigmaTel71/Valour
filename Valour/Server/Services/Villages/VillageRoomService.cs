@@ -11,7 +11,7 @@ namespace Valour.Server.Services.Villages;
 
 /// <summary>
 /// Provides a temporary video-capable room and associated chat for village
-/// buildings that are not linked to a permanent channel.
+/// maps and buildings that are not linked to a permanent channel.
 ///
 /// Planets are node-pinned, so the in-memory lease table is authoritative while
 /// the room is alive. The backing channels exist only to reuse Valour's mature
@@ -44,7 +44,63 @@ public sealed class VillageRoomService
     {
         await EnsurePlanetInitializedAsync(planetId);
 
-        var key = new RoomKey(planetId, buildingId);
+        await using var scope = _scopeFactory.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<ValourDb>();
+        var building = await db.VillageBuildings
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == buildingId && x.PlanetId == planetId);
+        if (building is null)
+            return TaskResult<VillageEphemeralRoom>.FromFailure("Village building not found.");
+        if (building.InteriorMapId is null)
+            return TaskResult<VillageEphemeralRoom>.FromFailure("This building has no voice space.");
+        if (building.ChannelId is not null)
+            return TaskResult<VillageEphemeralRoom>.FromFailure("This building already uses a permanent channel.");
+
+        return await AcquireCoreAsync(
+            new RoomKey(planetId, RoomScope.Building, buildingId),
+            building.InteriorMapId.Value,
+            buildingId,
+            building.Name,
+            userId);
+    }
+
+    /// <summary>
+    /// Leases the shared pseudo-channel for an outdoor map. Interior maps use
+    /// their parent building's room so a linked building cannot be bypassed by
+    /// acquiring its map id directly.
+    /// </summary>
+    public async Task<TaskResult<VillageEphemeralRoom>> AcquireMapAsync(
+        long planetId,
+        long mapId,
+        long userId)
+    {
+        await EnsurePlanetInitializedAsync(planetId);
+
+        await using var scope = _scopeFactory.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<ValourDb>();
+        var map = await db.VillageMaps
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == mapId && x.PlanetId == planetId);
+        if (map is null)
+            return TaskResult<VillageEphemeralRoom>.FromFailure("Village map not found.");
+        if (map.ParentBuildingId is not null)
+            return TaskResult<VillageEphemeralRoom>.FromFailure("Interior voice is controlled by its building.");
+
+        return await AcquireCoreAsync(
+            new RoomKey(planetId, RoomScope.Map, mapId),
+            mapId,
+            buildingId: null,
+            map.Name,
+            userId);
+    }
+
+    private async Task<TaskResult<VillageEphemeralRoom>> AcquireCoreAsync(
+        RoomKey key,
+        long mapId,
+        long? buildingId,
+        string spaceName,
+        long userId)
+    {
         var gate = _roomLocks.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
         await gate.WaitAsync();
         try
@@ -57,24 +113,14 @@ public sealed class VillageRoomService
             }
 
             await using var scope = _scopeFactory.CreateAsyncScope();
-            var db = scope.ServiceProvider.GetRequiredService<ValourDb>();
             var channelService = scope.ServiceProvider.GetRequiredService<ChannelService>();
-
-            var building = await db.VillageBuildings
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == buildingId && x.PlanetId == planetId);
-            if (building is null)
-                return TaskResult<VillageEphemeralRoom>.FromFailure("Village building not found.");
-
-            if (building.ChannelId is not null)
-                return TaskResult<VillageEphemeralRoom>.FromFailure("This building already uses a permanent channel.");
 
             var channel = new ChannelModel
             {
-                Name = MakeInternalChannelName(building.Name),
-                Description = $"{DescriptionPrefix}{building.Id}] Temporary room for {building.Name}.",
+                Name = MakeInternalChannelName(spaceName),
+                Description = $"{DescriptionPrefix}{key.Scope}:{key.ScopeId}] Temporary room for {spaceName}.",
                 ChannelType = ChannelTypeEnum.PlanetVideo,
-                PlanetId = planetId,
+                PlanetId = key.PlanetId,
                 ParentId = null,
                 RawPosition = 0,
                 InheritsPerms = false,
@@ -91,11 +137,12 @@ public sealed class VillageRoomService
 
             var room = new VillageEphemeralRoom
             {
-                PlanetId = planetId,
+                PlanetId = key.PlanetId,
+                MapId = mapId,
                 BuildingId = buildingId,
                 ChannelId = created.Data.Id,
                 ChatChannelId = created.Data.AssociatedChatChannelId.Value,
-                Name = building.Name,
+                Name = spaceName,
                 SupportsVideo = true,
             };
 
@@ -110,7 +157,16 @@ public sealed class VillageRoomService
 
     public async Task ReleaseAsync(long planetId, long buildingId, long userId)
     {
-        var key = new RoomKey(planetId, buildingId);
+        await ReleaseCoreAsync(new RoomKey(planetId, RoomScope.Building, buildingId), userId);
+    }
+
+    public async Task ReleaseMapAsync(long planetId, long mapId, long userId)
+    {
+        await ReleaseCoreAsync(new RoomKey(planetId, RoomScope.Map, mapId), userId);
+    }
+
+    private async Task ReleaseCoreAsync(RoomKey key, long userId)
+    {
         if (!_roomLocks.TryGetValue(key, out var gate))
             return;
 
@@ -138,7 +194,7 @@ public sealed class VillageRoomService
     public async Task ReleaseAllForUserAsync(long userId)
     {
         foreach (var key in _rooms.Keys)
-            await ReleaseAsync(key.PlanetId, key.BuildingId, userId);
+            await ReleaseCoreAsync(key, userId);
     }
 
     /// <summary>
@@ -149,7 +205,21 @@ public sealed class VillageRoomService
     /// </summary>
     public async Task CloseBuildingRoomAsync(long planetId, long buildingId)
     {
-        var key = new RoomKey(planetId, buildingId);
+        var key = new RoomKey(planetId, RoomScope.Building, buildingId);
+        await CloseRoomAsync(key);
+    }
+
+    /// <summary>
+    /// Immediately retires every temporary room for a village that was disabled.
+    /// </summary>
+    public async Task ClosePlanetRoomsAsync(long planetId)
+    {
+        foreach (var key in _rooms.Keys.Where(x => x.PlanetId == planetId))
+            await CloseRoomAsync(key);
+    }
+
+    private async Task CloseRoomAsync(RoomKey key)
+    {
         if (!_roomLocks.TryGetValue(key, out var gate))
             return;
 
@@ -167,15 +237,6 @@ public sealed class VillageRoomService
 
         if (room is not null)
             await DeleteChannelAsync(room.PlanetId, room.ChannelId);
-    }
-
-    /// <summary>
-    /// Immediately retires every temporary room for a village that was disabled.
-    /// </summary>
-    public async Task ClosePlanetRoomsAsync(long planetId)
-    {
-        foreach (var key in _rooms.Keys.Where(x => x.PlanetId == planetId))
-            await CloseBuildingRoomAsync(key.PlanetId, key.BuildingId);
     }
 
     private async Task DeleteIfStillEmptyAfterGraceAsync(RoomKey key, long generation)
@@ -281,7 +342,13 @@ public sealed class VillageRoomService
         return ISharedChannel.VillageEphemeralNamePrefix + safeName;
     }
 
-    private readonly record struct RoomKey(long PlanetId, long BuildingId);
+    private enum RoomScope
+    {
+        Map,
+        Building,
+    }
+
+    private readonly record struct RoomKey(long PlanetId, RoomScope Scope, long ScopeId);
 
     private sealed class RoomState
     {

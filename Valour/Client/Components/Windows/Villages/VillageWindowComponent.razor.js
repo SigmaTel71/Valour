@@ -17,6 +17,16 @@ import {
     getPlayerCenteredCamera
 } from "../../../ts/VillageTileRendering.js";
 import { createSpatialAudio } from "../../../ts/VillageSpatialAudio.js";
+import {
+    enqueueVillageBubble,
+    getVillageBubbleAlpha,
+    VILLAGE_BUBBLE_HOLD_MS,
+    VILLAGE_BUBBLE_FADE_MS
+} from "../../../ts/VillageChatBubbles.js";
+import {
+    normalizeMovementKey,
+    distanceToBuildingInteraction
+} from "../../../ts/VillageHandheldControls.js";
 
 // Pixels of drag before a touch counts as steering rather than a tap.
 const TOUCH_DEADZONE = 18;
@@ -69,6 +79,9 @@ export function init(canvasId, dotNetRef, scene, isMobile) {
         // Tileset key -> { definitions: Map<key, def>, imageUrl, tileSize }
         tilesets: new Map(),
         touch: { active: false, pointerId: null, originX: 0, originY: 0, dx: 0, dy: 0, moved: false, direction: null },
+        touchControlMode: "floating",
+        handheldDirection: null,
+        lastHandheldPointerAt: 0,
         // Live non-mouse pointers by id; two at once turns the gesture into a
         // pinch that steers the eased zoom target.
         pointers: new Map(),
@@ -103,7 +116,7 @@ export function init(canvasId, dotNetRef, scene, isMobile) {
         // hardware the user-agent sniff misses.
         showTouchControls: !!isMobile || (navigator.maxTouchPoints ?? 0) > 0,
         spatialAudio: createSpatialAudio(),
-        spatialAudioEnabled: false,
+        spatialAudioEnabled: true,
         voicePeers: new Map(),
         voiceElements: new Map(),
         textureCache: new Map(),
@@ -132,6 +145,92 @@ export function init(canvasId, dotNetRef, scene, isMobile) {
         resetZoom() {
             setTargetZoom(state, 1);
         },
+        setTouchControlMode(mode) {
+            state.touchControlMode = mode === "handheld" ? "handheld" : "floating";
+            state.handheldDirection = null;
+            state.touch.active = false;
+            state.touch.direction = null;
+            state.moveAccumulatorMs = 0;
+            state.showTouchControls = state.touchControlMode === "floating" &&
+                (!!isMobile || (navigator.maxTouchPoints ?? 0) > 0);
+            draw(state);
+        },
+        setHandheldDirection(direction, pressed) {
+            if (state.destroyed || state.admin.enabled || state.touchControlMode !== "handheld") {
+                return;
+            }
+
+            const normalized = normalizeMovementKey(direction);
+            if (!normalized) {
+                return;
+            }
+
+            unlockAudio(state);
+            state.lastHandheldPointerAt = performance.now();
+            if (!pressed) {
+                if (state.handheldDirection === normalized) {
+                    state.handheldDirection = null;
+                    state.moveAccumulatorMs = 0;
+                }
+                return;
+            }
+
+            const isNewPress = state.handheldDirection !== normalized;
+            state.handheldDirection = normalized;
+            state.lastDirectionKey = normalized;
+            if (isNewPress) {
+                state.moveAccumulatorMs = 0;
+                queueMovement(state, normalized);
+            }
+        },
+        nudgeHandheldDirection(direction) {
+            if (state.destroyed || state.admin.enabled || state.touchControlMode !== "handheld") {
+                return;
+            }
+
+            // Touch browsers synthesize click after pointerup. The pointerdown
+            // already moved, so only keyboard/screen-reader clicks should nudge.
+            if (performance.now() - state.lastHandheldPointerAt < 500) {
+                return;
+            }
+
+            const normalized = normalizeMovementKey(direction);
+            if (normalized) {
+                state.lastDirectionKey = normalized;
+                queueMovement(state, normalized);
+            }
+        },
+        async interact() {
+            if (state.destroyed || state.admin.enabled || state.build.enabled) {
+                return;
+            }
+
+            const map = getCurrentMap(state);
+            const player = ensureLocalPlayerPosition(state, state.currentMapId);
+            if (!map || !player) {
+                return;
+            }
+
+            const nearby = (map.buildings ?? [])
+                .map(building => ({ building, distance: distanceToBuildingInteraction(building, player) }))
+                .filter(item => item.distance <= 1)
+                .sort((a, b) => a.distance - b.distance)[0]?.building;
+
+            if (!nearby) {
+                return;
+            }
+
+            state.selectedBuildingId = nearby.id;
+            state.selectedPlotId = null;
+            await notifySelection(state);
+
+            if (nearby.interiorMapId) {
+                await runtime.setMap(nearby.interiorMapId);
+                return;
+            }
+
+            draw(state);
+        },
         setBuildMode(config) {
             state.build.enabled = config?.enabled === true;
             state.build.tool = config?.tool ?? "Furnish";
@@ -141,6 +240,11 @@ export function init(canvasId, dotNetRef, scene, isMobile) {
             state.build.pointerId = null;
             state.build.lastDragTile = null;
             state.build.stroke = null;
+            state.keys.clear();
+            state.handheldDirection = null;
+            state.touch.direction = null;
+            state.lastDirectionKey = null;
+            state.moveAccumulatorMs = 0;
             if (!state.build.enabled) {
                 restoreOptimisticTerrain(state);
                 state.build.hoverX = null;
@@ -156,6 +260,7 @@ export function init(canvasId, dotNetRef, scene, isMobile) {
             state.admin.start = null;
             state.admin.current = null;
             state.keys.clear();
+            state.handheldDirection = null;
             state.touch.direction = null;
             state.lastDirectionKey = null;
             state.moveAccumulatorMs = 0;
@@ -318,9 +423,17 @@ export function init(canvasId, dotNetRef, scene, isMobile) {
             state.spatialAudioEnabled = !!enabled;
             state.spatialAudio.setEnabled(state.spatialAudioEnabled);
 
-            for (const element of state.voiceElements.values()) {
-                element.muted = state.spatialAudioEnabled;
+            // Enabling is completed per peer only after a graph exists. Muting
+            // optimistically here would silence browsers without Web Audio or
+            // peers whose media stream has not arrived yet.
+            if (!state.spatialAudioEnabled) {
+                for (const element of state.voiceElements.values()) {
+                    element.muted = false;
+                }
             }
+        },
+        async resumeSpatialAudio() {
+            await state.spatialAudio.resume();
         },
         /**
          * Hands the runtime the live voice peers. Called by the call layer, not
@@ -352,20 +465,13 @@ export function init(canvasId, dotNetRef, scene, isMobile) {
                 }
             }
         },
-        /**
-         * Shows a line of chat above a member. Only the most recent line per
-         * member is kept: a wall of stacked bubbles would obscure the map, and
-         * the channel itself is the place to read scrollback.
-         */
-        pushBubble(userId, text) {
+        /** Shows a short, bounded stack of recent chat above a member. */
+        pushBubble(userId, text, optimistic = false) {
             if (!text) {
                 return;
             }
 
-            state.bubbles.set(userId, {
-                text: text.length > 120 ? text.slice(0, 119) + "\u2026" : text,
-                bornAt: performance.now()
-            });
+            enqueueVillageBubble(state.bubbles, userId, text, performance.now(), optimistic);
 
             draw(state);
         },
@@ -394,6 +500,8 @@ export function init(canvasId, dotNetRef, scene, isMobile) {
             state.keys.clear();
         }
     };
+
+    state.spatialAudio.setEnabled(state.spatialAudioEnabled);
 
     state.onResize = () => {
         resizeCanvas(state);
@@ -525,6 +633,14 @@ export function init(canvasId, dotNetRef, scene, isMobile) {
         }
 
         if (event.pointerType === "mouse") {
+            return;
+        }
+
+        // In handheld mode the HTML D-pad owns movement. Canvas touches remain
+        // ordinary taps, so inspecting a place still works without a ghost
+        // joystick appearing beneath the player's finger.
+        if (state.touchControlMode === "handheld") {
+            unlockAudio(state);
             return;
         }
 
@@ -752,6 +868,7 @@ export function init(canvasId, dotNetRef, scene, isMobile) {
 
     state.onBlur = () => {
         state.keys.clear();
+        state.handheldDirection = null;
         state.lastDirectionKey = null;
         state.moveAccumulatorMs = 0;
         state.touch.active = false;
@@ -1116,7 +1233,8 @@ function updatePlayer(state, deltaMs) {
         return;
     }
 
-    if (state.admin.enabled || (state.keys.size === 0 && !state.touch.direction)) {
+    if (state.admin.enabled || state.build.enabled ||
+        (state.keys.size === 0 && !state.touch.direction && !state.handheldDirection)) {
         state.moveAccumulatorMs = 0;
         return;
     }
@@ -2302,6 +2420,13 @@ function updateSpatialAudio(state) {
         const remote = state.remotes.get(peer.userId);
         if (!remote) {
             state.spatialAudio.remove(userId);
+            const existingElement = state.voiceElements.get(userId);
+            if (existingElement) {
+                // A participant outside the current map is outside the spatial
+                // space. This remains intentionally silent even if Web Audio
+                // itself is unavailable; disabling spatial sound restores it.
+                existingElement.muted = state.spatialAudioEnabled;
+            }
             continue;
         }
 
@@ -2313,15 +2438,16 @@ function updateSpatialAudio(state) {
             }
         }
 
-        if (element) {
-            element.muted = state.spatialAudioEnabled;
-        }
-
-        state.spatialAudio.upsert(
+        const routed = state.spatialAudio.upsert(
             userId,
             remote.renderX,
             remote.renderY,
-            element?.srcObject instanceof MediaStream ? element.srcObject : null);
+            element?.srcObject instanceof MediaStream ? element.srcObject : null,
+            element?.volume ?? 1);
+
+        if (element) {
+            element.muted = state.spatialAudioEnabled && routed;
+        }
     }
 }
 
@@ -2537,23 +2663,38 @@ function drawTouchStick(ctx, state) {
 
 function drawBubbles(ctx, state, px) {
     const now = performance.now();
-    const holdMs = 4500;
-    const fadeMs = 900;
 
-    for (const [userId, bubble] of [...state.bubbles.entries()]) {
-        const age = now - bubble.bornAt;
-        if (age > holdMs + fadeMs) {
+    for (const [userId, queue] of [...state.bubbles.entries()]) {
+        const visible = queue.filter(
+            bubble => now - bubble.bornAt <= VILLAGE_BUBBLE_HOLD_MS + VILLAGE_BUBBLE_FADE_MS);
+        if (visible.length === 0) {
             state.bubbles.delete(userId);
             continue;
         }
+        state.bubbles.set(userId, visible);
 
         const position = resolveBubbleAnchor(state, userId);
         if (!position) {
             continue;
         }
 
-        const alpha = age <= holdMs ? 1 : 1 - ((age - holdMs) / fadeMs);
-        drawBubble(ctx, state, px, position.x, position.y, bubble.text, alpha);
+        // Newest stays closest to the speaker; older messages climb upward.
+        let verticalOffset = 0;
+        for (let index = visible.length - 1; index >= 0; index--) {
+            const bubble = visible[index];
+            const alpha = getVillageBubbleAlpha(now - bubble.bornAt);
+            const boxHeight = drawBubble(
+                ctx,
+                state,
+                px,
+                position.x,
+                position.y,
+                bubble.text,
+                alpha,
+                verticalOffset,
+                index === visible.length - 1);
+            verticalOffset += boxHeight + Math.max(4, px * 0.12);
+        }
     }
 }
 
@@ -2576,7 +2717,7 @@ function resolveBubbleAnchor(state, userId) {
     return null;
 }
 
-function drawBubble(ctx, state, px, tileX, tileY, text, alpha) {
+function drawBubble(ctx, state, px, tileX, tileY, text, alpha, verticalOffset, showTail) {
     const fontSize = Math.max(10, Math.round(px * 0.24));
     ctx.font = `500 ${fontSize}px var(--font-family, sans-serif)`;
 
@@ -2595,7 +2736,7 @@ function drawBubble(ctx, state, px, tileX, tileY, text, alpha) {
     const boxHeight = lines.length * lineHeight + paddingY * 2;
 
     const centerX = (tileX + 0.5) * px - state.renderCameraX;
-    const bottomY = (tileY + 0.35) * px - state.renderCameraY - px * 0.42;
+    const bottomY = (tileY + 0.35) * px - state.renderCameraY - px * 0.42 - verticalOffset;
     const boxX = centerX - boxWidth / 2;
     const boxY = bottomY - boxHeight;
 
@@ -2607,13 +2748,16 @@ function drawBubble(ctx, state, px, tileX, tileY, text, alpha) {
     ctx.lineWidth = 1;
     roundRect(ctx, boxX, boxY, boxWidth, boxHeight, fontSize * 0.5, true, true);
 
-    // Tail pointing down at the speaker.
-    ctx.beginPath();
-    ctx.moveTo(centerX - fontSize * 0.32, boxY + boxHeight);
-    ctx.lineTo(centerX, boxY + boxHeight + fontSize * 0.45);
-    ctx.lineTo(centerX + fontSize * 0.32, boxY + boxHeight);
-    ctx.closePath();
-    ctx.fill();
+    if (showTail) {
+        // Only the bubble nearest the avatar needs a tail; repeating tails in
+        // the stack makes the older cards look like speech from empty space.
+        ctx.beginPath();
+        ctx.moveTo(centerX - fontSize * 0.32, boxY + boxHeight);
+        ctx.lineTo(centerX, boxY + boxHeight + fontSize * 0.45);
+        ctx.lineTo(centerX + fontSize * 0.32, boxY + boxHeight);
+        ctx.closePath();
+        ctx.fill();
+    }
 
     ctx.fillStyle = "#f2f4f8";
     ctx.textAlign = "center";
@@ -2625,6 +2769,7 @@ function drawBubble(ctx, state, px, tileX, tileY, text, alpha) {
     ctx.textAlign = "start";
     ctx.textBaseline = "alphabetic";
     ctx.restore();
+    return boxHeight;
 }
 
 function wrapBubbleText(ctx, text, maxWidth) {
@@ -2936,15 +3081,6 @@ async function invokeDotNet(state, methodName, ...args) {
     }
 }
 
-function normalizeMovementKey(key) {
-    const lowered = key.toLowerCase();
-    if (lowered === "w" || lowered === "arrowup") return "up";
-    if (lowered === "s" || lowered === "arrowdown") return "down";
-    if (lowered === "a" || lowered === "arrowleft") return "left";
-    if (lowered === "d" || lowered === "arrowright") return "right";
-    return null;
-}
-
 function directionToVector(directionKey) {
     if (directionKey === "up") return { x: 0, y: -1 };
     if (directionKey === "down") return { x: 0, y: 1 };
@@ -2954,6 +3090,10 @@ function directionToVector(directionKey) {
 }
 
 function getActiveDirectionKey(state) {
+    if (state.handheldDirection) {
+        return state.handheldDirection;
+    }
+
     // A held joystick wins over stale keyboard state.
     if (state.touch.direction) {
         return state.touch.direction;

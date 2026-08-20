@@ -81,6 +81,13 @@ public class VillageService : ServiceBase
     public Task<TaskResult> ReleaseBuildingRoomAsync(Planet planet, long buildingId) =>
         planet.Node.DeleteAsync($"api/planets/{planet.Id}/village/buildings/{buildingId}/room");
 
+    public Task<TaskResult<VillageEphemeralRoom>> AcquireMapRoomAsync(Planet planet, long mapId) =>
+        planet.Node.PostAsyncWithResponse<VillageEphemeralRoom>(
+            $"api/planets/{planet.Id}/village/maps/{mapId}/room");
+
+    public Task<TaskResult> ReleaseMapRoomAsync(Planet planet, long mapId) =>
+        planet.Node.DeleteAsync($"api/planets/{planet.Id}/village/maps/{mapId}/room");
+
     public async Task<TaskResult> SetPlotListingAsync(Planet planet, long plotId, bool forSale, decimal price) =>
         (await planet.Node.PutAsyncWithResponse<bool>(
             $"api/planets/{planet.Id}/village/plots/{plotId}/listing",

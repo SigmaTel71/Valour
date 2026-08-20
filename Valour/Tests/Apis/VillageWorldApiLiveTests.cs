@@ -363,6 +363,44 @@ public class VillageWorldApiLiveTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task OutdoorMap_GetsOneSharedTemporaryVideoRoomAndChat()
+    {
+        var scene = await LoadSceneAsync();
+        var outdoor = scene!.Maps.Single(x => x.Id == scene.StartingMapId);
+        var spawn = outdoor.SpawnTile!;
+
+        var joined = await _fixture.Client.VillageService.JoinMapAsync(
+            _planet,
+            outdoor.Id,
+            spawn.X,
+            spawn.Y);
+        Assert.True(joined.Success, joined.Message);
+
+        var first = await _fixture.Client.VillageService.AcquireMapRoomAsync(_planet, outdoor.Id);
+        var second = await _fixture.Client.VillageService.AcquireMapRoomAsync(_planet, outdoor.Id);
+
+        Assert.True(first.Success, first.Message);
+        Assert.True(second.Success, second.Message);
+        Assert.NotNull(first.Data);
+        Assert.NotNull(second.Data);
+        Assert.Equal(outdoor.Id, first.Data.MapId);
+        Assert.Null(first.Data.BuildingId);
+        Assert.Equal(first.Data.ChannelId, second.Data.ChannelId);
+        Assert.Equal(first.Data.ChatChannelId, second.Data.ChatChannelId);
+        Assert.True(first.Data.SupportsVideo);
+
+        var callChannel = await _planet.FetchChannelAsync(first.Data.ChannelId);
+        Assert.NotNull(callChannel);
+        Assert.Equal(ChannelTypeEnum.PlanetVideo, callChannel.ChannelType);
+        Assert.True(ISharedChannel.IsVillageEphemeral(callChannel));
+        Assert.Equal(first.Data.ChatChannelId, callChannel.AssociatedChatChannelId);
+
+        var released = await _fixture.Client.VillageService.ReleaseMapRoomAsync(_planet, outdoor.Id);
+        Assert.True(released.Success, released.Message);
+        await _fixture.Client.VillageService.LeaveMapAsync();
+    }
+
+    [Fact]
     public async Task EveryInterior_HasAWayBackOut()
     {
         var scene = await LoadSceneAsync();

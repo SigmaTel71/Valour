@@ -5,6 +5,7 @@
 @inject Valour.Client.Components.Calls.GlobalCallSessionService CallSession
 @inject Valour.Sdk.Services.MessageService MessageService
 @inject ValourClient Client
+@inject Valour.Client.Storage.IAppStorage LocalStorage
 @using System.Text.Json
 @using Valour.Shared.Models
 @using Valour.Shared.Villages
@@ -29,7 +30,7 @@ else if (_error is not null)
 }
 else
 {
-    <div class="village-window @(_activeVoiceChannel is not null ? "has-call" : string.Empty) @(_buildMode ? "build-mode-active" : string.Empty) @(_adminMode ? "admin-mode-active" : string.Empty)">
+    <div class="village-window @(_activeVoiceChannel is not null ? "has-call" : string.Empty) @(_buildMode ? "build-mode-active" : string.Empty) @(_adminMode ? "admin-mode-active" : string.Empty) @(HandheldControlsVisible ? "handheld-controls-active" : string.Empty)">
         <canvas id="@_canvasId"
                 class="village-canvas"
                 tabindex="0"
@@ -78,6 +79,16 @@ else
                         aria-controls="@_placesPanelId">
                     <i class="bi bi-list-ul"></i>
                 </button>
+                @if (DeviceInfo.IsMobile)
+                {
+                    <button class="village-icon-button @(_handheldControls ? "active" : string.Empty)"
+                            @onclick="ToggleHandheldControlsAsync"
+                            title="@(_handheldControls ? "Use floating joystick" : "Use handheld controls")"
+                            aria-label="@(_handheldControls ? "Switch to floating joystick controls" : "Switch to handheld controls")"
+                            aria-pressed="@_handheldControls">
+                        <i class="bi bi-controller"></i>
+                    </button>
+                }
                 @if (CanBuildCurrentMap)
                 {
                     <button class="village-icon-button @(_buildMode ? "active" : string.Empty)"
@@ -123,12 +134,23 @@ else
                         <i class="bi bi-door-open-fill"></i>
                     </button>
                 }
-                <label class="village-icon-toggle @(_proximityVoice ? "active" : string.Empty)" title="Spatial proximity voice">
+                @if (CurrentSpaceCanHostVoice)
+                {
+                    <button class="village-icon-button voice-space-button @(IsVoiceActiveHere ? "active" : string.Empty)"
+                            @onclick="ToggleCurrentVoiceAsync"
+                            title="@(IsVoiceActiveHere ? "Leave nearby voice" : $"Join nearby voice in {CurrentSpaceName}")"
+                            aria-label="@(IsVoiceActiveHere ? "Leave nearby voice" : $"Join nearby voice in {CurrentSpaceName}")"
+                            aria-pressed="@IsVoiceActiveHere">
+                        <i class="bi @(IsVoiceActiveHere ? "bi-telephone-x-fill" : "bi-headset")"></i>
+                    </button>
+                }
+                <label class="village-icon-toggle @(_proximityVoice ? "active" : string.Empty)"
+                       title="Spatial sound: nearby voices are louder and voices beyond 16 tiles fade out">
                     <input type="checkbox" checked="@_proximityVoice" @onchange="OnToggleProximityVoice" />
                     <i class="bi bi-soundwave"></i>
-                    <span>Spatial</span>
+                    <span>Spatial sound</span>
                 </label>
-                <label class="village-icon-toggle @(_autoJoinVoice ? "active" : string.Empty)" title="Automatically follow building voice rooms">
+                <label class="village-icon-toggle @(_autoJoinVoice ? "active" : string.Empty)" title="Automatically follow nearby voice between village spaces">
                     <input type="checkbox" checked="@_autoJoinVoice" @onchange="OnToggleAutoJoin" />
                     <i class="bi bi-mic-fill"></i>
                     <span>Auto join</span>
@@ -180,14 +202,24 @@ else
             <aside class="village-call-surface @(_voicePanelCollapsed ? "collapsed" : string.Empty)">
                 <div class="village-call-titlebar">
                     <div>
-                        <span class="eyebrow">@(_activeVoiceVideoMode ? "Video room" : "Voice room")</span>
+                        <span class="eyebrow">
+                            @(_activeVoiceVideoMode ? "Nearby video" : "Nearby voice") · @(_proximityVoice ? "Spatial on" : "Even volume")
+                        </span>
                         <strong>@(_activeVoiceBuildingName ?? _activeVoiceChannel.Name)</strong>
                     </div>
-                    <button class="village-icon-button compact"
-                            @onclick="ToggleVoicePanel"
-                            title="@(_voicePanelCollapsed ? "Expand meeting" : "Minimize meeting")">
-                        <i class="bi @(_voicePanelCollapsed ? "bi-chevron-up" : "bi-chevron-down")"></i>
-                    </button>
+                    <div class="village-call-actions">
+                        <button class="village-icon-button compact"
+                                @onclick="ToggleVoicePanel"
+                                title="@(_voicePanelCollapsed ? "Expand meeting" : "Minimize meeting")"
+                                aria-label="@(_voicePanelCollapsed ? "Expand meeting" : "Minimize meeting")">
+                            <i class="bi @(_voicePanelCollapsed ? "bi-chevron-up" : "bi-chevron-down")"></i>
+                        </button>
+                        <button class="village-icon-button compact leave-call"
+                                @onclick="LeaveVoiceAsync"
+                                title="Leave nearby voice" aria-label="Leave nearby voice">
+                            <i class="bi bi-telephone-x-fill"></i>
+                        </button>
+                    </div>
                 </div>
                 @if (!_voicePanelCollapsed)
                 {
@@ -673,7 +705,8 @@ else
                     <strong>@(_currentBuildingName ?? _activeChatChannel.Name)</strong>
                 </div>
                 <div class="composer-row">
-                    <input value="@_chatDraft"
+                    <input @ref="_chatInput"
+                           value="@_chatDraft"
                            @oninput="OnChatDraftChanged"
                            @onkeydown="OnChatKeyDown"
                            maxlength="120"
@@ -684,6 +717,63 @@ else
                             @onclick="SendVillageMessageAsync"
                             title="Send message">
                         <i class="bi bi-send-fill"></i>
+                    </button>
+                </div>
+            </div>
+        }
+
+        @if (HandheldControlsVisible)
+        {
+            <div class="village-handheld" role="group" aria-label="Handheld village controls">
+                <div class="handheld-gloss" aria-hidden="true"></div>
+                <div class="handheld-brand" aria-hidden="true">
+                    <span>VALOUR</span>
+                    <small>POCKET</small>
+                </div>
+
+                <div class="handheld-dpad" role="group" aria-label="Movement pad">
+                    <button class="dpad-key dpad-up" aria-label="Move up"
+                            @onpointerdown='() => SetHandheldDirectionAsync("up", true)'
+                            @onpointerup='() => SetHandheldDirectionAsync("up", false)'
+                            @onpointercancel='() => SetHandheldDirectionAsync("up", false)'
+                            @onpointerleave='() => SetHandheldDirectionAsync("up", false)'
+                            @onclick='() => NudgeHandheldDirectionAsync("up")'><i class="bi bi-caret-up-fill"></i></button>
+                    <button class="dpad-key dpad-left" aria-label="Move left"
+                            @onpointerdown='() => SetHandheldDirectionAsync("left", true)'
+                            @onpointerup='() => SetHandheldDirectionAsync("left", false)'
+                            @onpointercancel='() => SetHandheldDirectionAsync("left", false)'
+                            @onpointerleave='() => SetHandheldDirectionAsync("left", false)'
+                            @onclick='() => NudgeHandheldDirectionAsync("left")'><i class="bi bi-caret-left-fill"></i></button>
+                    <span class="dpad-center" aria-hidden="true"></span>
+                    <button class="dpad-key dpad-right" aria-label="Move right"
+                            @onpointerdown='() => SetHandheldDirectionAsync("right", true)'
+                            @onpointerup='() => SetHandheldDirectionAsync("right", false)'
+                            @onpointercancel='() => SetHandheldDirectionAsync("right", false)'
+                            @onpointerleave='() => SetHandheldDirectionAsync("right", false)'
+                            @onclick='() => NudgeHandheldDirectionAsync("right")'><i class="bi bi-caret-right-fill"></i></button>
+                    <button class="dpad-key dpad-down" aria-label="Move down"
+                            @onpointerdown='() => SetHandheldDirectionAsync("down", true)'
+                            @onpointerup='() => SetHandheldDirectionAsync("down", false)'
+                            @onpointercancel='() => SetHandheldDirectionAsync("down", false)'
+                            @onpointerleave='() => SetHandheldDirectionAsync("down", false)'
+                            @onclick='() => NudgeHandheldDirectionAsync("down")'><i class="bi bi-caret-down-fill"></i></button>
+                </div>
+
+                <div class="handheld-system-buttons">
+                    <button @onclick="FocusVillageChatAsync" disabled="@(_activeChatChannel is null)" aria-label="Focus nearby chat">
+                        <span></span><small>Select</small>
+                    </button>
+                    <button @onclick="TogglePlacesPanel" aria-label="Open or close Places">
+                        <span></span><small>Start</small>
+                    </button>
+                </div>
+
+                <div class="handheld-action-buttons" role="group" aria-label="Action buttons">
+                    <button class="handheld-action b-button" @onclick="HandheldBackAsync" aria-label="Back or leave building">
+                        <strong>B</strong><small>Back</small>
+                    </button>
+                    <button class="handheld-action a-button" @onclick="HandheldInteractAsync" aria-label="Interact with nearby place">
+                        <strong>A</strong><small>Action</small>
                     </button>
                 </div>
             </div>
@@ -709,7 +799,14 @@ else
             }
             else if (DeviceInfo.IsMobile)
             {
-                <i class="bi bi-hand-index-thumb-fill"></i><span>Drag anywhere to move · tap places to inspect</span>
+                @if (_handheldControls)
+                {
+                    <i class="bi bi-controller"></i><span>D-pad to move · A to interact</span>
+                }
+                else
+                {
+                    <i class="bi bi-hand-index-thumb-fill"></i><span>Drag anywhere to move · tap places to inspect</span>
+                }
             }
             else
             {
@@ -725,6 +822,7 @@ else
     private readonly string _canvasId = $"village-canvas-{Guid.NewGuid():N}";
     private readonly string _canvasInstructionsId = $"village-instructions-{Guid.NewGuid():N}";
     private readonly string _placesPanelId = $"village-places-{Guid.NewGuid():N}";
+    private ElementReference _chatInput;
     private IJSObjectReference? _module;
     private IJSObjectReference? _runtime;
     private DotNetObjectReference<VillageWindowComponent>? _selfRef;
@@ -743,17 +841,22 @@ else
     private int? _playerX;
     private int? _playerY;
     private bool _placesPanelOpen;
-    private bool _proximityVoice;
+    private bool _handheldControls = DevicePreferences.VillageHandheldControls;
+    private bool HandheldControlsActive => DeviceInfo.IsMobile && _handheldControls;
+    private bool HandheldControlsVisible => HandheldControlsActive && !_buildMode && !_adminMode;
+    private bool _proximityVoice = true;
     private bool _autoJoinVoice;
     private int _zoomPercent = 100;
     private long? _currentBuildingId;
     private string? _currentBuildingName;
     private long? _activeVoiceBuildingId;
+    private long? _activeVoiceMapId;
     private string? _activeVoiceBuildingName;
     private Channel? _activeVoiceChannel;
     private Channel? _activeChatChannel;
     private VillageEphemeralRoom? _ephemeralRoom;
     private long? _ephemeralRoomBuildingId;
+    private long? _ephemeralRoomMapId;
     private bool _activeVoiceVideoMode;
     private bool _voicePanelCollapsed;
     private string _chatDraft = string.Empty;
@@ -904,6 +1007,8 @@ else
                 return;
             }
 
+            await _runtime.InvokeVoidAsync("setTouchControlMode", HandheldControlsActive ? "handheld" : "floating");
+            await _runtime.InvokeVoidAsync("setSpatialAudioEnabled", _proximityVoice);
             HookVillageEvents();
             if (await JoinCurrentMapAsync())
             {
@@ -1119,6 +1224,70 @@ else
 
     private void TogglePlacesPanel() => _placesPanelOpen = !_placesPanelOpen;
 
+    private async Task ToggleHandheldControlsAsync()
+    {
+        _handheldControls = !_handheldControls;
+        await DevicePreferences.SetVillageHandheldControlsEnabled(_handheldControls, LocalStorage);
+        ShowActionMessage(_handheldControls
+            ? "Valour Pocket controls are on."
+            : "Floating joystick controls are on.");
+
+        if (_runtime is not null)
+            await _runtime.InvokeVoidAsync("setTouchControlMode", _handheldControls ? "handheld" : "floating");
+
+        await ReRender();
+    }
+
+    private async Task SetHandheldDirectionAsync(string direction, bool pressed)
+    {
+        if (_runtime is not null)
+            await _runtime.InvokeVoidAsync("setHandheldDirection", direction, pressed);
+    }
+
+    private async Task NudgeHandheldDirectionAsync(string direction)
+    {
+        if (_runtime is not null)
+            await _runtime.InvokeVoidAsync("nudgeHandheldDirection", direction);
+    }
+
+    private async Task HandheldInteractAsync()
+    {
+        if (_runtime is not null)
+            await _runtime.InvokeVoidAsync("interact");
+    }
+
+    private async Task HandheldBackAsync()
+    {
+        if (_currentMap?.MapKind == "Interior")
+        {
+            await ReturnOutsideAsync();
+            return;
+        }
+
+        if (_placesPanelOpen)
+        {
+            _placesPanelOpen = false;
+        }
+        else if (_selectedBuilding is not null || _selectedPlot is not null)
+        {
+            _selectedBuilding = null;
+            _selectedPlot = null;
+            _editingProperty = false;
+            if (_runtime is not null)
+                await _runtime.InvokeVoidAsync("setSelection", null, null);
+        }
+
+        await ReRender();
+    }
+
+    private async Task FocusVillageChatAsync()
+    {
+        if (_activeChatChannel is null)
+            return;
+
+        await _chatInput.FocusAsync();
+    }
+
     private async Task SelectBuildingFromPlacesAsync(VillagePocBuilding building)
     {
         _selectedBuilding = building;
@@ -1193,11 +1362,15 @@ else
         if (!IsMessageAudibleHere(message))
             return;
 
+        var bubbleText = MarkdownManager.GetPlainText(message.Content);
+        if (string.IsNullOrWhiteSpace(bubbleText))
+            return;
+
         _ = InvokeAsync(async () =>
         {
             try
             {
-                await _runtime.InvokeVoidAsync("pushBubble", message.AuthorUserId.ToString(), message.Content);
+                await _runtime.InvokeVoidAsync("pushBubble", message.AuthorUserId.ToString(), bubbleText);
             }
             catch (JSDisconnectedException) { }
             catch (JSException) { }
@@ -1220,7 +1393,8 @@ else
 
         if (speakerBuildingId is null)
             return _currentBuildingId is null &&
-                   _scene?.DefaultChatChannelId == message.ChannelId;
+                   (_ephemeralRoom?.ChatChannelId == message.ChannelId ||
+                    _scene?.DefaultChatChannelId == message.ChannelId);
 
         var building = _scene?.Maps
             .SelectMany(x => x.Buildings)
@@ -1325,36 +1499,21 @@ else
             _presenceConnected = true;
             _presenceConnecting = false;
             _presenceError = null;
-            var previousVoiceBuildingId = _activeVoiceBuildingId;
-            var previousVoiceChannelId = _activeVoiceChannel?.Id;
-            var currentBuilding = _currentBuildingId is null
-                ? null
-                : _scene?.Maps
-                    .SelectMany(x => x.Buildings)
-                    .FirstOrDefault(x => x.Id == _currentBuildingId.Value);
-            var usesEphemeralRoom = currentBuilding?.VoiceMode == VillageVoiceMode.AutoRoom &&
-                                    currentBuilding.ChannelId is null;
+            var usesEphemeralRoom = CurrentBuilding is null ||
+                                    (CurrentBuilding.VoiceMode == VillageVoiceMode.AutoRoom &&
+                                     CurrentBuilding.ChannelId is null);
 
             // The server released this user's lease on disconnect. Clearing
-            // the local handle forces EnsureEphemeralRoomAsync to reacquire it
+            // the local handle forces EnsureCurrentSpaceRoomAsync to reacquire it
             // instead of returning the now-stale cached response.
             if (usesEphemeralRoom)
             {
                 _ephemeralRoom = null;
                 _ephemeralRoomBuildingId = null;
+                _ephemeralRoomMapId = null;
             }
 
             await OnBuildingContextChangedAsync();
-
-            if (usesEphemeralRoom &&
-                previousVoiceBuildingId is not null &&
-                previousVoiceBuildingId == _currentBuildingId &&
-                previousVoiceChannelId != _ephemeralRoom?.ChannelId)
-            {
-                await LeaveVoiceAsync();
-                if (currentBuilding is not null && _ephemeralRoom is not null)
-                    await JoinBuildingVoiceAsync(currentBuilding);
-            }
 
             await PushPresencesAsync();
             await ReRender();
@@ -1431,14 +1590,31 @@ else
     private bool CanJoinVoiceFromHere(VillagePocBuilding building) =>
         _presenceConnected &&
         CanHostVoice(building) &&
-        (building.ChannelId is not null || building.Id == _currentBuildingId);
+        building.Id == _currentBuildingId;
+
+    private VillagePocBuilding? CurrentBuilding => _currentBuildingId is null
+        ? null
+        : _scene?.Maps.SelectMany(x => x.Buildings).FirstOrDefault(x => x.Id == _currentBuildingId);
+
+    private bool CurrentSpaceCanHostVoice =>
+        _presenceConnected &&
+        _currentMap is not null &&
+        (CurrentBuilding is null || CanHostVoice(CurrentBuilding));
+
+    private bool IsVoiceActiveHere =>
+        _activeVoiceChannel is not null &&
+        (_currentBuildingId is not null
+            ? _activeVoiceBuildingId == _currentBuildingId
+            : _activeVoiceBuildingId is null && _activeVoiceMapId == _currentMap?.Id);
+
+    private string CurrentSpaceName => CurrentBuilding?.Name ?? _currentMap?.Name ?? "Village";
 
     private async Task ClearPresenceDependentContextAsync()
     {
         _activeChatChannel = null;
         _currentBuildingName = null;
 
-        if (_activeVoiceBuildingId is not null)
+        if (_activeVoiceChannel is not null)
             await LeaveVoiceAsync();
 
         // The server expires map-scoped room leases on disconnect or when the
@@ -1446,12 +1622,14 @@ else
         // request through a connection that is already known to be unavailable.
         _ephemeralRoom = null;
         _ephemeralRoomBuildingId = null;
+        _ephemeralRoomMapId = null;
     }
 
     /// <summary>
-    /// Walking in or out of a building follows the voice room, but only once the
-    /// member has opted in. Joining a call the moment someone wanders through a
-    /// door would open their microphone without them asking.
+    /// Walking out of a voice space leaves its call. Auto-join may then enter
+    /// the next space; otherwise the microphone stays disconnected until the
+    /// member explicitly joins again. A map transition within the same building
+    /// keeps its existing call.
     /// </summary>
     private async Task OnBuildingContextChangedAsync()
     {
@@ -1462,21 +1640,29 @@ else
             return;
         }
 
-        var building = _currentBuildingId is null
-            ? null
-            : _scene?.Maps.SelectMany(x => x.Buildings).FirstOrDefault(x => x.Id == _currentBuildingId);
-        var usesEphemeralRoom = building?.VoiceMode == VillageVoiceMode.AutoRoom &&
-                                building.ChannelId is null;
-        var activeVoiceWasHere = building is not null && _activeVoiceBuildingId == building.Id;
+        var building = CurrentBuilding;
+        var mapId = _currentMap?.Id;
+        var usesEphemeralRoom = building is null ||
+                                (building.VoiceMode == VillageVoiceMode.AutoRoom && building.ChannelId is null);
+        var activeVoiceWasHere = _activeVoiceChannel is not null &&
+                                 (building is not null
+                                     ? _activeVoiceBuildingId == building.Id
+                                     : _activeVoiceBuildingId is null && _activeVoiceMapId == mapId);
+        var ephemeralRoomIsHere = building is not null
+            ? _ephemeralRoomBuildingId == building.Id
+            : _ephemeralRoomBuildingId is null && _ephemeralRoomMapId == mapId;
 
-        if (_ephemeralRoomBuildingId is not null &&
-            (_ephemeralRoomBuildingId != building?.Id || !usesEphemeralRoom))
+        if (_ephemeralRoom is not null &&
+            (!ephemeralRoomIsHere || !usesEphemeralRoom))
         {
-            if (_activeVoiceBuildingId == _ephemeralRoomBuildingId)
+            if (_activeVoiceChannel?.Id == _ephemeralRoom.ChannelId)
                 await LeaveVoiceAsync();
 
             await ReleaseEphemeralRoomAsync();
         }
+
+        if (_activeVoiceChannel is not null && !activeVoiceWasHere)
+            await LeaveVoiceAsync();
 
         _currentBuildingName = building?.Name;
         _activeChatChannel = null;
@@ -1485,14 +1671,14 @@ else
         VillageEphemeralRoom? room = null;
         if (usesEphemeralRoom)
         {
-            room = await EnsureEphemeralRoomAsync(building!);
+            room = await EnsureCurrentSpaceRoomAsync();
             chatChannelId = room?.ChatChannelId;
+            if (chatChannelId is null && building is null)
+                chatChannelId = _scene?.DefaultChatChannelId;
         }
         else
         {
-            chatChannelId = building is null
-                ? _scene?.DefaultChatChannelId
-                : building.ChatChannelId;
+            chatChannelId = building?.ChatChannelId;
         }
 
         if (chatChannelId is not null && Data is not null)
@@ -1502,20 +1688,20 @@ else
                 _activeChatChannel = contextChannel;
         }
 
-        var expectedVoiceChannelId = building is null || !CanHostVoice(building)
-            ? null
-            : building.ChannelId ?? room?.ChannelId;
+        var expectedVoiceChannelId = building is null
+            ? room?.ChannelId
+            : CanHostVoice(building) ? building.ChannelId ?? room?.ChannelId : null;
 
         // A scene refresh can rebind this same building to a different channel.
         // Building-id equality alone is not enough: preserve the user's active
         // call intent while moving the call to the new authoritative channel.
         if (activeVoiceWasHere && _activeVoiceChannel?.Id != expectedVoiceChannelId)
         {
-            if (_activeVoiceBuildingId is not null)
+            if (_activeVoiceChannel is not null)
                 await LeaveVoiceAsync();
 
-            if (building is not null && expectedVoiceChannelId is not null)
-                await JoinBuildingVoiceAsync(building);
+            if (expectedVoiceChannelId is not null)
+                await JoinCurrentVoiceAsync();
         }
 
         if (!_autoJoinVoice)
@@ -1524,30 +1710,50 @@ else
             return;
         }
 
-        if (building is null || !CanHostVoice(building))
+        if (expectedVoiceChannelId is null)
         {
-            if (_activeVoiceBuildingId is not null)
+            if (_activeVoiceChannel is not null)
                 await LeaveVoiceAsync();
 
             await ReRender();
             return;
         }
 
-        if (_activeVoiceBuildingId == building.Id)
+        if (IsVoiceActiveHere)
             return;
 
-        await JoinBuildingVoiceAsync(building);
+        await JoinCurrentVoiceAsync();
     }
 
     private async Task JoinBuildingVoiceAsync(VillagePocBuilding building)
     {
-        if (Data is null)
+        if (building.Id != _currentBuildingId)
             return;
 
-        var channelId = building.ChannelId;
-        if (channelId is null && building.VoiceMode == VillageVoiceMode.AutoRoom)
+        await JoinCurrentVoiceAsync();
+    }
+
+    private async Task ToggleCurrentVoiceAsync()
+    {
+        if (IsVoiceActiveHere)
+            await LeaveVoiceAsync();
+        else
+            await JoinCurrentVoiceAsync();
+    }
+
+    private async Task JoinCurrentVoiceAsync()
+    {
+        if (Data is null || _currentMap is null || !CurrentSpaceCanHostVoice)
+            return;
+
+        if (_runtime is not null)
+            await _runtime.InvokeVoidAsync("resumeSpatialAudio");
+
+        var building = CurrentBuilding;
+        var channelId = building?.ChannelId;
+        if (building is null || (channelId is null && building.VoiceMode == VillageVoiceMode.AutoRoom))
         {
-            var room = await EnsureEphemeralRoomAsync(building);
+            var room = await EnsureCurrentSpaceRoomAsync();
             channelId = room?.ChannelId;
         }
 
@@ -1558,8 +1764,9 @@ else
         if (channel is null || !ISharedChannel.VoiceChannelTypes.Contains(channel.ChannelType))
             return;
 
-        _activeVoiceBuildingId = building.Id;
-        _activeVoiceBuildingName = building.Name;
+        _activeVoiceBuildingId = building?.Id;
+        _activeVoiceMapId = _currentMap.Id;
+        _activeVoiceBuildingName = CurrentSpaceName;
         _activeVoiceChannel = channel;
         _activeVoiceVideoMode = channel.ChannelType == ChannelTypeEnum.PlanetVideo;
         _voicePanelCollapsed = false;
@@ -1568,18 +1775,24 @@ else
         await ReRender();
     }
 
-    private async Task<VillageEphemeralRoom?> EnsureEphemeralRoomAsync(VillagePocBuilding building)
+    private async Task<VillageEphemeralRoom?> EnsureCurrentSpaceRoomAsync()
     {
-        if (Data is null)
+        if (Data is null || _currentMap is null)
             return null;
 
-        if (_ephemeralRoomBuildingId == building.Id && _ephemeralRoom is not null)
+        var building = CurrentBuilding;
+        var roomMatchesSpace = building is not null
+            ? _ephemeralRoomBuildingId == building.Id
+            : _ephemeralRoomBuildingId is null && _ephemeralRoomMapId == _currentMap.Id;
+        if (roomMatchesSpace && _ephemeralRoom is not null)
             return _ephemeralRoom;
 
-        if (_ephemeralRoomBuildingId is not null)
+        if (_ephemeralRoom is not null)
             await ReleaseEphemeralRoomAsync();
 
-        var result = await VillageService.AcquireBuildingRoomAsync(Data, building.Id);
+        var result = building is null
+            ? await VillageService.AcquireMapRoomAsync(Data, _currentMap.Id)
+            : await VillageService.AcquireBuildingRoomAsync(Data, building.Id);
         if (!result.Success || result.Data is null)
         {
             ShowActionMessage(result.Message ?? "Could not open this area's temporary room.", true);
@@ -1587,25 +1800,32 @@ else
         }
 
         _ephemeralRoom = result.Data;
-        _ephemeralRoomBuildingId = building.Id;
+        _ephemeralRoomBuildingId = building?.Id;
+        _ephemeralRoomMapId = result.Data.MapId;
         return _ephemeralRoom;
     }
 
     private async Task ReleaseEphemeralRoomAsync()
     {
         var buildingId = _ephemeralRoomBuildingId;
+        var mapId = _ephemeralRoomMapId;
         _ephemeralRoom = null;
         _ephemeralRoomBuildingId = null;
+        _ephemeralRoomMapId = null;
 
-        if (buildingId is null || Data is null)
+        if (Data is null)
             return;
 
-        await VillageService.ReleaseBuildingRoomAsync(Data, buildingId.Value);
+        if (buildingId is not null)
+            await VillageService.ReleaseBuildingRoomAsync(Data, buildingId.Value);
+        else if (mapId is not null)
+            await VillageService.ReleaseMapRoomAsync(Data, mapId.Value);
     }
 
     private async Task LeaveVoiceAsync()
     {
         _activeVoiceBuildingId = null;
+        _activeVoiceMapId = null;
         _activeVoiceBuildingName = null;
         _activeVoiceChannel = null;
         _activeVoiceVideoMode = false;
@@ -1723,9 +1943,11 @@ else
         }
         else if (_runtime is not null && Client.Me is not null)
         {
-            // The server echo will refresh the same bubble; rendering immediately
+            // The server echo will append the confirmed bubble; rendering immediately
             // makes the composer feel local even on a high-latency community node.
-            await _runtime.InvokeVoidAsync("pushBubble", Client.Me.Id.ToString(), content);
+            var bubbleText = MarkdownManager.GetPlainText(content);
+            if (!string.IsNullOrWhiteSpace(bubbleText))
+                await _runtime.InvokeVoidAsync("pushBubble", Client.Me.Id.ToString(), bubbleText, true);
         }
 
         _sendingChat = false;
@@ -2685,7 +2907,7 @@ else
         long? channelId = _selectedBuilding.ChatChannelId ?? _selectedBuilding.ChannelId;
         if (channelId is null && _selectedBuilding.VoiceMode == VillageVoiceMode.AutoRoom)
         {
-            var room = await EnsureEphemeralRoomAsync(_selectedBuilding);
+            var room = await EnsureCurrentSpaceRoomAsync();
             channelId = room?.ChatChannelId;
         }
 
@@ -2781,7 +3003,7 @@ else
 
         // Closing the village must not leave the member sitting in a call they
         // can no longer see.
-        if (_activeVoiceBuildingId is not null)
+        if (_activeVoiceChannel is not null)
             await CallSession.LeaveAsync(clearChannel: true);
 
         await ReleaseEphemeralRoomAsync();

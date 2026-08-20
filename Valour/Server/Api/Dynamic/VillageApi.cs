@@ -160,6 +160,31 @@ public class VillageApi
             : ValourResult.BadRequest(result.Message ?? "Could not create the village room.");
     }
 
+    [ValourRoute(HttpVerbs.Post, "api/planets/{id}/village/maps/{mapId}/room")]
+    [UserRequired(UserPermissionsEnum.Membership)]
+    public static async Task<IResult> AcquireMapRoomRouteAsync(
+        long id,
+        long mapId,
+        PlanetMemberService memberService,
+        PlanetService planetService,
+        VillagePresenceService presenceService,
+        VillageRoomService roomService)
+    {
+        var member = await memberService.GetCurrentAsync(id);
+        if (member is null)
+            return ValourResult.NotPlanetMember();
+        if (!await IsEnabledAsync(id, planetService))
+            return ValourResult.Forbid(DisabledMessage);
+
+        if (!presenceService.GetMapOccupants(id, mapId).Any(x => x.UserId == member.UserId))
+            return ValourResult.BadRequest("Enter this village map before opening its temporary room.");
+
+        var result = await roomService.AcquireMapAsync(id, mapId, member.UserId);
+        return result.Success && result.Data is not null
+            ? Results.Json(result.Data)
+            : ValourResult.BadRequest(result.Message ?? "Could not create the village room.");
+    }
+
     [ValourRoute(HttpVerbs.Delete, "api/planets/{id}/village/buildings/{buildingId}/room")]
     [UserRequired(UserPermissionsEnum.Membership)]
     public static async Task<IResult> ReleaseBuildingRoomRouteAsync(
@@ -176,6 +201,25 @@ public class VillageApi
             return ValourResult.Forbid(DisabledMessage);
 
         await roomService.ReleaseAsync(id, buildingId, member.UserId);
+        return Results.Json(true);
+    }
+
+    [ValourRoute(HttpVerbs.Delete, "api/planets/{id}/village/maps/{mapId}/room")]
+    [UserRequired(UserPermissionsEnum.Membership)]
+    public static async Task<IResult> ReleaseMapRoomRouteAsync(
+        long id,
+        long mapId,
+        PlanetMemberService memberService,
+        PlanetService planetService,
+        VillageRoomService roomService)
+    {
+        var member = await memberService.GetCurrentAsync(id);
+        if (member is null)
+            return ValourResult.NotPlanetMember();
+        if (!await IsEnabledAsync(id, planetService))
+            return ValourResult.Forbid(DisabledMessage);
+
+        await roomService.ReleaseMapAsync(id, mapId, member.UserId);
         return Results.Json(true);
     }
 }
