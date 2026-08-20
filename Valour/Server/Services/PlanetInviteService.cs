@@ -149,8 +149,8 @@ public class PlanetInviteService
         }
         else
         {
-            // Not a real invite code - a planet may have opted its vanity
-            // name in as a standing invite link, so check for that too.
+            // Not a real invite code - a planet may have opted its
+            // vanity name in as a standing invite link, so check for that too.
             var vanityPlanetId = await _planetService.ResolveVanityInviteAsync(inviteCode);
             if (vanityPlanetId is null)
                 return new TaskResult<ISharedPlanetListInfo>(false, "Invite not found.");
