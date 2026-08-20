@@ -33,9 +33,9 @@
     private string GetWrapperStyle()
     {
         // No size metadata (e.g. older thread attachments): let the image
-        // render at natural size, clamped by the max constraints below. The
-        // spoiler blur/overlay are both position:absolute though, so with no
-        // size to go on they'd collapse to nothing - give them a fixed height.
+        // render at natural size, clamped by the max constraints below.
+        // The spoiler blur/overlay are both position:absolute though,
+        // so without size to go on they'd collapse to nothing - give them a fixed height.
         if (_width <= 0 || _height <= 0)
             return IsHiddenSpoiler
                 ? $"max-width: min({MaxSize}px, 100%); height: 200px;"
