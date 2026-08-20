@@ -41,9 +41,8 @@
                 ? $"max-width: min({MaxSize}px, 100%); height: 200px;"
                 : $"max-width: min({MaxSize}px, 100%);";
 
-        // This also sizes the spoiler placeholder (see markup below) - since
-        // LazyImage isn't rendered while hidden, nothing else is competing to
-        // size the wrapper.
+        // This also sizes the spoiler placeholder (see markup below) - since LazyImage
+        // isn't rendered while hidden, nothing else is competing to size the wrapper.
         if (DoAspect)
             return $"aspect-ratio: {_width} / {_height}; max-width: min({MaxSize}px, 100%); width: {_width}px";
 
