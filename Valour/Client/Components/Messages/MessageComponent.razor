@@ -96,9 +96,9 @@ else
                         continue;
 
                     // Image/Video handle their own blur-and-reveal. Everything else (embeds)
-                    // just doesn't mount its component until revealed, since some of those
-                    // are third-party iframes and we don't want to ping Twitter/YouTube/etc.
-                    // just because the message rendered.
+                    // just doesn't mount its component until revealed,
+                    // since some of those are third-party iframes and we don't want
+                    // to ping Twitter/YouTube/etc. just because the message rendered.
                     var isHiddenEmbedSpoiler = attachment.IsSpoiler &&
                                                 attachment.Type != MessageAttachmentType.Image &&
                                                 attachment.Type != MessageAttachmentType.Video &&
