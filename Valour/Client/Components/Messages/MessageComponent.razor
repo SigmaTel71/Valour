@@ -707,8 +707,8 @@ else
         if (_ghost) return;
     }
 
-    // Lazy so the vast majority of messages (no spoilered embeds) don't pay for
-    // an empty set each.
+    // Lazy so the vast majority of messages (no spoilered embeds)
+    // don't pay for an empty set each.
     private HashSet<int> _revealedSpoilerAttachments;
 
     private async Task RevealSpoilerAttachment(int id)
