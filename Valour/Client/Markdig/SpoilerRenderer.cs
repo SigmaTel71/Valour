@@ -30,11 +30,10 @@ public class SpoilerRenderer : BlazorObjectRenderer<SpoilerInline>
     }
 
     /// <summary>
-    /// Markdig's autolink parser won't pick up a URL sitting right against a
-    /// custom emphasis delimiter, so a bare link at the start/end of a spoiler
-    /// never gets auto-linked normally. Find and link those manually here using
-    /// the same URL pattern the server uses for embeds, routed through the
-    /// normal renderer.Render path so it still gets in-app link handling.
+    /// Markdig's autolink parser won't pick up a URL sitting right against a custom emphasis delimiter,
+    /// so a bare link at the start/end of a spoiler never gets auto-linked normally. 
+    /// Find and link those manually here using the same URL pattern the server uses for embeds,
+    /// routed through the normal renderer.Render path so it still gets in-app link handling.
     /// </summary>
     private static void WriteInlineWithAutoLinks(BlazorRenderer renderer, Inline child)
     {
