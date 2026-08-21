@@ -292,7 +292,7 @@ public class MessageService
 
         if (planet is null)
         {
-            if (channel.ChannelType == ChannelTypeEnum.DirectChat)
+            if (channel.ChannelType is ChannelTypeEnum.DirectChat or ChannelTypeEnum.GroupChat)
             {
                 var channelMembers = await _db.ChannelMembers
                     .AsNoTracking()

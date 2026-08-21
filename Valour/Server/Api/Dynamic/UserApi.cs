@@ -1038,6 +1038,24 @@ public class UserApi
         return Results.Json(prefs.ToModel());
     }
 
+    [ValourRoute(HttpVerbs.Post, "api/users/me/preferences/callPolicy/{policy}")]
+    [UserRequired]
+    public static async Task<IResult> SetCallPolicyAsync(
+        DmPolicy policy,
+        UserService userService,
+        ValourDb db)
+    {
+        if (!Enum.IsDefined(policy))
+            return ValourResult.BadRequest("Invalid call policy.");
+
+        var userId = await userService.GetCurrentUserIdAsync();
+        var prefs = await EnsurePreferencesAsync(userId, db);
+        prefs.CallPolicy = policy;
+
+        await db.SaveChangesAsync();
+        return Results.Json(prefs.ToModel());
+    }
+
     [ValourRoute(HttpVerbs.Post, "api/users/me/preferences/activityCooldown/{seconds}")]
     [UserRequired]
     public static async Task<IResult> SetActivityCooldownAsync(
@@ -1110,6 +1128,7 @@ public class UserApi
             NotificationVolume = NotificationPreferences.DefaultNotificationVolume,
             EnabledNotificationSources = NotificationPreferences.AllNotificationSourcesMask,
             DmPolicy = dmPolicy,
+            CallPolicy = DmPolicy.FriendsOnly,
             ForceGpuAcceleration = false
         };
     }

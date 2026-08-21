@@ -61,6 +61,7 @@ public class ValourClient
     public readonly UnreadService UnreadService;
     public readonly PlanetTagService PlanetTagService;
     public readonly VoiceStateService VoiceStateService;
+    public readonly DirectCallService DirectCallService;
     public readonly AttachmentService AttachmentService;
     public readonly ThreadService ThreadService;
     public readonly WikiService WikiService;
@@ -143,6 +144,7 @@ public class ValourClient
         UnreadService = new UnreadService(this);
         PlanetTagService = new PlanetTagService(this);
         VoiceStateService = new VoiceStateService(this);
+        DirectCallService = new DirectCallService(this);
         AttachmentService = new AttachmentService(this);
         ThreadService = new ThreadService(this);
         WikiService = new WikiService(this);
@@ -272,7 +274,10 @@ public class ValourClient
         // await NodeService.SetupPrimaryNodeAsync(); Already done in LoginAsync
         
         if (await TryLoadBootstrapAsync())
+        {
+            await DirectCallService.LoadCurrentAsync();
             return TaskResult.SuccessResult;
+        }
 
         // Compatibility fallback for servers that predate api/bootstrap.
         var loadTasks = new List<Task>()
@@ -284,6 +289,7 @@ public class ValourClient
             KlipyService.LoadGifFavoritesAsync(),
             ChannelFavoriteService.LoadFavoritesAsync(),
             ChannelService.LoadDmChannelsAsync(),
+            DirectCallService.LoadCurrentAsync(),
             NotificationService.LoadUnreadNotificationsAsync(),
             UnreadService.FetchUnreadPlanetsAsync(),
             UnreadService.FetchUnreadDirectChannelsAsync()

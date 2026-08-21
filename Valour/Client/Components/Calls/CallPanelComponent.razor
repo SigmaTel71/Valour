@@ -267,6 +267,9 @@
     [Parameter]
     public bool VideoMode { get; set; }
 
+    [Parameter]
+    public DirectCall? DirectCall { get; set; }
+
     private RealtimeKitComponent? _rtk => RealtimeKitHost.Component;
     private readonly object _memberPrefetchLock = new();
 
@@ -439,6 +442,7 @@
     private async Task Initialize(Channel channel)
     {
         if (CallSession.ActiveChannel?.Id == channel.Id &&
+            CallSession.ActiveDirectCall?.Id == DirectCall?.Id &&
             (CallSession.Joined || CallSession.Connecting || CallSession.WaitingForPeer))
         {
             SyncFromGlobalCallSession();
@@ -446,7 +450,10 @@
             return;
         }
 
-        await CallSession.InitializeAsync(channel, VideoMode);
+        if (DirectCall is not null)
+            await CallSession.InitializeDirectCallAsync(channel, DirectCall);
+        else
+            await CallSession.InitializeAsync(channel, VideoMode);
         SyncFromGlobalCallSession();
         StateHasChanged();
     }

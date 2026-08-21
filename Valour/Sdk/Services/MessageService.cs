@@ -165,7 +165,7 @@ public class MessageService : ServiceBase
     /// <summary>
     /// Ran when a message is recieved
     /// </summary>
-    private void OnDirectMessageReceived(Message message)
+    private async Task OnDirectMessageReceived(Message message)
     {
         message = message.Sync(_client);
         
@@ -173,10 +173,10 @@ public class MessageService : ServiceBase
         
         MessageReceived?.Invoke(message);
         
-        if (_cache.Channels.TryGet(message.ChannelId, out var channel))
-        {
-            channel?.NotifyMessageReceived(message);
-        }
+        if (!_cache.Channels.TryGet(message.ChannelId, out var channel))
+            channel = await _client.ChannelService.FetchDirectChannelAsync(message.ChannelId);
+
+        channel?.NotifyMessageReceived(message);
     }
     
     /// <summary>

@@ -1036,6 +1036,12 @@ public class UserService
                 .Select(x => x.Id)
                 .ToListAsync();
 
+            var directCallIds = await _db.DirectCallMembers
+                .Where(x => x.UserId == dbUser.Id)
+                .Select(x => x.CallId)
+                .Distinct()
+                .ToListAsync();
+
             var authoredMessageIds = await _db.Messages
                 .IgnoreQueryFilters()
                 .Where(x => x.AuthorUserId == dbUser.Id)
@@ -1084,6 +1090,16 @@ public class UserService
             await _db.UserPreferences.IgnoreQueryFilters()
                 .Where(x => x.Id == dbUser.Id)
                 .ExecuteDeleteAsync();
+
+            if (directCallIds.Count > 0)
+            {
+                await _db.DirectCallMembers
+                    .Where(x => directCallIds.Contains(x.CallId))
+                    .ExecuteDeleteAsync();
+                await _db.DirectCalls
+                    .Where(x => directCallIds.Contains(x.Id))
+                    .ExecuteDeleteAsync();
+            }
 
             foreach (var entry in _db.ChangeTracker.Entries<Valour.Database.AuthToken>()
                          .Where(x => x.Entity.UserId == dbUser.Id)
@@ -1264,9 +1280,28 @@ public class UserService
             await _db.SaveChangesAsync();
             
             // Channel membership
+            var affectedGroupChannelIds = await _db.ChannelMembers.IgnoreQueryFilters()
+                .Where(x => x.UserId == dbUser.Id && x.Channel.ChannelType == ChannelTypeEnum.GroupChat)
+                .Select(x => x.ChannelId)
+                .Distinct()
+                .ToListAsync();
             var dchannelMembers = _db.ChannelMembers.IgnoreQueryFilters().Where(x => x.UserId == dbUser.Id);
             _db.ChannelMembers.RemoveRange(dchannelMembers);
 
+            await _db.SaveChangesAsync();
+
+            foreach (var groupChannelId in affectedGroupChannelIds)
+            {
+                if (await _db.ChannelMembers.AnyAsync(x => x.ChannelId == groupChannelId && x.IsAdmin))
+                    continue;
+
+                var replacementAdmin = await _db.ChannelMembers
+                    .Where(x => x.ChannelId == groupChannelId)
+                    .OrderBy(x => x.Id)
+                    .FirstOrDefaultAsync();
+                if (replacementAdmin is not null)
+                    replacementAdmin.IsAdmin = true;
+            }
             await _db.SaveChangesAsync();
             
             // Direct Message Channels

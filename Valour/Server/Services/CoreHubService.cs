@@ -204,6 +204,39 @@ public class CoreHubService
         }
     }
 
+    public async Task RelayDirectCallUpdate(
+        DirectCall call,
+        NodeLifecycleService nodeLifecycleService,
+        List<long> userIds)
+    {
+        foreach (var userId in userIds)
+            await nodeLifecycleService.RelayUserEventAsync(
+                userId,
+                NodeLifecycleService.NodeEventType.DirectCall,
+                call);
+    }
+
+    public async Task RelayDirectChannelUpdate(
+        Channel channel,
+        NodeLifecycleService nodeLifecycleService,
+        IEnumerable<long> userIds)
+    {
+        foreach (var userId in userIds.Distinct())
+            await nodeLifecycleService.RelayUserEventAsync(
+                userId,
+                NodeLifecycleService.NodeEventType.DirectChannel,
+                channel);
+    }
+
+    public Task RelayDirectChannelRemoved(
+        long channelId,
+        long userId,
+        NodeLifecycleService nodeLifecycleService) =>
+        nodeLifecycleService.RelayUserEventAsync(
+            userId,
+            NodeLifecycleService.NodeEventType.DirectChannelRemoved,
+            channelId);
+
     public void RelayNotification(Notification notif, NodeLifecycleService nodeLifecycleService)
     {
         _ = nodeLifecycleService.RelayUserEventAsync(notif.UserId, NodeLifecycleService.NodeEventType.Notification, notif);

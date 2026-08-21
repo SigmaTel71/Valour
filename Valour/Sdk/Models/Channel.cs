@@ -665,7 +665,18 @@ public class Channel : ClientPlanetModel<Channel, long>, ISharedChannel
     public async Task<List<User>> GetChannelMemberUsersAsync(bool refresh = false)
     {
         if (PlanetId is null)
-            return new List<User>();
+        {
+            if (!refresh && _memberUsers is not null)
+                return _memberUsers;
+
+            var directResult = await Node.GetJsonAsync<List<User>>(IdRoute + "/members");
+            if (!directResult.Success || directResult.Data is null)
+                return [];
+
+            directResult.Data.SyncAll(Client);
+            _memberUsers = directResult.Data;
+            return _memberUsers;
+        }
 
         if (Members is null)
         {
@@ -712,6 +723,9 @@ public class Channel : ClientPlanetModel<Channel, long>, ISharedChannel
         if (PlanetId is not null)
             return Planet.GetIconUrl(IconFormat.Webp64);
 
+        if (ChannelType == ChannelTypeEnum.GroupChat)
+            return "./_content/Valour.Client/media/logo/logo-128.webp";
+
         dmUser ??= await GetDmUserAsync();
         return dmUser?.GetAvatar() ?? "./_content/Valour.Client/media/logo/logo-128.webp";
     }
@@ -720,6 +734,9 @@ public class Channel : ClientPlanetModel<Channel, long>, ISharedChannel
     {
         if (PlanetId is not null)
             return Name;
+
+        if (ChannelType == ChannelTypeEnum.GroupChat)
+            return string.IsNullOrWhiteSpace(Name) ? "Group chat" : Name;
 
         // Missing member data is not the same as a self-DM
         if (Members is null)
@@ -794,6 +811,7 @@ public class Channel : ClientPlanetModel<Channel, long>, ISharedChannel
             case ChannelTypeEnum.PlanetChat:
                 return await Client.ChannelService.TryOpenPlanetChannelConnection(this, key);
             case ChannelTypeEnum.DirectChat:
+            case ChannelTypeEnum.GroupChat:
                 await UpdateUserState(DateTime.UtcNow); // Update the user state
                 return TaskResult.SuccessResult;
             default:

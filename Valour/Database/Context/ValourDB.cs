@@ -287,6 +287,8 @@ public partial class ValourDb : DbContext, IDataProtectionKeyContext
     public DbSet<MessageAttachment> MessageAttachments { get; set; }
     public DbSet<MessageMention> MessageMentions { get; set; }
     public DbSet<RealtimeKitMeeting> RealtimeKitMeetings { get; set; }
+    public DbSet<DirectCall> DirectCalls { get; set; }
+    public DbSet<DirectCallMember> DirectCallMembers { get; set; }
     
     
 
@@ -373,6 +375,8 @@ public partial class ValourDb : DbContext, IDataProtectionKeyContext
         MessageAttachment.SetupDbModel(modelBuilder);
         MessageMention.SetupDbModel(modelBuilder);
         RealtimeKitMeeting.SetupDbModel(modelBuilder);
+        DirectCall.SetupDbModel(modelBuilder);
+        DirectCallMember.SetupDbModel(modelBuilder);
         Message.SetupDbModel(modelBuilder);
         User.SetupDbModel(modelBuilder);
         UserSubscription.SetupDbModel(modelBuilder);

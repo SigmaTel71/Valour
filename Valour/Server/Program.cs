@@ -547,6 +547,7 @@ public partial class Program
         services.AddScoped<PlanetBanService>();
         services.AddScoped<ChatCacheService>();
         services.AddScoped<ChannelService>();
+        services.AddScoped<DirectCallService>();
         services.AddScoped<MessageService>();
         services.AddScoped<PlanetStorageService>();
         services.AddScoped<PlanetVoiceService>();
@@ -645,6 +646,7 @@ public partial class Program
         services.AddHostedService<SubscriptionWorker>();
         services.AddHostedService<StripeReconciliationWorker>();
         services.AddHostedService<VoiceStateCleanupWorker>();
+        services.AddHostedService<DirectCallCleanupWorker>();
         services.AddHostedService<HostedPlanetCleanupWorker>();
         services.AddHostedService<NotificationCleanupWorker>();
         services.AddHostedService<CalendarReminderWorker>();
