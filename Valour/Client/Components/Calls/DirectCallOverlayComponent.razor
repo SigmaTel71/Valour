@@ -112,7 +112,11 @@
 
     private void OnCallUpdated(DirectCall call) => _ = InvokeAsync(async () =>
     {
-        if (call.State == DirectCallState.Ended)
+        var myMembership = call.Members.FirstOrDefault(x => x.UserId == Client.Me?.Id);
+        var isUnavailableForMe = call.State == DirectCallState.Ended ||
+            myMembership?.State is DirectCallMemberState.Declined or DirectCallMemberState.Left;
+
+        if (isUnavailableForMe)
         {
             if (CallSession.ActiveDirectCall?.Id == call.Id)
                 await CallSession.LeaveAsync(clearChannel: true);
