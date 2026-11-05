@@ -1,4 +1,6 @@
-﻿@using Microsoft.Extensions.DependencyInjection
+@using Microsoft.Extensions.DependencyInjection
+
+@inject IStringLocalizer<ValourApp> Localizer
 @inject ValourClient Client
 @inject LoggingService Logger
 @inject IJSRuntime JsRuntime
@@ -9,6 +11,7 @@
 @inject Valour.Sdk.E2ee.IE2eeKeyStore E2eeKeyStore
 @implements IDisposable
 
+<LanguageTrackProvider OnInitializeEvent="provider => provider.RegisterComponent(this)" />
 <BrowserUtils OnReady="@ReadyAsync" />
 
 <!-- Enable app sounds -->
@@ -65,6 +68,10 @@
     protected override async Task OnInitializedAsync()
     {
         Logger.AddColorLogger(Log);
+
+        bool.TryParse(await LocalStorage.GetStringAsync("alwaysShowTime"), out TimeUtil.AlwaysShowTime);
+        bool.TryParse(await LocalStorage.GetStringAsync("useRelativeTime"), out TimeUtil.UseRelativeTime);
+
         await DevicePreferences.LoadPreferences(LocalStorage);
         Logger.Log("App", "Loaded user preferences", "magenta");
         Client.AuthService.LoggedOut += OnTokenInvalidatedAsync;
@@ -295,7 +302,7 @@
     {
         try
         {
-            await JsRuntime.InvokeVoidAsync("valourBootStatus", text);
+            await JsRuntime.InvokeVoidAsync("valourBootStatus", Localizer[text].ToString());
         }
         catch (JSException)
         {

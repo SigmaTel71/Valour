@@ -1,6 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Valour.Shared.Models;
+using Valour.Shared.Utilities;
+using static Valour.Shared.Models.TimeSettings;
 
 namespace Valour.Database;
 
@@ -28,6 +30,21 @@ public class UserPreferences : ISharedUserPreferences
 
     [Column("call_policy")]
     public DmPolicy CallPolicy { get; set; } = DmPolicy.FriendsOnly;
+
+    [Column("sync_language_between_devices")]
+    public bool SyncLanguageBetweenDevices { get; set; } = true;
+
+    [Column("language")]
+    public string Language { get; set; } = SupportedCultures.Default;
+
+    [Column("time_format")]
+    public TimeFormatPreference TimeFormat { get; set; } = TimeFormatPreference.PreferAuto;
+
+    [Column("always_show_time")]
+    public bool AlwaysShowTime { get; set; } = false;
+
+    [Column("use_relative_time")]
+    public bool UseRelativeTime { get; set; } = false;
 
     [Column("force_gpu_acceleration")]
     public bool ForceGpuAcceleration { get; set; }

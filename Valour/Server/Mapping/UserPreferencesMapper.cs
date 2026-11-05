@@ -17,7 +17,12 @@ public static class UserPreferencesMapper
             CallPolicy = prefs.CallPolicy,
             ForceGpuAcceleration = prefs.ForceGpuAcceleration,
             ActivityCooldownSeconds = prefs.ActivityCooldownSeconds,
-            ShowNsfw = prefs.ShowNsfw
+            ShowNsfw = prefs.ShowNsfw,
+            TimeFormat = prefs.TimeFormat,
+            AlwaysShowTime = prefs.AlwaysShowTime,
+            UseRelativeTime = prefs.UseRelativeTime,
+            SyncLanguageBetweenDevices = prefs.SyncLanguageBetweenDevices,
+            Language = prefs.Language
         };
     }
 
@@ -36,7 +41,12 @@ public static class UserPreferencesMapper
             CallPolicy = prefs.CallPolicy,
             ForceGpuAcceleration = prefs.ForceGpuAcceleration,
             ActivityCooldownSeconds = prefs.ActivityCooldownSeconds,
-            ShowNsfw = prefs.ShowNsfw
+            ShowNsfw = prefs.ShowNsfw,
+            TimeFormat = prefs.TimeFormat,
+            AlwaysShowTime = prefs.AlwaysShowTime,
+            UseRelativeTime = prefs.UseRelativeTime,
+            SyncLanguageBetweenDevices = prefs.SyncLanguageBetweenDevices,
+            Language = prefs.Language
         };
     }
 }
