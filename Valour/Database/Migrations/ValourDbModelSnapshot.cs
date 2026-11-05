@@ -4812,6 +4812,10 @@ namespace Valour.Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("activity_cooldown_seconds");
 
+                    b.Property<bool>("AlwaysShowTime")
+                        .HasColumnType("boolean")
+                        .HasColumnName("always_show_time");
+
                     b.Property<int>("CallPolicy")
                         .HasColumnType("integer")
                         .HasColumnName("call_policy");
@@ -4832,6 +4836,10 @@ namespace Valour.Database.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("force_gpu_acceleration");
 
+                    b.Property<string>("Language")
+                        .HasColumnType("text")
+                        .HasColumnName("language");
+
                     b.Property<bool>("MarketingEmailOptOut")
                         .HasColumnType("boolean")
                         .HasColumnName("marketing_email_opt_out");
@@ -4843,6 +4851,18 @@ namespace Valour.Database.Migrations
                     b.Property<bool>("ShowNsfw")
                         .HasColumnType("boolean")
                         .HasColumnName("show_nsfw");
+
+                    b.Property<bool>("SyncLanguageBetweenDevices")
+                        .HasColumnType("boolean")
+                        .HasColumnName("sync_language_between_devices");
+
+                    b.Property<int>("TimeFormat")
+                        .HasColumnType("integer")
+                        .HasColumnName("time_format");
+
+                    b.Property<bool>("UseRelativeTime")
+                        .HasColumnType("boolean")
+                        .HasColumnName("use_relative_time");
 
                     b.HasKey("Id");
 
