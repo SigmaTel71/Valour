@@ -1,3 +1,5 @@
+using static Valour.Shared.Models.TimeSettings;
+
 namespace Valour.Shared.Models;
 
 public interface ISharedUserPreferences : ISharedModel<long>
@@ -8,6 +10,11 @@ public interface ISharedUserPreferences : ISharedModel<long>
     DmPolicy DmPolicy { get; set; }
     DmPolicy CallPolicy { get; set; }
     bool ForceGpuAcceleration { get; set; }
+    TimeFormatPreference TimeFormat { get; set; }
+    bool AlwaysShowTime { get; set; }
+    bool UseRelativeTime { get; set; }
+    bool SyncLanguageBetweenDevices { get; set; }
+    string Language { get; set; }
 
     /// <summary>
     /// Personal per-channel cooldown for activity notifications, in seconds.
